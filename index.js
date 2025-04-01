@@ -4,6 +4,7 @@ import express2 from "express";
 // server/routes.ts
 import { createServer } from "http";
 import { z } from "zod";
+import PDFDocument from "pdfkit";
 var contactSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Please provide a valid email address"),
@@ -11,6 +12,30 @@ var contactSchema = z.object({
   message: z.string().min(10, "Message must be at least 10 characters")
 });
 async function registerRoutes(app2) {
+  app2.get("/api/analytics", async (req, res) => {
+    try {
+      const mockData = {
+        visits: [120, 132, 145, 162, 158, 169, 175],
+        achievements: 12,
+        skillProgress: {
+          "JavaScript": 85,
+          "React": 90,
+          "Node.js": 80
+        },
+        interactionStats: {
+          clicks: 450,
+          scrollDepth: 85,
+          timeSpent: 240
+        }
+      };
+      return res.status(200).json(mockData);
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message: "Error fetching analytics"
+      });
+    }
+  });
   app2.post("/api/contact", async (req, res) => {
     try {
       const validatedData = contactSchema.parse(req.body);
@@ -31,6 +56,69 @@ async function registerRoutes(app2) {
       return res.status(500).json({
         success: false,
         message: "Something went wrong. Please try again later."
+      });
+    }
+  });
+  app2.post("/api/generate-resume", async (req, res) => {
+    try {
+      const { selectedSections } = req.body;
+      const doc = new PDFDocument();
+      const chunks = [];
+      doc.on("data", (chunk) => chunks.push(chunk));
+      doc.on("end", () => {
+        const pdfBuffer = Buffer.concat(chunks);
+        res.type("application/pdf");
+        res.send(pdfBuffer);
+      });
+      const { personalInfo, options } = req.body;
+      doc.fontSize(24).text(personalInfo.name, { align: "center" });
+      doc.fontSize(16).text(personalInfo.title, { align: "center" });
+      doc.moveDown();
+      if (selectedSections.personalInfo) {
+        doc.fontSize(14).text("Contact Information", { underline: true });
+        doc.fontSize(12).text(`Email: ${personalInfo.email}`);
+        doc.text(`Phone: ${personalInfo.phone}`);
+        doc.text(`Location: ${personalInfo.location}`);
+        doc.moveDown();
+        doc.fontSize(14).text("Professional Summary", { underline: true });
+        doc.fontSize(12).text(personalInfo.summary);
+        doc.moveDown();
+      }
+      if (selectedSections.experience) {
+        doc.fontSize(14).text("Work Experience", { underline: true });
+        personalInfo.experience.forEach((exp) => {
+          doc.fontSize(12).text(exp.title, { bold: true });
+          doc.text(`${exp.company} | ${exp.period}`);
+          doc.moveDown(0.5);
+        });
+        doc.moveDown();
+      }
+      if (selectedSections.education) {
+        doc.fontSize(14).text("Education", { underline: true });
+        personalInfo.education.forEach((edu) => {
+          doc.fontSize(12).text(edu.degree, { bold: true });
+          doc.text(`${edu.institution} | ${edu.year}`);
+          doc.moveDown(0.5);
+        });
+        doc.moveDown();
+      }
+      if (selectedSections.skills) {
+        doc.fontSize(14).text("Skills", { underline: true });
+        doc.fontSize(12).text(personalInfo.skills.join(", "));
+        doc.moveDown();
+      }
+      if (selectedSections.includeCoverLetter && personalInfo.coverLetter) {
+        doc.addPage();
+        doc.fontSize(14).text("Cover Letter", { underline: true });
+        doc.fontSize(12).text(personalInfo.coverLetter);
+        doc.moveDown();
+      }
+      doc.end();
+    } catch (error) {
+      console.error("Error generating resume:", error);
+      res.status(500).json({
+        success: false,
+        message: "Error generating resume"
       });
     }
   });
