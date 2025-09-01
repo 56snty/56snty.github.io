@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emal | Digital Dimension</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Canvas for Three.js scene -->
+    <canvas id="digitalCanvas"></canvas>
+    
+    <!-- Custom cursor -->
+    <div class="cursor"></div>
+    <div class="cursor-follower"></div>
+    
+    <!-- Navigation -->
+    <div id="cosmicNav">
+        <div class="nav-portal active" data-target="hero">
+            <i class="fas fa-home"></i>
+            <span class="nav-label">Home</span>
+        </div>
+        <div class="nav-portal" data-target="skills">
+            <i class="fas fa-tools"></i>
+            <span class="nav-label">Skills</span>
+        </div>
+        <div class="nav-portal" data-target="projects">
+            <i class="fas fa-rocket"></i>
+            <span class="nav-label">Projects</span>
+        </div>
+        <div class="nav-portal" data-target="contact">
+            <i class="fas fa-link"></i>
+            <span class="nav-label">Connect</span>
+        </div>
+    </div>
+    
+    <!-- Hero Section -->
+    <section id="hero" class="section active">
+        <div class="hero-logo warp-animation">
+            <svg viewBox="0 0 100 100">
+                <path d="M50,15 L75,50 L50,85 L25,50 Z" fill="none" stroke="white" stroke-width="2" />
+                <circle cx="50" cy="50" r="15" fill="none" stroke="white" stroke-width="2" />
+            </svg>
+        </div>
+        <div class="hero-content">
+            <h1 class="hero-title">Hey, I'm <span style="color: #fff; text-shadow: 0 0 15px #fff;">Emal</span></h1>
+            <p class="hero-subtitle"></p> <!-- Empty for typing effect -->
+        </div>
+    </section>
+    
+    <!-- Skills Section -->
+    <section id="skills" class="section">
+        <div class="skills-container">
+            <div class="skill-category">
+                <h3 class="category-title">Languages</h3>
+                <ul class="skill-list">
+                    <li class="skill-item" data-proficiency="Expert">HTML</li>
+                    <li class="skill-item" data-proficiency="Expert">CSS</li>
+                    <li class="skill-item" data-proficiency="Advanced">JavaScript</li>
+                    <li class="skill-item" data-proficiency="Intermediate">PHP</li>
+                    <li class="skill-item" data-proficiency="Intermediate">Python</li>
+                    <li class="skill-item" data-proficiency="Beginner">Dart</li>
+                </ul>
+            </div>
+            
+            <div class="skill-category">
+                <h3 class="category-title">Frameworks</h3>
+                <ul class="skill-list">
+                    <li class="skill-item" data-proficiency="Advanced">Flutter</li>
+                    <li class="skill-item" data-proficiency="Intermediate">React</li>
+                    <li class="skill-item" data-proficiency="Intermediate">Laravel</li>
+                </ul>
+            </div>
+            
+            <div class="skill-category">
+                <h3 class="category-title">Tools</h3>
+                <ul class="skill-list">
+                    <li class="skill-item" data-proficiency="Expert">Git</li>
+                    <li class="skill-item" data-proficiency="Advanced">Figma</li>
+                    <li class="skill-item" data-proficiency="Intermediate">Firebase</li>
+                    <li class="skill-item" data-proficiency="Intermediate">WordPress</li>
+                </ul>
+            </div>
+            
+            <div class="skill-category">
+                <h3 class="category-title">Focus Areas</h3>
+                <ul class="skill-list">
+                    <li class="skill-item" data-proficiency="Expert">Responsive Design</li>
+                    <li class="skill-item" data-proficiency="Advanced">API Logic</li>
+                    <li class="skill-item" data-proficiency="Advanced">UI/UX</li>
+                    <li class="skill-item" data-proficiency="Intermediate">CMS Systems</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Projects Section -->
+    <section id="projects" class="section">
+        <div class="project-showcase">
+            <div class="portfolio-project">
+                <h2 class="project-title">Digital Dimension Portfolio</h2>
+                <p>A surreal, interactive journey through a digital dimension. This portfolio itself is a testament to blending code, creativity, and immersive design.</p>
+                
+                <div class="project-details">
+                    <div>
+                        <h3>Concept</h3>
+                        <p class="project-description">This portfolio is designed as a cosmic journey through digital space. Instead of traditional navigation, you explore through portals. The generative background reacts to your movements, creating a living digital canvas.</p>
+                    </div>
+                    <div>
+                        <h3>Tech Stack</h3>
+                        <div class="tech-stack">
+                            <span class="tech-item">Three.js</span>
+                            <span class="tech-item">WebGL</span>
+                            <span class="tech-item">GSAP</span>
+                            <span class="tech-item">HTML5 Canvas</span>
+                            <span class="tech-item">CSS3</span>
+                            <span class="tech-item">JavaScript ES6</span>
+                        </div>
+                        
+                        <h3 style="margin-top: 20px;">Features</h3>
+                        <ul class="skill-list">
+                            <li class="skill-item">Generative particle system</li>
+                            <li class="skill-item">Cosmic portal navigation</li>
+                            <li class="skill-item">3D interactive elements</li>
+                            <li class="skill-item">Cursor-reactive design</li>
+                            <li class="skill-item">Dynamic animations</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <h2 style="margin-top: 50px; font-size: 1.8rem; text-align: left;">Upcoming Projects</h2>
+            <div class="upcoming-projects">
+                <div class="upcoming-card" data-title="AI-Powered Web App"></div>
+                <div class="upcoming-card" data-title="VR Experience Prototype"></div>
+                <div class="upcoming-card" data-title="Blockchain Dashboard"></div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Contact Section -->
+    <section id="contact" class="section">
+        <div class="contact-content">
+            <h2 class="contact-title">Connect With Me</h2>
+            <p style="font-size: 1.2rem; margin-bottom: 30px; max-width: 500px; margin: 0 auto 40px; opacity: 0.8;">
+                Let's create something extraordinary together. Reach out through the digital void.
+            </p>
+            
+            <a href="https://github.com/56snty" class="github-link" target="_blank">
+                <i class="fab fa-github"></i> Visit My GitHub
+            </a>
+        </div>
+    </section>
+<script src="script.js"></script>
+</body>
+</html>
