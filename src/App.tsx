@@ -1,25 +1,49 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react';
+import { ThemeProvider } from './ThemeProvider';
+import { GlobalStyle } from './styles/GlobalStyles';
+import { SpectacularLoadingScreen } from './components/SpectacularLoadingScreen';
+import { EnhancedNavigation } from './components/EnhancedNavigation';
+import { EnhancedHeroSection } from './components/EnhancedHeroSection';
+import { AboutSection } from './components/AboutSection';
+import { SkillsShowcase } from './components/SkillsShowcase';
+import { SpectacularContactSection } from './components/SpectacularContactSection';
+import { Footer } from './components/Footer';
+import { CursorEffect } from './components/CursorEffect';
+import { AdvancedParallaxBackground } from './components/AdvancedParallaxBackground';
+import { SmoothScrollProvider } from './components/SmoothScrollProvider';
+import { ImageGallery } from './components/ImageGallery';
 
 function App() {
+  const [isLoading, setIsLoading] = useState(true);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <ThemeProvider>
+      <GlobalStyle />
+      <CursorEffect />
+
+      {isLoading && (
+        <SpectacularLoadingScreen onLoadingComplete={() => setIsLoading(false)} />
+      )}
+
+      {!isLoading && (
+        <>
+          <AdvancedParallaxBackground />
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <EnhancedNavigation />
+            <div id="home">
+              <EnhancedHeroSection />
+            </div>
+            <AboutSection />
+            <SkillsShowcase />
+            <div id="portfolio">
+              <ImageGallery />
+            </div>
+            <SpectacularContactSection />
+            <Footer />
+          </div>
+        </>
+      )}
+    </ThemeProvider>
   );
 }
 
