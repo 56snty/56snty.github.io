@@ -9,7 +9,15 @@
       "Bash(npm run build:*)",
       "Bash(taskkill:*)",
       "Bash(rm:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(npm run deploy:*)",
+      "Bash(git worktree:*)",
+      "Bash(gh api:*)",
+      "Bash(git rm:*)",
+      "Read(//c/Users/emalk/OneDrive/Bureaublad/**)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []
