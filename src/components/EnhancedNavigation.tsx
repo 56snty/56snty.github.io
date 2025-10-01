@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { motion, AnimatePresence, useScroll } from 'framer-motion';
-import { useTheme } from '../ThemeProvider';
 
 const NavContainer = styled(motion.nav)<{ isScrolled: boolean }>`
   position: fixed;
@@ -173,28 +172,6 @@ const MobileNavLink = styled(motion.a)<{ isActive?: boolean }>`
   }
 `;
 
-const ThemeToggle = styled(motion.button)`
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(78, 205, 196, 0.3);
-  color: white;
-  border-radius: 50%;
-  width: 45px;
-  height: 45px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
-
-  &:hover {
-    background: rgba(78, 205, 196, 0.2);
-    transform: rotate(180deg) scale(1.1);
-    box-shadow: 0 5px 15px rgba(78, 205, 196, 0.3);
-  }
-`;
-
 const ProgressBar = styled(motion.div)`
   position: absolute;
   bottom: 0;
@@ -224,7 +201,6 @@ export const EnhancedNavigation: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const { scrollYProgress } = useScroll();
-  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -304,28 +280,17 @@ export const EnhancedNavigation: React.FC = () => {
           ))}
         </NavLinks>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <ThemeToggle
-            onClick={toggleTheme}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            animate={{ rotate: theme.isDark ? 0 : 180 }}
+        <MobileMenuButton
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          whileTap={{ scale: 0.9 }}
+        >
+          <motion.div
+            animate={{ rotate: isMobileMenuOpen ? 45 : 0 }}
+            transition={{ duration: 0.2 }}
           >
-            {theme.isDark ? '🌙' : '☀️'}
-          </ThemeToggle>
-
-          <MobileMenuButton
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            whileTap={{ scale: 0.9 }}
-          >
-            <motion.div
-              animate={{ rotate: isMobileMenuOpen ? 45 : 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              {isMobileMenuOpen ? '✕' : '☰'}
-            </motion.div>
-          </MobileMenuButton>
-        </div>
+            {isMobileMenuOpen ? '✕' : '☰'}
+          </motion.div>
+        </MobileMenuButton>
       </NavContent>
 
       <ProgressBar

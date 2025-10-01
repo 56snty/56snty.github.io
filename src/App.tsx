@@ -10,7 +10,6 @@ import { SpectacularContactSection } from './components/SpectacularContactSectio
 import { Footer } from './components/Footer';
 import { CursorEffect } from './components/CursorEffect';
 import { AdvancedParallaxBackground } from './components/AdvancedParallaxBackground';
-import { SmoothScrollProvider } from './components/SmoothScrollProvider';
 import { ImageGallery } from './components/ImageGallery';
 
 function App() {

@@ -1,7 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import styled from 'styled-components';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import { useTheme } from '../ThemeProvider';
 
 const ContactContainer = styled.section`
   min-height: 100vh;
