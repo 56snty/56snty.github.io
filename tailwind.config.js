@@ -3,16 +3,12 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter Tight', 'sans-serif'],
-        display: ['Syne', 'sans-serif'],
+        display: ['Italiana', 'serif'],
+        mono: ['Space Mono', 'monospace'],
+        body: ['Manrope', 'sans-serif'],
       },
-      colors: {
-        'void': '#050505',
-        'glass': 'rgba(255, 255, 255, 0.03)',
-        'accent': '#E2E2E2' // Soft off-white is more premium than pure white
-      },
-      backgroundImage: {
-        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+      animation: {
+        'spin-slow': 'spin 12s linear infinite',
       }
     },
   },
