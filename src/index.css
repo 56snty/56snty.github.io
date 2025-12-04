@@ -13,20 +13,10 @@ html, body, #root {
   color: white;
 }
 
-/* Luxury Typography */
+/* Typography */
 .font-display { font-family: 'Italiana', serif; }
 .font-body { font-family: 'Manrope', sans-serif; }
 .font-mono { font-family: 'Space Mono', monospace; }
-
-/* Utilities */
-.animate-spin-slow {
-  animation: spin 12s linear infinite;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
 
 ::selection { background: #ffaa00; color: #000; }
 .hide-scroll::-webkit-scrollbar { display: none; }

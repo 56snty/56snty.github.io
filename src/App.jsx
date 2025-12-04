@@ -1,6 +1,6 @@
 import React, { useRef, useMemo, useEffect, useState, Suspense } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { Instances, Instance, Float, Environment, Lightformer, MeshTransmissionMaterial, Trail, useTexture } from '@react-three/drei'
+import { Instances, Instance, Float, Environment, Lightformer, MeshTransmissionMaterial, Trail } from '@react-three/drei'
 import { EffectComposer, Bloom, ChromaticAberration, Noise, Vignette } from '@react-three/postprocessing'
 import { BlendFunction } from 'postprocessing'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -148,7 +148,6 @@ function ConnectionBeam({ active, start, end }) {
   
   useFrame((state, delta) => {
     if (mesh.current && active) {
-        // Math to stretch cylinder between two 3D points
         const startVec = new THREE.Vector3(start.x, start.y, 0)
         const endVec = new THREE.Vector3(end.x, end.y, 0)
         
@@ -158,9 +157,8 @@ function ConnectionBeam({ active, start, end }) {
         mesh.current.position.copy(mid)
         mesh.current.scale.y = dist
         mesh.current.lookAt(endVec)
-        mesh.current.rotateX(Math.PI / 2) // Orient cylinder correctly
+        mesh.current.rotateX(Math.PI / 2) 
 
-        // Pulse texture
         if(mat.current) {
             mat.current.opacity = 0.4 + Math.sin(state.clock.elapsedTime * 20) * 0.2
             mat.current.emissiveIntensity = 8 + Math.sin(state.clock.elapsedTime * 15) * 4
@@ -193,14 +191,11 @@ function DualCore({ active, relativePos, isDark }) {
   const localGroup = useRef()
   const { viewport } = useThree()
   
-  // Responsive Scale
   const scale = viewport.width < 5 ? 0.6 : 1
 
   useFrame((state, delta) => {
     const targetLocalX = active ? relativePos.x * 0.15 : 0
     const targetLocalY = active ? relativePos.y * 0.15 : 0
-    
-    // Remote is relative to us
     const targetRemoteX = relativePos.x * 0.85
     const targetRemoteY = relativePos.y * 0.85
 
@@ -342,7 +337,7 @@ function QuantumScene({ isDark }) {
 }
 
 // ==============================================
-// 3. UI COMPONENTS (OPTIMIZED LAYOUT)
+// 3. UI COMPONENTS
 // ==============================================
 
 const anim = {
@@ -498,9 +493,15 @@ const Contact = () => (
         </a>
         <div className="mt-8 md:mt-12 flex justify-center gap-6 md:gap-8">
            <button className="w-10 h-10 md:w-14 md:h-14 rounded-full border border-white/20 flex items-center justify-center hover:bg-white hover:text-black hover:scale-110 transition-all duration-300">
-              <a href="https://github.com/56snty" target="_blank" rel="noopener noreferrer"><Github size={16} className="md:w-5 md:h-5" /></a>
+              <a href="https://github.com/56snty" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-full h-full text-current"><Github size={16} className="md:w-5 md:h-5" /></a>
            </button>
-           <button className="w-10 h-10 md:w-14 md:h-14 rounded-full border border-white/20 flex items-center justify-center hover:bg-white hover:text-black hover:scale-110 transition-all duration-300" onClick={() => navigator.clipboard.writeText('wzv')}>
+           <button 
+              className="w-10 h-10 md:w-14 md:h-14 rounded-full border border-white/20 flex items-center justify-center hover:bg-white hover:text-black hover:scale-110 transition-all duration-300" 
+              onClick={() => {
+                navigator.clipboard.writeText('wzv');
+                alert('Discord username copied: wzv');
+              }}
+           >
               <MessageCircle size={16} className="md:w-5 md:h-5" />
            </button>
         </div>
@@ -541,4 +542,4 @@ export default function App() {
       </div>
     </div>
   )
-}
+}0236
