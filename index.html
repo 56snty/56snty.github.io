@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.27/bundled/lenis.min.js"></script>
     <style>
         * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; cursor: none; }
-        body { background:#000; color:#fff; font-family: "Space Mono", monospace; overflow-x:hidden; height: 500vh; }
+        body { background:#000; color:#fff; font-family: monospace; overflow-x:hidden; height: 500vh; }
         #canvas-container { position:fixed; inset:0; z-index:0; pointer-events: none; }
         .hud { position:fixed; inset:0; padding:30px; display:flex; flex-direction:column; justify-content:space-between; z-index:100; pointer-events:none; mix-blend-mode: difference; }
         .hud-top, .hud-bottom { display:flex; justify-content:space-between; font-size:9px; letter-spacing:3px; text-transform:uppercase; }
@@ -22,7 +22,7 @@
     <div id="canvas-container"></div>
     <div class="hud">
         <div class="hud-top">
-            <div>NODE_STATUS // <span id="node-id" class="tag">0x----</span></div>
+            <div>NODE_STATUS // <span id="node-id" class="tag">OFFLINE</span></div>
             <div id="sync-label">STANDALONE</div>
         </div>
         <div class="hud-bottom">
@@ -31,27 +31,33 @@
         </div>
     </div>
     <main>
-        <section><h1>VOID</h1></section>
-        <section><h1>MERGE</h1></section>
-        <section><h1>FRACTAL</h1></section>
-        <section><h1>BEYOND</h1></section>
+        <section class="section"><h1>VOID</h1></section>
+        <section class="section"><h1>MERGE</h1></section>
+        <section class="section"><h1>FRACTAL</h1></section>
+        <section class="section"><h1>BEYOND</h1></section>
     </main>
 <script>
+// --- MULTI-BROWSER SYNC ENGINE ---
 const bc = new BroadcastChannel('IGLOO_SYNC');
 const sid = Math.random().toString(16).slice(2, 6).toUpperCase();
-document.getElementById('node-id').textContent = sid;
+document.getElementById('node-id').textContent = '0x' + sid;
+
 let state = { morph: 0, target: 0 };
+
 bc.onmessage = (e) => {
     state.target = e.data.morph;
     document.getElementById('sync-label').textContent = "LINKED_NODE";
     document.getElementById('sync-label').style.color = "#00ffcc";
 };
+
+// --- THREE.JS VISUALS ---
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.getElementById('canvas-container').appendChild(renderer.domElement);
+
 const material = new THREE.ShaderMaterial({
     uniforms: { uTime: { value: 0 }, uMorph: { value: 0 } },
     vertexShader: `
@@ -75,27 +81,34 @@ const material = new THREE.ShaderMaterial({
         }
     `
 });
+
 const geometry = new THREE.IcosahedronGeometry(1.8, 64);
 const mesh = new THREE.Mesh(geometry, material);
 scene.add(mesh);
 camera.position.z = 5;
-const lenis = new Lenis({ lerp: 0.1, touchMultiplier: 2 });
+
+// --- SMOOTH SCROLL & SYNC BROADCAST ---
+const lenis = new Lenis({ lerp: 0.1 });
 lenis.on('scroll', (e) => {
     state.target = e.progress;
-    bc.postMessage({ morph: e.progress });
+    bc.postMessage({ morph: e.progress }); // BROADCAST TO OTHER WINDOWS
 });
+
 function animate(t) {
     lenis.raf(t);
     state.morph += (state.target - state.morph) * 0.08;
     material.uniforms.uMorph.value = state.morph;
     material.uniforms.uTime.value = t * 0.002;
+    
     document.getElementById('progress-bar').style.width = (state.morph * 100) + "%";
     document.getElementById('stab').textContent = (100 - state.morph * 50).toFixed(0) + "%";
+    
     mesh.rotation.y += 0.005 + (state.morph * 0.02);
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
 }
 requestAnimationFrame(animate);
+
 window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
@@ -104,4 +117,3 @@ window.addEventListener('resize', () => {
 </script>
 </body>
 </html>
-
