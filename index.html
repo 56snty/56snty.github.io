@@ -89,6 +89,7 @@ const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({color:0xffffff
 scene.add(stars);
 
 // --- SEAMLESS FLY-THROUGH ---
+const bc = new BroadcastChannel('ZENITH_SYNC'); bc.onmessage = (e) => { lenis.scrollTo(e.data.prog * 5000, {immediate: false}); };
 const lenis = new Lenis({ lerp: 0.04, smoothWheel: true });
 let scrollProgress = 0;
 
@@ -123,7 +124,7 @@ function check(p, target, id) {
 
 lenis.on('scroll', (e) => { 
     // This allows the user to scroll infinitely
-    scrollProgress = e.animatedScroll / 5000; 
+    scrollProgress = e.animatedScroll / 5000; bc.postMessage({prog: scrollProgress}); 
 });
 
 window.addEventListener('mousemove', (e) => {
