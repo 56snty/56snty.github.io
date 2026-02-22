@@ -39,6 +39,7 @@
 <body>
     <div id="cursor"></div>
     <div id="cursor-dot"></div>
+<div id="shutter" style="position:fixed; inset:0; background:#000; z-index:9999; transition: opacity 1.5s ease;"></div>
     <div class="noise"></div>
     <div class="vignette"></div>
     <div id="canvas-container"></div>
@@ -116,6 +117,7 @@ const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffff
 scene.add(stars);
 
 // --- HYPER-SMOOTH MOTION ---
+window.scrollTo(0,0); if (history.scrollRestoration) { history.scrollRestoration = "manual"; }
 const lenis = new Lenis({ lerp: 0.025, smoothWheel: true, infinite: true });
 let scrollProgress = 0;
 
@@ -143,6 +145,7 @@ function animate(t) {
 
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
+setTimeout(() => { document.getElementById("shutter").style.opacity = 0; setTimeout(() => document.getElementById("shutter").remove(), 1500); }, 500);
 }
 
 function check(p, target, id) {
@@ -161,6 +164,7 @@ window.addEventListener('mousemove', (e) => {
 });
 
 requestAnimationFrame(animate);
+setTimeout(() => { document.getElementById("shutter").style.opacity = 0; setTimeout(() => document.getElementById("shutter").remove(), 1500); }, 500);
 </script>
 </body>
 </html>
