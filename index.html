@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-    <title>EMAL // SPATIAL_PORTAL</title>
+    <title>EMAL // STABLE_PORTAL</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100;900&display=swap');
@@ -14,7 +14,7 @@
         .hud { position:fixed; inset:0; padding:30px; z-index:100; pointer-events:none; mix-blend-mode: difference; }
         .nav { display:flex; justify-content:space-between; font-size:9px; letter-spacing:0.8em; font-weight:100; opacity: 0.5; }
         .content { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
-        .card { opacity: 0; transform: scale(0.8); filter: blur(40px); transition: all 1s cubic-bezier(0.16, 1, 0.3, 1); text-align: center; }
+        .card { opacity: 0; transform: scale(0.9); filter: blur(20px); transition: all 1s cubic-bezier(0.16, 1, 0.3, 1); text-align: center; }
         .card.active { opacity: 1; transform: scale(1); filter: blur(0px); }
         h2 { font-size: 15vw; font-weight: 900; letter-spacing: -0.06em; line-height: 0.8; text-transform: uppercase; }
         #shutter { position:fixed; inset:0; background:#000; z-index:10000; transition: opacity 1.5s ease; }
@@ -25,7 +25,7 @@
     <div class="noise"></div>
     <div id="canvas-container"></div>
     <div class="hud">
-        <div class="nav"><div>EMAL_SPATIAL</div><div id="status">INIT_CORE</div></div>
+        <div class="nav"><div>EMAL_PORTAL_V2</div><div id="status">STANDBY</div></div>
     </div>
     <div class="content"><div class="card" id="c1"><h2>AETHER</h2></div></div>
     <div class="content"><div class="card" id="c2"><h2>VOID</h2></div></div>
@@ -33,91 +33,82 @@
 
 <script>
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.01, 1000);
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-// --- WORLD BUILD ---
+// --- GEOMETRY ---
 const points = [];
 for (let i = 0; i <= 30; i++) points.push(new THREE.Vector3(Math.sin(i * 0.3) * 5, Math.cos(i * 0.4) * 5, i * 20));
 const curve = new THREE.CatmullRomCurve3(points, true);
 const tubeGeo = new THREE.TubeGeometry(curve, 256, 3, 16, true);
-const tubeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x333333, wireframe: true, transparent: true, opacity: 0.15 });
+const tubeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x222222, wireframe: true, transparent: true, opacity: 0.1 });
 const tube = new THREE.Mesh(tubeGeo, tubeMat);
 scene.add(tube);
 const light = new THREE.PointLight(0xffffff, 2, 60);
 scene.add(light);
 
-// Star Dust
-const starGeo = new THREE.BufferGeometry();
-const starPos = new Float32Array(15000 * 3);
-for(let i=0; i<15000*3; i++) starPos[i] = (Math.random()-0.5) * 400;
-starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.015, transparent: true, opacity: 0.6 }));
-scene.add(stars);
-
-// --- SPATIAL SYNC ENGINE ---
-const bc = new BroadcastChannel('spatial_sync');
-let targetProgress = 0;
-let virtualProgress = 0;
-let masterID = Math.random();
-let spatialOffset = 0;
-
-// Update Window Position every frame
-function getSpatialData() {
-    return {
-        id: masterID,
-        prog: targetProgress,
-        x: window.screenX,
-        y: window.screenY,
-        w: window.innerWidth
-    };
-}
-
-bc.onmessage = (e) => {
-    if (e.data.id !== masterID) {
-        targetProgress = e.data.prog;
-        // Calculate the horizontal "Gap" between this window and the other
-        const relativeX = e.data.x - window.screenX;
-        spatialOffset = (relativeX / window.innerWidth) * 0.5;
-    }
-};
+// --- SYNC ENGINE ---
+const bc = new BroadcastChannel('spatial_v2');
+let tProg = 0, vProg = 0, sOffset = 0, targetSOffset = 0;
+let lastInteraction = 0;
 
 window.addEventListener('wheel', (e) => {
-    targetProgress += e.deltaY * 0.00015;
-    bc.postMessage(getSpatialData());
+    tProg += e.deltaY * 0.00015;
+    lastInteraction = Date.now();
+    broadcast();
 });
 
 window.addEventListener('touchmove', (e) => {
-    // simplified for touch
-    targetProgress += 0.001; 
-    bc.postMessage(getSpatialData());
+    tProg += 0.001;
+    lastInteraction = Date.now();
+    broadcast();
 });
 
+bc.onmessage = (e) => {
+    // Only follow if we haven't touched this tab recently (Leader/Follower logic)
+    if (Date.now() - lastInteraction > 500) {
+        tProg = e.data.prog;
+        const centerX = window.screenX + window.innerWidth / 2;
+        const otherCenterX = e.data.screenX + e.data.width / 2;
+        targetSOffset = (centerX - otherCenterX) * 0.002;
+        document.getElementById('status').textContent = "LINKED_FOLLOW";
+    } else {
+        document.getElementById('status').textContent = "LINKED_LEAD";
+    }
+};
+
+function broadcast() {
+    bc.postMessage({ 
+        prog: tProg, 
+        screenX: window.screenX, 
+        width: window.innerWidth 
+    });
+}
+
 function animate(t) {
-    virtualProgress += (targetProgress - virtualProgress) * 0.05;
-    const loop = (virtualProgress % 1 + 1) % 1;
-    
+    // Smooth Interpolation for both Progress and Spatial Shift
+    vProg += (tProg - vProg) * 0.05;
+    sOffset += (targetSOffset - sOffset) * 0.08;
+
+    const loop = (vProg % 1 + 1) % 1;
     const camPos = curve.getPointAt(loop);
     camera.position.copy(camPos);
     
-    // LOOK AT + SPATIAL OFFSET
     const lookTarget = curve.getPointAt((loop + 0.01) % 1);
     camera.lookAt(lookTarget);
     
-    // The "Magic": Shift the camera view based on window position
-    camera.rotation.y += spatialOffset;
+    // Apply Spatial Offset
+    camera.rotation.y += sOffset;
+    light.position.copy(camPos);
 
-    document.getElementById('status').textContent = `SPATIAL_SYNC: ${spatialOffset !== 0 ? 'LINKED' : 'STANDBY'}`;
-    
     check(loop, 0.1, 'c1');
     check(loop, 0.4, 'c2');
     check(loop, 0.7, 'c3');
 
     renderer.render(scene, camera);
-    bc.postMessage(getSpatialData()); // Keep broadcasting pos
     requestAnimationFrame(animate);
 }
 
@@ -128,6 +119,12 @@ function check(p, target, id) {
 
 setTimeout(() => document.getElementById('shutter').style.opacity = 0, 800);
 requestAnimationFrame(animate);
+
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
 </script>
 </body>
 </html>
