@@ -8,20 +8,23 @@
     <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.27/bundled/lenis.min.js"></script>
     <style>
         * { margin:0; padding:0; box-sizing:border-box; cursor: none; }
-        body { background: #050506; color: #fff; font-family: sans-serif; overflow-x:hidden; height: 400vh; }
+        body { background: #080808; color: #fff; font-family: "Helvetica", sans-serif; overflow-x:hidden; height: 300vh; }
         #canvas-container { position:fixed; inset:0; z-index:0; }
-        .ui { position:fixed; inset:0; padding:40px; z-index:100; pointer-events:none; mix-blend-mode: difference; }
-        .nav { display:flex; justify-content:space-between; font-size:10px; letter-spacing:0.3em; opacity:0.5; }
-        h1 { position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); font-size:15vw; font-weight:900; letter-spacing:-0.05em; line-height:0.8; }
-        .grain { position:fixed; inset:0; z-index:999; opacity:0.04; pointer-events:none; background:url('https://grainy-gradients.vercel.app/noise.svg'); }
+        .ui { position:fixed; inset:0; padding:30px; z-index:100; pointer-events:none; mix-blend-mode: difference; }
+        .nav { display:flex; justify-content:space-between; font-size:9px; letter-spacing:4px; opacity:0.4; }
+        .center { position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); text-align:center; width:100%; }
+        h1 { font-size:18vw; font-weight:900; letter-spacing:-0.08em; line-height:0.8; margin:0; }
+        .grain { position:fixed; inset:0; z-index:999; opacity:0.06; pointer-events:none; background:url('https://grainy-gradients.vercel.app/noise.svg'); filter: contrast(150%) brightness(150%); }
     </style>
 </head>
 <body>
     <div class="grain"></div>
     <div id="canvas-container"></div>
     <div class="ui">
-        <div class="nav"><div>EMAL.DEV</div><div>SHADER_v9_CORE</div></div>
-        <h1>ICE_CORE</h1>
+        <div class="nav"><div>EMAL.LABS</div><div>[ PRESTIGE_V10 ]</div></div>
+        <div class="center">
+            <h1 id="t1">FROST</h1>
+        </div>
     </div>
 
 <script>
@@ -32,58 +35,64 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-// --- THE CUSTOM ICE SHADER ---
-const iceMaterial = new THREE.ShaderMaterial({
+// --- THE SECRET SAUCE: MATCAP SHADER ---
+// This mimics professional studio lighting on any device.
+const material = new THREE.ShaderMaterial({
     uniforms: { uTime: { value: 0 }, uScroll: { value: 0 } },
-    transparent: true,
     vertexShader: `
         varying vec3 vNormal;
-        varying vec3 vEye;
+        varying vec3 vViewDir;
         uniform float uTime;
         uniform float uScroll;
+        
+        // High-end Displacement
         void main() {
-            vNormal = normalize(normalMatrix * normal);
-            vec4 worldPos = modelViewMatrix * vec4(position, 1.0);
-            vEye = normalize(-worldPos.xyz);
-            
-            // Subtle Ice Deformation
             vec3 p = position;
-            p.z += sin(p.x * 2.0 + uTime) * 0.1 * (1.0 + uScroll);
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+            float noise = sin(p.x * 2.0 + uTime) * cos(p.y * 2.0 + uTime) * (0.3 + uScroll);
+            p += normal * noise;
+            vNormal = normalize(normalMatrix * normal);
+            vec4 mvPosition = modelViewMatrix * vec4(p, 1.0);
+            vViewDir = normalize(-mvPosition.xyz);
+            gl_Position = projectionMatrix * mvPosition;
         }
     `,
     fragmentShader: `
         varying vec3 vNormal;
-        varying vec3 vEye;
-        uniform float uTime;
+        varying vec3 vViewDir;
         void main() {
-            // Fake Refraction Logic
-            float fresnel = pow(1.0 - dot(vNormal, vEye), 3.0);
-            vec3 iceColor = mix(vec3(0.0, 0.2, 0.4), vec3(0.8, 0.9, 1.0), fresnel);
+            // Iridescent Ice Math
+            float fresnel = pow(1.0 - dot(vNormal, vViewDir), 3.0);
+            vec3 colorA = vec3(0.05, 0.05, 0.1); // Deep Shadow
+            vec3 colorB = vec3(0.7, 0.8, 1.0);  // Ice Highlight
+            vec3 finalColor = mix(colorA, colorB, fresnel);
             
-            // Add internal "Glitch" light
-            float shimmer = sin(vNormal.x * 10.0 + uTime) * 0.1;
-            gl_FragColor = vec4(iceColor + shimmer, 0.9);
+            // Add "Digital Grain" to the shader
+            float dither = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898,78.233))) * 43758.5453);
+            gl_FragColor = vec4(finalColor + (dither * 0.05), 1.0);
         }
     `
 });
 
-const geometry = new THREE.IcosahedronGeometry(2, 40);
-const mesh = new THREE.Mesh(geometry, iceMaterial);
-scene.add(mesh);
+const core = new THREE.Mesh(new THREE.IcosahedronGeometry(2, 64), material);
+scene.add(core);
 camera.position.z = 5;
 
-const lenis = new Lenis();
-let scroll = 0;
-lenis.on('scroll', (e) => { scroll = e.progress; });
+const lenis = new Lenis({ lerp: 0.1 });
+let targetScroll = 0;
+lenis.on('scroll', (e) => { targetScroll = e.progress; });
 
 function animate(t) {
     lenis.raf(t);
-    iceMaterial.uniforms.uTime.value = t * 0.001;
-    iceMaterial.uniforms.uScroll.value = scroll;
+    material.uniforms.uTime.value = t * 0.001;
+    material.uniforms.uScroll.value = targetScroll;
     
-    mesh.rotation.y += 0.005 + (scroll * 0.02);
-    mesh.rotation.x += 0.002;
+    core.rotation.y += 0.005 + (targetScroll * 0.02);
+    core.rotation.x += 0.003;
+    
+    // Smooth Scale Pulse
+    const s = 1 + (Math.sin(t * 0.001) * 0.05) + (targetScroll * 0.5);
+    core.scale.set(s, s, s);
+    
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
 }
