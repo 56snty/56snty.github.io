@@ -3,93 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
-    <title>EMAL // REFINED_ZENITH</title>
+    <title>EMAL // ELITE</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.27/bundled/lenis.min.js"></script>
     <style>
-        :root { --bg: #0d0d0e; --text: #e4e4e7; --accent: #a5b4fc; }
+        :root { --accent: #ffffff; --bg: #000000; }
         * { margin:0; padding:0; box-sizing:border-box; cursor: none; }
-        body { background: var(--bg); color: var(--text); font-family: "Inter", sans-serif; overflow-x:hidden; height: 1000vh; }
+        body { background: var(--bg); color: #fff; font-family: "Inter", sans-serif; overflow-x:hidden; height: 1200vh; }
         
-        #canvas-container { position:fixed; inset:0; z-index:0; }
-        .noise { position:fixed; inset:0; z-index:999; opacity:0.04; pointer-events:none; background:url('https://grainy-gradients.vercel.app/noise.svg'); }
+        #canvas-container { position:fixed; inset:0; z-index:0; filter: contrast(1.1) brightness(1.1); }
         
-        /* High-End HUD */
-        .hud { position:fixed; inset:0; padding:50px; z-index:100; pointer-events:none; display:flex; flex-direction:column; justify-content:space-between; }
-        .nav-top { display:flex; justify-content:space-between; font-size:9px; letter-spacing:4px; font-weight:700; opacity: 0.6; mix-blend-mode: difference; }
+        /* The Igloo.inc Grain */
+        .noise { position:fixed; inset:0; z-index:999; opacity:0.08; pointer-events:none; background:url('https://grainy-gradients.vercel.app/noise.svg'); filter: grayscale(1); }
         
-        /* Minimal Portfolio Plates */
-        .content-layer { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 10; }
+        .hud { position:fixed; inset:0; padding:40px; z-index:100; pointer-events:none; }
+        .nav { display:flex; justify-content:space-between; font-size:10px; letter-spacing:5px; font-weight:900; opacity: 0.4; }
+        
+        .content { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
         .card { 
-            opacity: 0; transform: translateY(30px) scale(0.95); transition: all 1.2s cubic-bezier(0.19, 1, 0.22, 1);
-            text-align: center; max-width: 800px;
+            opacity: 0; transform: scale(1.2) rotateX(20deg); filter: blur(20px);
+            transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+            text-align: center; 
         }
-        .card.active { opacity: 1; transform: translateY(0) scale(1); }
-        h2 { font-size: 10vw; font-weight: 300; letter-spacing: -0.04em; line-height: 0.9; margin-bottom: 15px; color: var(--text); }
-        p { font-size: 11px; letter-spacing: 6px; opacity: 0.3; text-transform: uppercase; font-weight: 400; }
+        .card.active { opacity: 1; transform: scale(1) rotateX(0deg); filter: blur(0px); }
+        
+        h2 { font-size: 15vw; font-weight: 900; letter-spacing: -0.07em; line-height: 0.8; text-transform: uppercase; font-style: italic; }
+        p { font-size: 10px; letter-spacing: 10px; opacity: 0.3; margin-top: 20px; }
 
-        #cursor { position: fixed; width: 6px; height: 6px; background: var(--accent); border-radius: 50%; pointer-events: none; z-index: 1000; box-shadow: 0 0 15px var(--accent); transition: transform 0.1s; }
+        #cursor { position: fixed; width: 40px; height: 40px; border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; pointer-events: none; z-index: 1000; transition: transform 0.15s cubic-bezier(0.23, 1, 0.32, 1); }
+        #cursor-dot { position: fixed; width: 4px; height: 4px; background: #fff; border-radius: 50%; pointer-events: none; z-index: 1000; }
     </style>
 </head>
 <body>
     <div id="cursor"></div>
+    <div id="cursor-dot"></div>
     <div class="noise"></div>
     <div id="canvas-container"></div>
 
     <div class="hud">
-        <div class="nav-top">
-            <div>EMAL_REFINED</div>
-            <div>[ PERSISTENT_FLIGHT ]</div>
-            <div>©2026</div>
+        <div class="nav">
+            <div>EMAL.LABS / V12</div>
+            <div>[ REALM_STATUS: HYPERFLOW ]</div>
         </div>
     </div>
 
-    <div class="content-layer"><div class="card" id="c1"><p>Introduction</p><h2>EMAL STUDIO</h2></div></div>
-    <div class="content-layer"><div class="card" id="c2"><p>Expertise</p><h2>3D ARCHITECTURE</h2></div></div>
-    <div class="content-layer"><div class="card" id="c3"><p>Next Realm</p><h2>BEYOND_VOID</h2></div></div>
+    <div class="content"><div class="card" id="c1"><h2>VOID</h2><p>THE ARCHITECT</p></div></div>
+    <div class="content"><div class="card" id="c2"><h2>MERGE</h2><p>CREATIVE SUITE</p></div></div>
+    <div class="content"><div class="card" id="c3"><h2>BEYOND</h2><p>CONTACT_NODE</p></div></div>
 
 <script>
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.1, 1000);
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-// --- POLITE COLOR THEORY ---
-// Using Muted Indigo (#a5b4fc) and Deep Slate (#0d0d0e)
+// --- HYPER-REAL GLASS TUNNEL ---
 const points = [];
-for (let i = 0; i <= 25; i++) {
-    points.push(new THREE.Vector3(Math.sin(i * 0.4) * 3, Math.cos(i * 0.6) * 3, i * 18));
+for (let i = 0; i <= 30; i++) {
+    points.push(new THREE.Vector3(Math.sin(i * 0.4) * 4, Math.cos(i * 0.4) * 4, i * 20));
 }
 const curve = new THREE.CatmullRomCurve3(points, true);
-const tubeGeo = new THREE.TubeGeometry(curve, 300, 2.5, 16, true);
+const tubeGeo = new THREE.TubeGeometry(curve, 256, 4, 32, true);
 
-// Custom "Atmospheric" Shader
 const material = new THREE.ShaderMaterial({
     uniforms: { uTime: { value: 0 }, uScroll: { value: 0 } },
-    transparent: true,
     side: THREE.BackSide,
+    transparent: true,
     vertexShader: `
         varying vec2 vUv;
+        varying float vNoise;
+        uniform float uTime;
         void main() {
             vUv = uv;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            vec3 p = position;
+            vNoise = sin(p.z * 0.1 + uTime * 2.0);
+            p.x += vNoise * 0.5;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
         }
     `,
     fragmentShader: `
         varying vec2 vUv;
+        varying float vNoise;
         uniform float uTime;
-        uniform float uScroll;
         void main() {
-            vec3 dark = vec3(0.05, 0.05, 0.06); 
-            vec3 politeBlue = vec3(0.64, 0.70, 0.98); // Muted Indigo
-            
-            float grid = smoothstep(0.48, 0.5, sin(vUv.x * 100.0 + uTime + uScroll * 10.0));
-            float fog = 1.0 - pow(vUv.y, 3.0);
-            
-            vec3 finalColor = mix(dark, politeBlue, grid * 0.1);
-            gl_FragColor = vec4(finalColor, fog);
+            vec3 color1 = vec3(0.02, 0.02, 0.03);
+            vec3 color2 = vec3(0.4, 0.4, 0.45);
+            float lines = step(0.98, sin(vUv.x * 200.0 + vNoise));
+            vec3 final = mix(color1, color2, lines * 0.2);
+            float alpha = smoothstep(0.0, 1.0, vUv.y);
+            gl_FragColor = vec4(final + (vNoise * 0.05), 0.8);
         }
     `
 });
@@ -97,35 +101,29 @@ const material = new THREE.ShaderMaterial({
 const tunnel = new THREE.Mesh(tubeGeo, material);
 scene.add(tunnel);
 
-// Soft Ambient Stars
-const starGeo = new THREE.BufferGeometry();
-const starPos = [];
-for(let i=0; i<5000; i++) {
-    starPos.push((Math.random()-0.5)*120, (Math.random()-0.5)*120, Math.random()*600);
-}
-starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
-const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({color:0xa5b4fc, size:0.02, transparent:true, opacity:0.3}));
+// Star Dust
+const stars = new THREE.Points(
+    new THREE.BufferGeometry().setFromPoints(Array(8000).fill().map(() => new THREE.Vector3((Math.random()-0.5)*150, (Math.random()-0.5)*150, Math.random()*800))),
+    new THREE.PointsMaterial({ color: 0xffffff, size: 0.02, transparent: true, opacity: 0.4 })
+);
 scene.add(stars);
 
-// --- SMOOTH FLIGHT ---
-const lenis = new Lenis({ lerp: 0.04 });
+// --- SCROLL ENGINE ---
+const lenis = new Lenis({ lerp: 0.03, smoothWheel: true });
 let scrollProgress = 0;
 
 function animate(t) {
     lenis.raf(t);
-    const loopPos = (scrollProgress % 1 + 1) % 1; 
-    const camPos = curve.getPointAt(loopPos);
-    const lookAtPos = curve.getPointAt((loopPos + 0.01) % 1);
-    
-    camera.position.copy(camPos);
-    camera.lookAt(lookAtPos);
-    
-    material.uniforms.uTime.value = t * 0.0005;
-    material.uniforms.uScroll.value = scrollProgress;
+    const loop = (scrollProgress % 1 + 1) % 1;
+    camera.position.copy(curve.getPointAt(loop));
+    camera.lookAt(curve.getPointAt((loop + 0.01) % 1));
+    camera.rotation.z += t * 0.0002;
 
-    check(loopPos, 0.1, 'c1');
-    check(loopPos, 0.4, 'c2');
-    check(loopPos, 0.8, 'c3');
+    material.uniforms.uTime.value = t * 0.001;
+    
+    check(loop, 0.1, 'c1');
+    check(loop, 0.4, 'c2');
+    check(loop, 0.8, 'c3');
 
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
@@ -133,16 +131,14 @@ function animate(t) {
 
 function check(p, target, id) {
     const el = document.getElementById(id);
-    const active = p > target && p < target + 0.15;
-    el.classList.toggle('active', active);
+    el.classList.toggle('active', p > target && p < target + 0.15);
 }
 
-lenis.on('scroll', (e) => { 
-    scrollProgress = e.animatedScroll / 8000; 
-});
+lenis.on('scroll', (e) => { scrollProgress = e.animatedScroll / 12000; });
 
 window.addEventListener('mousemove', (e) => {
-    document.getElementById('cursor').style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+    document.getElementById('cursor').style.transform = `translate(${e.clientX - 20}px, ${e.clientY - 20}px)`;
+    document.getElementById('cursor-dot').style.transform = `translate(${e.clientX - 2}px, ${e.clientY - 2}px)`;
 });
 
 requestAnimationFrame(animate);
