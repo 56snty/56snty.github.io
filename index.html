@@ -3,33 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
-    <title>EMAL // IGLOO_ZENITH</title>
+    <title>EMAL // REFINED_ZENITH</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.27/bundled/lenis.min.js"></script>
     <style>
-        :root { --accent: #fff; --bg: #030303; }
+        :root { --bg: #0d0d0e; --text: #e4e4e7; --accent: #a5b4fc; }
         * { margin:0; padding:0; box-sizing:border-box; cursor: none; }
-        body { background: var(--bg); color: #fff; font-family: "Inter", sans-serif; overflow-x:hidden; height: 1000vh; }
+        body { background: var(--bg); color: var(--text); font-family: "Inter", sans-serif; overflow-x:hidden; height: 1000vh; }
         
         #canvas-container { position:fixed; inset:0; z-index:0; }
+        .noise { position:fixed; inset:0; z-index:999; opacity:0.04; pointer-events:none; background:url('https://grainy-gradients.vercel.app/noise.svg'); }
         
-        /* Igloo.inc Grain Overlay */
-        .noise { position:fixed; inset:0; z-index:999; opacity:0.06; pointer-events:none; background:url('https://grainy-gradients.vercel.app/noise.svg'); }
+        /* High-End HUD */
+        .hud { position:fixed; inset:0; padding:50px; z-index:100; pointer-events:none; display:flex; flex-direction:column; justify-content:space-between; }
+        .nav-top { display:flex; justify-content:space-between; font-size:9px; letter-spacing:4px; font-weight:700; opacity: 0.6; mix-blend-mode: difference; }
         
-        /* Frosted Glass HUD */
-        .hud { position:fixed; inset:0; padding:40px; z-index:100; pointer-events:none; display:flex; flex-direction:column; justify-content:space-between; }
-        .nav-top { display:flex; justify-content:space-between; font-size:10px; letter-spacing:4px; font-weight:900; mix-blend-mode: difference; }
-        
+        /* Minimal Portfolio Plates */
         .content-layer { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 10; }
         .card { 
-            opacity: 0; transform: scale(0.8) blur(10px); transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
-            text-align: center; 
+            opacity: 0; transform: translateY(30px) scale(0.95); transition: all 1.2s cubic-bezier(0.19, 1, 0.22, 1);
+            text-align: center; max-width: 800px;
         }
-        .card.active { opacity: 1; transform: scale(1) blur(0px); }
-        h2 { font-size: 12vw; font-weight: 900; letter-spacing: -0.06em; line-height: 0.8; margin-bottom: 10px; }
-        p { font-size: 10px; letter-spacing: 5px; opacity: 0.4; text-transform: uppercase; }
+        .card.active { opacity: 1; transform: translateY(0) scale(1); }
+        h2 { font-size: 10vw; font-weight: 300; letter-spacing: -0.04em; line-height: 0.9; margin-bottom: 15px; color: var(--text); }
+        p { font-size: 11px; letter-spacing: 6px; opacity: 0.3; text-transform: uppercase; font-weight: 400; }
 
-        #cursor { position: fixed; width: 8px; height: 8px; background: #fff; border-radius: 50%; pointer-events: none; z-index: 1000; mix-blend-mode: difference; }
+        #cursor { position: fixed; width: 6px; height: 6px; background: var(--accent); border-radius: 50%; pointer-events: none; z-index: 1000; box-shadow: 0 0 15px var(--accent); transition: transform 0.1s; }
     </style>
 </head>
 <body>
@@ -39,75 +38,91 @@
 
     <div class="hud">
         <div class="nav-top">
-            <div>EMAL.LABS</div>
-            <div>STATUS: SEAMLESS_FLIGHT</div>
-            <div>[ 2026 ]</div>
+            <div>EMAL_REFINED</div>
+            <div>[ PERSISTENT_FLIGHT ]</div>
+            <div>©2026</div>
         </div>
     </div>
 
-    <div class="content-layer"><div class="card" id="c1"><p>01 // ARCHITECT</p><h2>EMAL</h2></div></div>
-    <div class="content-layer"><div class="card" id="c2"><p>02 // REALMS</p><h2>BEYOND</h2></div></div>
-    <div class="content-layer"><div class="card" id="c3"><p>03 // CONNECT</p><h2>VOID</h2></div></div>
+    <div class="content-layer"><div class="card" id="c1"><p>Introduction</p><h2>EMAL STUDIO</h2></div></div>
+    <div class="content-layer"><div class="card" id="c2"><p>Expertise</p><h2>3D ARCHITECTURE</h2></div></div>
+    <div class="content-layer"><div class="card" id="c3"><p>Next Realm</p><h2>BEYOND_VOID</h2></div></div>
 
 <script>
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+const camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-// --- INFINITE LOOP ENGINE ---
+// --- POLITE COLOR THEORY ---
+// Using Muted Indigo (#a5b4fc) and Deep Slate (#0d0d0e)
 const points = [];
-for (let i = 0; i <= 20; i++) {
-    points.push(new THREE.Vector3(Math.sin(i * 0.5) * 4, Math.cos(i * 0.8) * 4, i * 15));
+for (let i = 0; i <= 25; i++) {
+    points.push(new THREE.Vector3(Math.sin(i * 0.4) * 3, Math.cos(i * 0.6) * 3, i * 18));
 }
-// Closed: true makes it a seamless loop
 const curve = new THREE.CatmullRomCurve3(points, true);
-const tubeGeo = new THREE.TubeGeometry(curve, 256, 3, 12, true);
+const tubeGeo = new THREE.TubeGeometry(curve, 300, 2.5, 16, true);
 
-// Igloo-Style "Ice Wireframe"
-const material = new THREE.MeshStandardMaterial({ 
-    color: 0x444444, 
-    wireframe: true, 
-    transparent: true, 
-    opacity: 0.15,
-    emissive: 0xffffff,
-    emissiveIntensity: 0.05
+// Custom "Atmospheric" Shader
+const material = new THREE.ShaderMaterial({
+    uniforms: { uTime: { value: 0 }, uScroll: { value: 0 } },
+    transparent: true,
+    side: THREE.BackSide,
+    vertexShader: `
+        varying vec2 vUv;
+        void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+    `,
+    fragmentShader: `
+        varying vec2 vUv;
+        uniform float uTime;
+        uniform float uScroll;
+        void main() {
+            vec3 dark = vec3(0.05, 0.05, 0.06); 
+            vec3 politeBlue = vec3(0.64, 0.70, 0.98); // Muted Indigo
+            
+            float grid = smoothstep(0.48, 0.5, sin(vUv.x * 100.0 + uTime + uScroll * 10.0));
+            float fog = 1.0 - pow(vUv.y, 3.0);
+            
+            vec3 finalColor = mix(dark, politeBlue, grid * 0.1);
+            gl_FragColor = vec4(finalColor, fog);
+        }
+    `
 });
+
 const tunnel = new THREE.Mesh(tubeGeo, material);
 scene.add(tunnel);
 
-// Star Particles
+// Soft Ambient Stars
 const starGeo = new THREE.BufferGeometry();
 const starPos = [];
-for(let i=0; i<4000; i++) {
-    starPos.push((Math.random()-0.5)*100, (Math.random()-0.5)*100, Math.random()*500);
+for(let i=0; i<5000; i++) {
+    starPos.push((Math.random()-0.5)*120, (Math.random()-0.5)*120, Math.random()*600);
 }
 starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
-const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({color:0xffffff, size:0.03, transparent:true, opacity:0.5}));
+const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({color:0xa5b4fc, size:0.02, transparent:true, opacity:0.3}));
 scene.add(stars);
 
-// --- SEAMLESS FLY-THROUGH ---
-const bc = new BroadcastChannel('ZENITH_SYNC'); bc.onmessage = (e) => { lenis.scrollTo(e.data.prog * 5000, {immediate: false}); };
-const lenis = new Lenis({ lerp: 0.04, smoothWheel: true });
+// --- SMOOTH FLIGHT ---
+const lenis = new Lenis({ lerp: 0.04 });
 let scrollProgress = 0;
 
 function animate(t) {
     lenis.raf(t);
-    
-    // Smooth camera flight - % 1 ensures the loop never "ends" or crashes
-    const loopPos = scrollProgress % 1;
+    const loopPos = (scrollProgress % 1 + 1) % 1; 
     const camPos = curve.getPointAt(loopPos);
     const lookAtPos = curve.getPointAt((loopPos + 0.01) % 1);
     
     camera.position.copy(camPos);
     camera.lookAt(lookAtPos);
     
-    // Tilt based on curve
-    camera.rotation.z += Math.sin(t * 0.001) * 0.1;
+    material.uniforms.uTime.value = t * 0.0005;
+    material.uniforms.uScroll.value = scrollProgress;
 
-    // Trigger Content (Seamlessly)
     check(loopPos, 0.1, 'c1');
     check(loopPos, 0.4, 'c2');
     check(loopPos, 0.8, 'c3');
@@ -118,13 +133,12 @@ function animate(t) {
 
 function check(p, target, id) {
     const el = document.getElementById(id);
-    if(p > target && p < target + 0.15) el.classList.add('active');
-    else el.classList.remove('active');
+    const active = p > target && p < target + 0.15;
+    el.classList.toggle('active', active);
 }
 
 lenis.on('scroll', (e) => { 
-    // This allows the user to scroll infinitely
-    scrollProgress = e.animatedScroll / 5000; bc.postMessage({prog: scrollProgress}); 
+    scrollProgress = e.animatedScroll / 8000; 
 });
 
 window.addEventListener('mousemove', (e) => {
