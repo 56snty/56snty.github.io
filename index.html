@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-    <title>EMAL // OMNI_SYNC</title>
+    <title>EMAL // SPATIAL_PORTAL</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100;900&display=swap');
         * { margin:0; padding:0; box-sizing:border-box; cursor: none; touch-action: none; }
         html, body { background: #000; color: #fff; font-family: 'Outfit', sans-serif; overflow: hidden; height: 100vh; width: 100vw; position: fixed; }
         #canvas-container { position:fixed; inset:0; z-index:0; }
-        .noise { position:fixed; inset:0; z-index:999; opacity:0.1; pointer-events:none; background:url('https://grainy-gradients.vercel.app/noise.svg'); mix-blend-mode: overlay; }
+        .noise { position:fixed; inset:0; z-index:999; opacity:0.12; pointer-events:none; background:url('https://grainy-gradients.vercel.app/noise.svg'); mix-blend-mode: overlay; }
         .hud { position:fixed; inset:0; padding:30px; z-index:100; pointer-events:none; mix-blend-mode: difference; }
         .nav { display:flex; justify-content:space-between; font-size:9px; letter-spacing:0.8em; font-weight:100; opacity: 0.5; }
         .content { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
-        .card { opacity: 0; transform: scale(0.5) translateZ(-500px); filter: blur(40px); transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1); text-align: center; }
-        .card.active { opacity: 1; transform: scale(1) translateZ(0); filter: blur(0px); }
+        .card { opacity: 0; transform: scale(0.8); filter: blur(40px); transition: all 1s cubic-bezier(0.16, 1, 0.3, 1); text-align: center; }
+        .card.active { opacity: 1; transform: scale(1); filter: blur(0px); }
         h2 { font-size: 15vw; font-weight: 900; letter-spacing: -0.06em; line-height: 0.8; text-transform: uppercase; }
         #shutter { position:fixed; inset:0; background:#000; z-index:10000; transition: opacity 1.5s ease; }
     </style>
@@ -25,7 +25,7 @@
     <div class="noise"></div>
     <div id="canvas-container"></div>
     <div class="hud">
-        <div class="nav"><div>EMAL_OMNI</div><div id="status">INIT_CORE</div></div>
+        <div class="nav"><div>EMAL_SPATIAL</div><div id="status">INIT_CORE</div></div>
     </div>
     <div class="content"><div class="card" id="c1"><h2>AETHER</h2></div></div>
     <div class="content"><div class="card" id="c2"><h2>VOID</h2></div></div>
@@ -58,33 +58,43 @@ starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
 const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.015, transparent: true, opacity: 0.6 }));
 scene.add(stars);
 
-// --- OMNI-INPUT (Desktop + Mobile) ---
+// --- SPATIAL SYNC ENGINE ---
+const bc = new BroadcastChannel('spatial_sync');
 let targetProgress = 0;
 let virtualProgress = 0;
-let touchStartY = 0;
+let masterID = Math.random();
+let spatialOffset = 0;
 
-// Desktop Scroll
+// Update Window Position every frame
+function getSpatialData() {
+    return {
+        id: masterID,
+        prog: targetProgress,
+        x: window.screenX,
+        y: window.screenY,
+        w: window.innerWidth
+    };
+}
+
+bc.onmessage = (e) => {
+    if (e.data.id !== masterID) {
+        targetProgress = e.data.prog;
+        // Calculate the horizontal "Gap" between this window and the other
+        const relativeX = e.data.x - window.screenX;
+        spatialOffset = (relativeX / window.innerWidth) * 0.5;
+    }
+};
+
 window.addEventListener('wheel', (e) => {
     targetProgress += e.deltaY * 0.00015;
-    syncTabs();
-}, { passive: false });
-
-// Mobile Touch (The Fix)
-window.addEventListener('touchstart', (e) => {
-    touchStartY = e.touches[0].clientY;
-}, { passive: false });
+    bc.postMessage(getSpatialData());
+});
 
 window.addEventListener('touchmove', (e) => {
-    const deltaY = touchStartY - e.touches[0].clientY;
-    targetProgress += deltaY * 0.0005; // Sensitivity
-    touchStartY = e.touches[0].clientY;
-    syncTabs();
-}, { passive: false });
-
-// --- MULTIVERSE SYNC ---
-const bc = new BroadcastChannel('emal_omni_sync');
-bc.onmessage = (e) => { targetProgress = e.data.prog; };
-function syncTabs() { bc.postMessage({ prog: targetProgress }); }
+    // simplified for touch
+    targetProgress += 0.001; 
+    bc.postMessage(getSpatialData());
+});
 
 function animate(t) {
     virtualProgress += (targetProgress - virtualProgress) * 0.05;
@@ -92,17 +102,22 @@ function animate(t) {
     
     const camPos = curve.getPointAt(loop);
     camera.position.copy(camPos);
-    camera.lookAt(curve.getPointAt((loop + 0.01) % 1));
-    camera.rotation.z += Math.sin(t * 0.0005) * 0.2;
-    light.position.copy(camPos);
+    
+    // LOOK AT + SPATIAL OFFSET
+    const lookTarget = curve.getPointAt((loop + 0.01) % 1);
+    camera.lookAt(lookTarget);
+    
+    // The "Magic": Shift the camera view based on window position
+    camera.rotation.y += spatialOffset;
 
-    document.getElementById('status').textContent = `POS: ${loop.toFixed(2)}`;
+    document.getElementById('status').textContent = `SPATIAL_SYNC: ${spatialOffset !== 0 ? 'LINKED' : 'STANDBY'}`;
     
     check(loop, 0.1, 'c1');
     check(loop, 0.4, 'c2');
     check(loop, 0.7, 'c3');
 
     renderer.render(scene, camera);
+    bc.postMessage(getSpatialData()); // Keep broadcasting pos
     requestAnimationFrame(animate);
 }
 
@@ -113,13 +128,6 @@ function check(p, target, id) {
 
 setTimeout(() => document.getElementById('shutter').style.opacity = 0, 800);
 requestAnimationFrame(animate);
-
-// Handle Resize
-window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-});
 </script>
 </body>
 </html>
