@@ -65,7 +65,7 @@ for (let i = 0; i <= 30; i++) {
 }
 const curve = new THREE.CatmullRomCurve3(points, true);
 const tubeGeo = new THREE.TubeGeometry(curve, 256, 3, 16, true);
-const tubeMat = new THREE.MeshBasicMaterial({ color: 0x222222, wireframe: true, transparent: true, opacity: 0.1 });
+const tubeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x444444, emissiveIntensity: 2.0, wireframe: true, transparent: true, opacity: 0.1 });
 const tube = new THREE.Mesh(tubeGeo, tubeMat);
 scene.add(tube);
 
@@ -76,6 +76,7 @@ for(let i=0; i<15000*3; i++) starPos[i] = (Math.random()-0.5) * 300;
 starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
 const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.015, transparent: true, opacity: 0.6 }));
 scene.add(stars);
+const light = new THREE.PointLight(0xffffff, 1, 50); scene.add(light);
 
 // --- VIRTUAL SCROLL LOGIC ---
 let virtualProgress = 0;
@@ -103,6 +104,7 @@ function animate(t) {
     const lookAtPos = curve.getPointAt((loop + 0.01) % 1);
     
     camera.position.copy(camPos);
+light.position.copy(camPos);
     camera.lookAt(lookAtPos);
     camera.rotation.z += Math.sin(t * 0.0005) * 0.2; // Barrel Roll
 
