@@ -2,100 +2,112 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-    <title>IGLOO // EMAL.DEV</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>AETHER // PORTAL</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.27/bundled/lenis.min.js"></script>
     <style>
         * { margin:0; padding:0; box-sizing:border-box; cursor: none; }
-        body { background: #080808; color: #fff; font-family: "Helvetica", sans-serif; overflow-x:hidden; height: 300vh; }
+        body { background: #000; color: #fff; font-family: 'Georgia', serif; overflow-x:hidden; height: 1000vh; }
         #canvas-container { position:fixed; inset:0; z-index:0; }
-        .ui { position:fixed; inset:0; padding:30px; z-index:100; pointer-events:none; mix-blend-mode: difference; }
-        .nav { display:flex; justify-content:space-between; font-size:9px; letter-spacing:4px; opacity:0.4; }
-        .center { position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); text-align:center; width:100%; }
-        h1 { font-size:18vw; font-weight:900; letter-spacing:-0.08em; line-height:0.8; margin:0; }
-        .grain { position:fixed; inset:0; z-index:999; opacity:0.06; pointer-events:none; background:url('https://grainy-gradients.vercel.app/noise.svg'); filter: contrast(150%) brightness(150%); }
+        .hud { position:fixed; inset:0; padding:50px; display:flex; flex-direction:column; justify-content:space-between; z-index:100; pointer-events:none; }
+        .realm-tag { font-size: 10px; letter-spacing: 5px; text-transform: uppercase; opacity: 0.5; }
+        .title-wrap { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; width: 100%; }
+        h1 { font-size: 10vw; font-weight: 100; font-style: italic; letter-spacing: -0.02em; filter: blur(5px); opacity: 0; transition: all 1s ease; }
+        .active h1 { filter: blur(0px); opacity: 1; }
+        .grain { position:fixed; inset:0; z-index:999; opacity:0.1; pointer-events:none; background:url('https://grainy-gradients.vercel.app/noise.svg'); }
     </style>
 </head>
 <body>
     <div class="grain"></div>
     <div id="canvas-container"></div>
-    <div class="ui">
-        <div class="nav"><div>EMAL.LABS</div><div>[ PRESTIGE_V10 ]</div></div>
-        <div class="center">
-            <h1 id="t1">FROST</h1>
-        </div>
+    <div class="hud">
+        <div class="realm-tag">Realm_04 // Aether_Flow</div>
+        <div class="realm-tag" style="text-align:right;">Distance: <span id="dist">0m</span></div>
+    </div>
+    <div class="title-wrap" id="trigger">
+        <h1 id="realm-name">THE_BEYOND</h1>
     </div>
 
 <script>
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-// --- THE SECRET SAUCE: MATCAP SHADER ---
-// This mimics professional studio lighting on any device.
+// --- CREATE THE INFINITE PATH ---
+const points = [];
+for (let i = 0; i < 50; i++) {
+    points.push(new THREE.Vector3(Math.sin(i * 0.3) * 2, Math.cos(i * 0.3) * 2, i * 5));
+}
+const curve = new THREE.CatmullRomCurve3(points);
+const tubeGeometry = new THREE.TubeGeometry(curve, 200, 1.5, 20, false);
+
+// --- PROCEDURAL REALM MATERIAL ---
 const material = new THREE.ShaderMaterial({
     uniforms: { uTime: { value: 0 }, uScroll: { value: 0 } },
+    side: THREE.BackSide,
+    transparent: true,
     vertexShader: `
-        varying vec3 vNormal;
-        varying vec3 vViewDir;
-        uniform float uTime;
-        uniform float uScroll;
-        
-        // High-end Displacement
+        varying vec2 vUv;
         void main() {
-            vec3 p = position;
-            float noise = sin(p.x * 2.0 + uTime) * cos(p.y * 2.0 + uTime) * (0.3 + uScroll);
-            p += normal * noise;
-            vNormal = normalize(normalMatrix * normal);
-            vec4 mvPosition = modelViewMatrix * vec4(p, 1.0);
-            vViewDir = normalize(-mvPosition.xyz);
-            gl_Position = projectionMatrix * mvPosition;
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
         }
     `,
     fragmentShader: `
-        varying vec3 vNormal;
-        varying vec3 vViewDir;
+        varying vec2 vUv;
+        uniform float uTime;
+        uniform float uScroll;
         void main() {
-            // Iridescent Ice Math
-            float fresnel = pow(1.0 - dot(vNormal, vViewDir), 3.0);
-            vec3 colorA = vec3(0.05, 0.05, 0.1); // Deep Shadow
-            vec3 colorB = vec3(0.7, 0.8, 1.0);  // Ice Highlight
-            vec3 finalColor = mix(colorA, colorB, fresnel);
+            vec3 color1 = vec3(0.0, 0.1, 0.2); // Deep Void
+            vec3 color2 = vec3(0.5, 0.1, 1.0); // Neon Pulse
             
-            // Add "Digital Grain" to the shader
-            float dither = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898,78.233))) * 43758.5453);
-            gl_FragColor = vec4(finalColor + (dither * 0.05), 1.0);
+            float ring = smoothstep(0.4, 0.5, sin(vUv.x * 50.0 + uTime * 5.0 + uScroll * 100.0));
+            vec3 finalColor = mix(color1, color2, ring * 0.5);
+            
+            // Add stars/dust
+            float dust = pow(fract(sin(dot(vUv, vec2(12.98, 78.23))) * 43758.54), 20.0);
+            finalColor += dust;
+            
+            gl_FragColor = vec4(finalColor, 1.0);
         }
     `
 });
 
-const core = new THREE.Mesh(new THREE.IcosahedronGeometry(2, 64), material);
-scene.add(core);
-camera.position.z = 5;
+const tube = new THREE.Mesh(tubeGeometry, material);
+scene.add(tube);
 
-const lenis = new Lenis({ lerp: 0.1 });
-let targetScroll = 0;
-lenis.on('scroll', (e) => { targetScroll = e.progress; });
+// --- ANIMATION & CAMERA FLY-THROUGH ---
+const lenis = new Lenis({ lerp: 0.05, wheelMultiplier: 0.8 });
+let progress = 0;
 
 function animate(t) {
     lenis.raf(t);
     material.uniforms.uTime.value = t * 0.001;
-    material.uniforms.uScroll.value = targetScroll;
     
-    core.rotation.y += 0.005 + (targetScroll * 0.02);
-    core.rotation.x += 0.003;
+    // Camera follows the path based on scroll
+    const camPos = curve.getPointAt(progress % 1);
+    const lookAtPos = curve.getPointAt((progress + 0.01) % 1);
+    camera.position.copy(camPos);
+    camera.lookAt(lookAtPos);
     
-    // Smooth Scale Pulse
-    const s = 1 + (Math.sin(t * 0.001) * 0.05) + (targetScroll * 0.5);
-    core.scale.set(s, s, s);
+    material.uniforms.uScroll.value = progress;
+    document.getElementById('dist').textContent = Math.floor(progress * 1000) + "m";
+    
+    // UI Effects
+    if(progress > 0.1) document.getElementById('trigger').classList.add('active');
     
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
 }
+
+lenis.on('scroll', (e) => {
+    progress = e.progress;
+});
+
 requestAnimationFrame(animate);
 
 window.addEventListener('resize', () => {
