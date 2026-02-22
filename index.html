@@ -3,33 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>AETHER // PORTAL</title>
+    <title>EMAL // BEYOND</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.27/bundled/lenis.min.js"></script>
     <style>
+        :root { --accent: #00f3ff; }
         * { margin:0; padding:0; box-sizing:border-box; cursor: none; }
-        body { background: #000; color: #fff; font-family: 'Georgia', serif; overflow-x:hidden; height: 1000vh; }
+        body { background: #000; color: #fff; font-family: "Helvetica Neue", sans-serif; overflow-x:hidden; height: 1200vh; }
         #canvas-container { position:fixed; inset:0; z-index:0; }
-        .hud { position:fixed; inset:0; padding:50px; display:flex; flex-direction:column; justify-content:space-between; z-index:100; pointer-events:none; }
-        .realm-tag { font-size: 10px; letter-spacing: 5px; text-transform: uppercase; opacity: 0.5; }
-        .title-wrap { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; width: 100%; }
-        h1 { font-size: 10vw; font-weight: 100; font-style: italic; letter-spacing: -0.02em; filter: blur(5px); opacity: 0; transition: all 1s ease; }
-        .active h1 { filter: blur(0px); opacity: 1; }
-        .grain { position:fixed; inset:0; z-index:999; opacity:0.1; pointer-events:none; background:url('https://grainy-gradients.vercel.app/noise.svg'); }
+        
+        /* High-End UI */
+        .hud { position:fixed; inset:0; padding:40px; z-index:100; pointer-events:none; display:flex; flex-direction:column; justify-content:space-between; mix-blend-mode: difference; }
+        .nav-top { display:flex; justify-content:space-between; font-size:10px; letter-spacing:4px; font-weight:900; }
+        
+        /* Portfolio Content Plates */
+        .content-layer { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 10; }
+        .project-card { 
+            opacity: 0; transform: translateY(50px) scale(0.9); transition: all 0.8s cubic-bezier(0.2, 1, 0.3, 1);
+            text-align: center; max-width: 600px;
+        }
+        .project-card.active { opacity: 1; transform: translateY(0) scale(1); }
+        .project-card h2 { font-size: 8vw; font-weight: 900; letter-spacing: -0.05em; line-height: 0.8; margin-bottom: 20px; }
+        .project-card p { font-size: 12px; letter-spacing: 2px; opacity: 0.5; text-transform: uppercase; }
+
+        #cursor { position: fixed; width: 10px; height: 10px; background: #fff; border-radius: 50%; pointer-events: none; z-index: 1000; mix-blend-mode: difference; }
+        .noise { position:fixed; inset:0; z-index:999; opacity:0.04; pointer-events:none; background:url('https://grainy-gradients.vercel.app/noise.svg'); }
     </style>
 </head>
 <body>
-    <div class="grain"></div>
+    <div id="cursor"></div>
+    <div class="noise"></div>
     <div id="canvas-container"></div>
+
     <div class="hud">
-        <div class="realm-tag">Realm_04 // Aether_Flow</div>
-        <div class="realm-tag" style="text-align:right;">Distance: <span id="dist">0m</span></div>
+        <div class="nav-top">
+            <div>EMAL.DEV</div>
+            <div id="status">INIT_FLIGHT...</div>
+            <div>[ 2026 ]</div>
+        </div>
+        <div class="nav-top" style="opacity:0.3">
+            <div>SCROLL_TO_TRAVEL</div>
+            <div id="depth">DEPTH: 000m</div>
+        </div>
     </div>
-    <div class="title-wrap" id="trigger">
-        <h1 id="realm-name">THE_BEYOND</h1>
+
+    <div class="content-layer">
+        <div class="project-card" id="p1">
+            <p>01 / THE BEGINNING</p>
+            <h2>EMAL</h2>
+        </div>
+    </div>
+    <div class="content-layer">
+        <div class="project-card" id="p2">
+            <p>02 / VISUAL MASTER</p>
+            <h2>CREATIVE_DEVELOPER</h2>
+        </div>
+    </div>
+    <div class="content-layer">
+        <div class="project-card" id="p3">
+            <p>03 / RECENT WORK</p>
+            <h2>BEYOND_REALMS</h2>
+        </div>
     </div>
 
 <script>
+// --- THREE.JS REALM ENGINE ---
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
@@ -37,84 +75,69 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-// --- CREATE THE INFINITE PATH ---
+// Create Infinite Star-Tunnel Path
 const points = [];
-for (let i = 0; i < 50; i++) {
-    points.push(new THREE.Vector3(Math.sin(i * 0.3) * 2, Math.cos(i * 0.3) * 2, i * 5));
+for (let i = 0; i < 100; i++) {
+    points.push(new THREE.Vector3(Math.sin(i * 0.2) * 3, Math.cos(i * 0.3) * 3, i * 10));
 }
 const curve = new THREE.CatmullRomCurve3(points);
-const tubeGeometry = new THREE.TubeGeometry(curve, 200, 1.5, 20, false);
+const tubeGeo = new THREE.TubeGeometry(curve, 300, 2, 8, false);
+const material = new THREE.MeshBasicMaterial({ color: 0x111111, wireframe: true, transparent: true, opacity: 0.2 });
+const tunnel = new THREE.Mesh(tubeGeo, material);
+scene.add(tunnel);
 
-// --- PROCEDURAL REALM MATERIAL ---
-const material = new THREE.ShaderMaterial({
-    uniforms: { uTime: { value: 0 }, uScroll: { value: 0 } },
-    side: THREE.BackSide,
-    transparent: true,
-    vertexShader: `
-        varying vec2 vUv;
-        void main() {
-            vUv = uv;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-    `,
-    fragmentShader: `
-        varying vec2 vUv;
-        uniform float uTime;
-        uniform float uScroll;
-        void main() {
-            vec3 color1 = vec3(0.0, 0.1, 0.2); // Deep Void
-            vec3 color2 = vec3(0.5, 0.1, 1.0); // Neon Pulse
-            
-            float ring = smoothstep(0.4, 0.5, sin(vUv.x * 50.0 + uTime * 5.0 + uScroll * 100.0));
-            vec3 finalColor = mix(color1, color2, ring * 0.5);
-            
-            // Add stars/dust
-            float dust = pow(fract(sin(dot(vUv, vec2(12.98, 78.23))) * 43758.54), 20.0);
-            finalColor += dust;
-            
-            gl_FragColor = vec4(finalColor, 1.0);
-        }
-    `
-});
+// Floating Star Field
+const starGeo = new THREE.BufferGeometry();
+const starPos = [];
+for(let i=0; i<3000; i++) {
+    starPos.push((Math.random()-0.5)*50, (Math.random()-0.5)*50, Math.random()*1000);
+}
+starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
+const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({color:0xffffff, size:0.05}));
+scene.add(stars);
 
-const tube = new THREE.Mesh(tubeGeometry, material);
-scene.add(tube);
-
-// --- ANIMATION & CAMERA FLY-THROUGH ---
-const lenis = new Lenis({ lerp: 0.05, wheelMultiplier: 0.8 });
+// --- SCROLL & FLY LOGIC ---
+const lenis = new Lenis({ lerp: 0.05 });
 let progress = 0;
 
 function animate(t) {
     lenis.raf(t);
-    material.uniforms.uTime.value = t * 0.001;
     
-    // Camera follows the path based on scroll
+    // Smooth camera fly
     const camPos = curve.getPointAt(progress % 1);
     const lookAtPos = curve.getPointAt((progress + 0.01) % 1);
     camera.position.copy(camPos);
     camera.lookAt(lookAtPos);
     
-    material.uniforms.uScroll.value = progress;
-    document.getElementById('dist').textContent = Math.floor(progress * 1000) + "m";
+    // UI Updates
+    document.getElementById('depth').textContent = `DEPTH: ${Math.floor(progress * 5000)}m`;
     
-    // UI Effects
-    if(progress > 0.1) document.getElementById('trigger').classList.add('active');
-    
+    // Content Trigger Logic
+    checkSection(progress, 0.1, 'p1');
+    checkSection(progress, 0.4, 'p2');
+    checkSection(progress, 0.8, 'p3');
+
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
 }
 
-lenis.on('scroll', (e) => {
-    progress = e.progress;
+function checkSection(prog, target, id) {
+    const el = document.getElementById(id);
+    if(prog > target && prog < target + 0.15) {
+        el.classList.add('active');
+    } else {
+        el.classList.remove('active');
+    }
+}
+
+lenis.on('scroll', (e) => { progress = e.progress; });
+
+// Cursor
+window.addEventListener('mousemove', (e) => {
+    document.getElementById('cursor').style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
 });
 
 requestAnimationFrame(animate);
-
-window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-});
 </script>
 </body>
 </html>
