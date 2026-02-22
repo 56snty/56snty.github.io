@@ -83,7 +83,7 @@ window.addEventListener('mousemove', (e) => {
 });
 
 // --- SYNC ENGINE (BIDIRECTIONAL) ---
-bc.onmessage = (e) => {
+bc.onmessage = (e) => { document.getElementById("pulse").style.boxShadow = "0 0 30px #00ffcc"; setTimeout(() => { document.getElementById("pulse").style.boxShadow = "0 0 10px #00ffcc"; }, 100);
     scrollTarget = e.data.progress;
     document.getElementById('sync-status').textContent = "NODE_LINKED_" + e.data.node;
     document.getElementById('latency').textContent = Math.floor(Math.random() * 5) + "ms";
@@ -102,7 +102,7 @@ const material = new THREE.MeshPhysicalMaterial({
     color: 0xffffff,
     metalness: 0.1,
     roughness: 0.05,
-    transmission: 0.9,
+    transmission: 0.9, emissive: 0x0055ff, emissiveIntensity: 0.2,
     thickness: 1.5,
     transparent: true,
     wireframe: false
