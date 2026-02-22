@@ -3,54 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
-    <title>EMAL // SINGULARITY</title>
+    <title>EMAL // MULTIVERSE</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.27/bundled/lenis.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100;900&display=swap');
         * { margin:0; padding:0; box-sizing:border-box; cursor: none; }
-        /* Prevent the browser from ever 'leaving' the 3D world */
         html, body { background: #000; color: #fff; font-family: 'Outfit', sans-serif; overflow: hidden; height: 100vh; width: 100vw; position: fixed; }
-        
-        #canvas-container { position:fixed; inset:0; z-index:0; }
-        .noise { position:fixed; inset:0; z-index:999; opacity:0.1; pointer-events:none; background:url('https://grainy-gradients.vercel.app/noise.svg'); mix-blend-mode: overlay; }
-        .overlay { position:fixed; inset:0; z-index:5; background: radial-gradient(circle at center, transparent 0%, black 100%); pointer-events:none; }
-
+        #canvas-container { position:fixed; inset:0; z-index:0; transition: filter 0.3s ease; }
+        .noise { position:fixed; inset:0; z-index:999; opacity:0.15; pointer-events:none; background:url('https://grainy-gradients.vercel.app/noise.svg'); mix-blend-mode: overlay; }
         .hud { position:fixed; inset:0; padding:40px; z-index:100; pointer-events:none; mix-blend-mode: difference; }
         .nav { display:flex; justify-content:space-between; font-size:9px; letter-spacing:0.8em; font-weight:100; opacity: 0.5; }
-        
         .content { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
-        .card { 
-            opacity: 0; transform: scale(0.5) translateZ(-500px); filter: blur(40px);
-            transition: all 1.5s cubic-bezier(0.16, 1, 0.3, 1);
-            text-align: center; 
-        }
+        .card { opacity: 0; transform: scale(0.5) translateZ(-500px); filter: blur(40px); transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1); text-align: center; }
         .card.active { opacity: 1; transform: scale(1) translateZ(0); filter: blur(0px); }
-        
-        h2 { font-size: 15vw; font-weight: 900; letter-spacing: -0.06em; line-height: 0.8; text-transform: uppercase; margin:0; }
-        p { font-size: 10px; letter-spacing: 12px; opacity: 0.3; margin-top: 30px; font-weight: 100; }
-
+        h2 { font-size: 15vw; font-weight: 900; letter-spacing: -0.06em; line-height: 0.8; text-transform: uppercase; }
         #shutter { position:fixed; inset:0; background:#000; z-index:10000; transition: opacity 2s ease; }
-        #cursor { position: fixed; width: 12px; height: 12px; background: #fff; border-radius: 50%; pointer-events: none; z-index: 1000; mix-blend-mode: difference; transition: transform 0.1s; }
+        .glitch-flash { position: fixed; inset: 0; background: #fff; z-index: 1000; opacity: 0; pointer-events: none; }
     </style>
 </head>
 <body>
     <div id="shutter"></div>
-    <div id="cursor"></div>
+    <div id="flash" class="glitch-flash"></div>
     <div class="noise"></div>
-    <div class="overlay"></div>
     <div id="canvas-container"></div>
-
     <div class="hud">
-        <div class="nav"><div>EMAL_SINGULARITY</div><div id="depth">DEPTH: 0%</div></div>
+        <div class="nav"><div>EMAL_MULTIVERSE</div><div id="sync-status">ALONE</div></div>
     </div>
-
-    <div class="content"><div class="card" id="c1"><h2>AETHER</h2><p>THE ORIGIN</p></div></div>
-    <div class="content"><div class="card" id="c2"><h2>VOID</h2><p>CORE_LOGIC</p></div></div>
-    <div class="content"><div class="card" id="c3"><h2>ZENITH</h2><p>TERMINUS</p></div></div>
+    <div class="content"><div class="card" id="c1"><h2>VOID</h2></div></div>
+    <div class="content"><div class="card" id="c2"><h2>WARP</h2></div></div>
+    <div class="content"><div class="card" id="c3"><h2>EXIT</h2></div></div>
 
 <script>
-// --- CORE SETUP ---
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.01, 1000);
 const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
@@ -58,60 +42,55 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-// --- THE INFINITE 3D PATH ---
-const points = [];
-for (let i = 0; i <= 30; i++) {
-    points.push(new THREE.Vector3(Math.sin(i * 0.3) * 5, Math.cos(i * 0.4) * 5, i * 20));
+// --- MULTIVERSE SYNC ---
+const bc = new BroadcastChannel('emal_multiverse');
+let isMaster = false;
+
+bc.onmessage = (msg) => {
+    if (!isMaster) {
+        targetProgress = msg.data.prog;
+        triggerGlitch();
+        document.getElementById('sync-status').textContent = "LINKED_SLAVE";
+    }
+};
+
+function triggerGlitch() {
+    const f = document.getElementById('flash');
+    f.style.opacity = '0.1';
+    setTimeout(() => f.style.opacity = '0', 50);
+    document.getElementById('canvas-container').style.filter = 'hue-rotate(90deg) brightness(1.5)';
+    setTimeout(() => document.getElementById('canvas-container').style.filter = 'none', 150);
 }
+
+// --- WORLD BUILD ---
+const points = [];
+for (let i = 0; i <= 30; i++) points.push(new THREE.Vector3(Math.sin(i * 0.3) * 5, Math.cos(i * 0.4) * 5, i * 20));
 const curve = new THREE.CatmullRomCurve3(points, true);
 const tubeGeo = new THREE.TubeGeometry(curve, 256, 3, 16, true);
-const tubeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x444444, emissiveIntensity: 2.0, wireframe: true, transparent: true, opacity: 0.1 });
+const tubeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x222222, wireframe: true, transparent: true, opacity: 0.1 });
 const tube = new THREE.Mesh(tubeGeo, tubeMat);
 scene.add(tube);
+const light = new THREE.PointLight(0xffffff, 2, 50);
+scene.add(light);
 
-// Star Dust
-const starGeo = new THREE.BufferGeometry();
-const starPos = new Float32Array(15000 * 3);
-for(let i=0; i<15000*3; i++) starPos[i] = (Math.random()-0.5) * 300;
-starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.015, transparent: true, opacity: 0.6 }));
-scene.add(stars);
-const light = new THREE.PointLight(0xffffff, 1, 50); scene.add(light);
-
-// --- VIRTUAL SCROLL LOGIC ---
+// --- INPUTS ---
 let virtualProgress = 0;
 let targetProgress = 0;
 
-// Mouse Wheel & Touch Swipe Detection
 window.addEventListener('wheel', (e) => {
+    isMaster = true;
     targetProgress += e.deltaY * 0.0001;
-});
-
-let touchY = 0;
-window.addEventListener('touchstart', (e) => { touchY = e.touches[0].clientY; });
-window.addEventListener('touchmove', (e) => {
-    const deltaY = touchY - e.touches[0].clientY;
-    targetProgress += deltaY * 0.0005;
-    touchY = e.touches[0].clientY;
+    bc.postMessage({ prog: targetProgress });
+    document.getElementById('sync-status').textContent = "LINKED_MASTER";
 });
 
 function animate(t) {
-    // Smooth Interpolation (The 11/10 Feeling)
     virtualProgress += (targetProgress - virtualProgress) * 0.05;
-    
     const loop = (virtualProgress % 1 + 1) % 1;
-    const camPos = curve.getPointAt(loop);
-    const lookAtPos = curve.getPointAt((loop + 0.01) % 1);
+    camera.position.copy(curve.getPointAt(loop));
+    camera.lookAt(curve.getPointAt((loop + 0.01) % 1));
+    light.position.copy(camera.position);
     
-    camera.position.copy(camPos);
-light.position.copy(camPos);
-    camera.lookAt(lookAtPos);
-    camera.rotation.z += Math.sin(t * 0.0005) * 0.2; // Barrel Roll
-
-    // HUD Update
-    document.getElementById('depth').textContent = `DEPTH: ${(loop * 100).toFixed(0)}%`;
-
-    // Content Check
     check(loop, 0.1, 'c1');
     check(loop, 0.4, 'c2');
     check(loop, 0.7, 'c3');
@@ -122,19 +101,10 @@ light.position.copy(camPos);
 
 function check(p, target, id) {
     const el = document.getElementById(id);
-    const active = p > target && p < target + 0.15;
-    el.classList.toggle('active', active);
+    el.classList.toggle('active', p > target && p < target + 0.15);
 }
 
-// Global UI
-window.addEventListener('mousemove', (e) => {
-    document.getElementById('cursor').style.transform = `translate(${e.clientX - 6}px, ${e.clientY - 6}px)`;
-});
-
-setTimeout(() => { 
-    document.getElementById('shutter').style.opacity = 0;
-}, 500);
-
+setTimeout(() => document.getElementById('shutter').style.opacity = 0, 500);
 requestAnimationFrame(animate);
 </script>
 </body>
