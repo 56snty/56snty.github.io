@@ -3,60 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
-    <title>EMAL // ZENITH_11</title>
+    <title>EMAL // SINGULARITY</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.27/bundled/lenis.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100;900&display=swap');
         * { margin:0; padding:0; box-sizing:border-box; cursor: none; }
-        body { background: #000; color: #fff; font-family: 'Outfit', sans-serif; overflow: hidden; height: 1500vh; }
+        /* Prevent the browser from ever 'leaving' the 3D world */
+        html, body { background: #000; color: #fff; font-family: 'Outfit', sans-serif; overflow: hidden; height: 100vh; width: 100vw; position: fixed; }
         
         #canvas-container { position:fixed; inset:0; z-index:0; }
-        
-        /* The Masterpiece Polish */
-        .noise { position:fixed; inset:0; z-index:999; opacity:0.12; pointer-events:none; background:url('https://grainy-gradients.vercel.app/noise.svg'); mix-blend-mode: overlay; }
-        .vignette { position:fixed; inset:0; z-index:5; background: radial-gradient(circle, transparent 30%, black 120%); pointer-events:none; }
-        
-        .hud { position:fixed; inset:0; padding:60px; z-index:100; pointer-events:none; mix-blend-mode: difference; }
-        .nav { display:flex; justify-content:space-between; font-size:10px; letter-spacing:0.8em; font-weight:100; text-transform: uppercase; }
+        .noise { position:fixed; inset:0; z-index:999; opacity:0.1; pointer-events:none; background:url('https://grainy-gradients.vercel.app/noise.svg'); mix-blend-mode: overlay; }
+        .overlay { position:fixed; inset:0; z-index:5; background: radial-gradient(circle at center, transparent 0%, black 100%); pointer-events:none; }
+
+        .hud { position:fixed; inset:0; padding:40px; z-index:100; pointer-events:none; mix-blend-mode: difference; }
+        .nav { display:flex; justify-content:space-between; font-size:9px; letter-spacing:0.8em; font-weight:100; opacity: 0.5; }
         
         .content { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
         .card { 
-            opacity: 0; transform: scale(0.3) rotateY(45deg); filter: blur(40px);
-            transition: all 1.8s cubic-bezier(0.16, 1, 0.3, 1);
+            opacity: 0; transform: scale(0.5) translateZ(-500px); filter: blur(40px);
+            transition: all 1.5s cubic-bezier(0.16, 1, 0.3, 1);
             text-align: center; 
         }
-        .card.active { opacity: 1; transform: scale(1) rotateY(0deg); filter: blur(0px); }
+        .card.active { opacity: 1; transform: scale(1) translateZ(0); filter: blur(0px); }
         
-        h2 { font-size: 20vw; font-weight: 900; letter-spacing: -0.08em; line-height: 0.75; margin:0; }
-        p { font-size: 10px; letter-spacing: 15px; opacity: 0.4; margin-top: 40px; }
+        h2 { font-size: 15vw; font-weight: 900; letter-spacing: -0.06em; line-height: 0.8; text-transform: uppercase; margin:0; }
+        p { font-size: 10px; letter-spacing: 12px; opacity: 0.3; margin-top: 30px; font-weight: 100; }
 
-        #cursor { position: fixed; width: 60px; height: 60px; border: 0.5px solid rgba(255,255,255,0.2); border-radius: 50%; pointer-events: none; z-index: 1000; transition: transform 0.2s cubic-bezier(0, 0.5, 0.5, 1); }
-        #shutter { position:fixed; inset:0; background:#000; z-index:10000; transition: opacity 2.5s cubic-bezier(0.7,0,0.3,1); }
+        #shutter { position:fixed; inset:0; background:#000; z-index:10000; transition: opacity 2s ease; }
+        #cursor { position: fixed; width: 12px; height: 12px; background: #fff; border-radius: 50%; pointer-events: none; z-index: 1000; mix-blend-mode: difference; transition: transform 0.1s; }
     </style>
 </head>
 <body>
     <div id="shutter"></div>
     <div id="cursor"></div>
     <div class="noise"></div>
-    <div class="vignette"></div>
+    <div class="overlay"></div>
     <div id="canvas-container"></div>
 
     <div class="hud">
-        <div class="nav">
-            <div>EMAL / PERSISTENCE</div>
-            <div id="velocity">VEL: 0.00</div>
-        </div>
+        <div class="nav"><div>EMAL_SINGULARITY</div><div id="depth">DEPTH: 0%</div></div>
     </div>
 
-    <div class="content"><div class="card" id="c1"><h2>AETHER</h2><p>01 // SYSTEM_LOAD</p></div></div>
-    <div class="content"><div class="card" id="c2"><h2>VOID</h2><p>02 // DEEP_LOGIC</p></div></div>
-    <div class="content"><div class="card" id="c3"><h2>ZENITH</h2><p>03 // TERMINUS</p></div></div>
+    <div class="content"><div class="card" id="c1"><h2>AETHER</h2><p>THE ORIGIN</p></div></div>
+    <div class="content"><div class="card" id="c2"><h2>VOID</h2><p>CORE_LOGIC</p></div></div>
+    <div class="content"><div class="card" id="c3"><h2>ZENITH</h2><p>TERMINUS</p></div></div>
 
 <script>
-window.scrollTo(0,0);
-if (history.scrollRestoration) history.scrollRestoration = "manual";
-
+// --- CORE SETUP ---
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.01, 1000);
 const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
@@ -64,81 +58,61 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-// --- THE FRACTAL GLASS PATH ---
+// --- THE INFINITE 3D PATH ---
 const points = [];
-for (let i = 0; i <= 50; i++) {
-    points.push(new THREE.Vector3(Math.sin(i * 0.3) * 5, Math.cos(i * 0.4) * 5, i * 25));
+for (let i = 0; i <= 30; i++) {
+    points.push(new THREE.Vector3(Math.sin(i * 0.3) * 5, Math.cos(i * 0.4) * 5, i * 20));
 }
 const curve = new THREE.CatmullRomCurve3(points, true);
-const tubeGeo = new THREE.TubeGeometry(curve, 512, 4, 32, true);
+const tubeGeo = new THREE.TubeGeometry(curve, 256, 3, 16, true);
+const tubeMat = new THREE.MeshBasicMaterial({ color: 0x222222, wireframe: true, transparent: true, opacity: 0.1 });
+const tube = new THREE.Mesh(tubeGeo, tubeMat);
+scene.add(tube);
 
-const material = new THREE.ShaderMaterial({
-    uniforms: { uTime: { value: 0 }, uScroll: { value: 0 }, uVelocity: { value: 0 } },
-    side: THREE.BackSide,
-    transparent: true,
-    vertexShader: `
-        varying vec2 vUv;
-        uniform float uTime;
-        uniform float uVelocity;
-        void main() {
-            vUv = uv;
-            vec3 p = position;
-            // Distort tunnel based on movement velocity
-            p.x += sin(p.z * 0.1 + uTime) * (1.0 + uVelocity * 10.0);
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
-        }
-    `,
-    fragmentShader: `
-        varying vec2 vUv;
-        uniform float uTime;
-        uniform float uVelocity;
-        void main() {
-            float grid = smoothstep(0.98, 1.0, sin(vUv.x * 100.0 + uTime));
-            vec3 color = mix(vec3(0.02), vec3(0.8, 0.8, 1.0), grid);
-            // Chromatic shift simulation
-            color.r += uVelocity * 2.0;
-            gl_FragColor = vec4(color, 0.6);
-        }
-    `
-});
-
-const tunnel = new THREE.Mesh(tubeGeo, material);
-scene.add(tunnel);
-
-// Star Streak Particles
-const starCount = 15000;
+// Star Dust
 const starGeo = new THREE.BufferGeometry();
-const positions = new Float32Array(starCount * 3);
-for(let i=0; i<starCount*3; i++) positions[i] = (Math.random()-0.5) * 250;
-starGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.01, transparent: true, opacity: 0.7 }));
+const starPos = new Float32Array(15000 * 3);
+for(let i=0; i<15000*3; i++) starPos[i] = (Math.random()-0.5) * 300;
+starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.015, transparent: true, opacity: 0.6 }));
 scene.add(stars);
 
-// --- MOTION ENGINE ---
-const lenis = new Lenis({ lerp: 0.03, smoothWheel: true, infinite: true });
-let scrollProgress = 0;
-let lastProgress = 0;
+// --- VIRTUAL SCROLL LOGIC ---
+let virtualProgress = 0;
+let targetProgress = 0;
+
+// Mouse Wheel & Touch Swipe Detection
+window.addEventListener('wheel', (e) => {
+    targetProgress += e.deltaY * 0.0001;
+});
+
+let touchY = 0;
+window.addEventListener('touchstart', (e) => { touchY = e.touches[0].clientY; });
+window.addEventListener('touchmove', (e) => {
+    const deltaY = touchY - e.touches[0].clientY;
+    targetProgress += deltaY * 0.0005;
+    touchY = e.touches[0].clientY;
+});
 
 function animate(t) {
-    lenis.raf(t);
-    const loop = (scrollProgress % 1 + 1) % 1;
+    // Smooth Interpolation (The 11/10 Feeling)
+    virtualProgress += (targetProgress - virtualProgress) * 0.05;
     
-    // Smooth camera flow
-    camera.position.copy(curve.getPointAt(loop));
-    camera.lookAt(curve.getPointAt((loop + 0.015) % 1));
-    camera.rotation.z += Math.sin(t * 0.0004) * 0.3; // Constant Barrel Roll
-
-    // Velocity Math
-    const velocity = Math.abs(scrollProgress - lastProgress);
-    lastProgress = scrollProgress;
+    const loop = (virtualProgress % 1 + 1) % 1;
+    const camPos = curve.getPointAt(loop);
+    const lookAtPos = curve.getPointAt((loop + 0.01) % 1);
     
-    material.uniforms.uTime.value = t * 0.001;
-    material.uniforms.uVelocity.value = velocity;
-    document.getElementById('velocity').textContent = `VEL: ${velocity.toFixed(4)}`;
+    camera.position.copy(camPos);
+    camera.lookAt(lookAtPos);
+    camera.rotation.z += Math.sin(t * 0.0005) * 0.2; // Barrel Roll
 
-    check(loop, 0.15, 'c1');
-    check(loop, 0.45, 'c2');
-    check(loop, 0.80, 'c3');
+    // HUD Update
+    document.getElementById('depth').textContent = `DEPTH: ${(loop * 100).toFixed(0)}%`;
+
+    // Content Check
+    check(loop, 0.1, 'c1');
+    check(loop, 0.4, 'c2');
+    check(loop, 0.7, 'c3');
 
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
@@ -146,20 +120,18 @@ function animate(t) {
 
 function check(p, target, id) {
     const el = document.getElementById(id);
-    const active = p > target && p < target + 0.12;
+    const active = p > target && p < target + 0.15;
     el.classList.toggle('active', active);
 }
 
-lenis.on('scroll', (e) => { scrollProgress = e.animatedScroll / 20000; });
-
+// Global UI
 window.addEventListener('mousemove', (e) => {
-    document.getElementById('cursor').style.transform = `translate(${e.clientX - 30}px, ${e.clientY - 30}px)`;
+    document.getElementById('cursor').style.transform = `translate(${e.clientX - 6}px, ${e.clientY - 6}px)`;
 });
 
 setTimeout(() => { 
     document.getElementById('shutter').style.opacity = 0;
-    setTimeout(() => document.getElementById('shutter').remove(), 2500);
-}, 1000);
+}, 500);
 
 requestAnimationFrame(animate);
 </script>
