@@ -2,111 +2,131 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>EMAL // INFERNO_V7</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+    <title>ZENITH // EMAL.DEV</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.27/bundled/lenis.min.js"></script>
     <style>
         * { margin:0; padding:0; box-sizing:border-box; cursor: none; }
-        body { background: #000; color: #fff; font-family: monospace; overflow-x:hidden; height: 500vh; }
+        body { background: #000; color: #fff; font-family: 'Courier New', monospace; overflow-x:hidden; height: 400vh; }
         #canvas-container { position:fixed; inset:0; z-index:0; }
-        .ui { position:fixed; inset:0; padding:30px; pointer-events:none; z-index:100; mix-blend-mode: screen; }
-        h1 { position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); font-size:15vw; font-weight:900; filter: blur(10px); opacity:0.5; }
-        .sync-btn { 
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-            padding: 10px 20px; border: 1px solid #ff4400; color: #ff4400;
-            background: none; font-family: monospace; cursor: pointer; pointer-events: all;
-            box-shadow: 0 0 15px #ff440055; text-transform: uppercase; letter-spacing: 2px;
-        }
-        #status-light { width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: #555; margin-right: 10px; }
+        .overlay { position:fixed; inset:0; pointer-events:none; z-index:10; background: radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.8) 100%); }
+        .ui-grid { position:fixed; inset:0; padding:40px; display:flex; flex-direction:column; justify-content:space-between; z-index:100; mix-blend-mode: difference; }
+        .header { display:flex; justify-content:space-between; font-size:10px; letter-spacing:4px; opacity:0.7; }
+        .big-title { position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); width:100%; text-align:center; }
+        h1 { font-size:18vw; font-weight:900; letter-spacing:-0.05em; line-height:0.8; filter: blur(calc(var(--scroll) * 20px)); transition: filter 0.1s linear; }
+        #cursor { position:fixed; width:40px; height:40px; border:1px solid rgba(255,100,0,0.5); border-radius:50%; pointer-events:none; z-index:1000; transition: transform 0.1s ease-out; }
     </style>
 </head>
 <body>
+    <div id="cursor"></div>
     <div id="canvas-container"></div>
-    <div class="ui">
-        <div style="display:flex; justify-content:space-between; font-size:10px;">
-            <div><span id="status-light"></span> NODE: <span id="node-name">SEARCHING...</span></div>
-            <div>[ FLAME_ENGINE_ACTIVE ]</div>
+    <div class="overlay"></div>
+    
+    <div class="ui-grid">
+        <div class="header">
+            <div>EMAL.ZENITH_V8</div>
+            <div id="sync-indicator">● STANDALONE_HQ</div>
         </div>
-        <h1>INFERNO</h1>
+        <div class="big-title">
+            <h1 id="txt">ZENITH</h1>
+        </div>
+        <div class="header" style="align-items:flex-end;">
+            <div>COORD: <span id="coords">0,0</span></div>
+            <div style="text-align:right;">SCROLL_DEPTH<br><span id="depth">0.00%</span></div>
+        </div>
     </div>
-    <button class="sync-btn" onclick="forceSync()">Magic Sync Connect</button>
 
 <script>
-const bc = new BroadcastChannel('FLAME_SYNC');
-const nodeName = document.getElementById('node-name');
-const statusLight = document.getElementById('status-light');
-
-function forceSync() {
-    bc.postMessage({ type: 'PING' });
-    alert("Sending Magic Signal...");
-}
-
-bc.onmessage = (e) => {
-    statusLight.style.background = "#ff4400";
-    statusLight.style.boxShadow = "0 0 20px #ff4400";
-    nodeName.textContent = "CONNECTED_REMOTE";
-    if(e.data.scroll) targetScroll = e.data.scroll;
-};
-
-// --- THREE.JS FLAME CORE ---
+const container = document.getElementById('canvas-container');
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
 renderer.setSize(window.innerWidth, window.innerHeight);
-document.getElementById('canvas-container').appendChild(renderer.setPixelRatio(window.devicePixelRatio));
+renderer.setPixelRatio(window.devicePixelRatio);
+container.appendChild(renderer.domElement);
 
-const material = new THREE.ShaderMaterial({
-    uniforms: { uTime: { value: 0 }, uScroll: { value: 0 } },
-    transparent: true,
+// --- MAGICAL FIRE SHADER ---
+const fireMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+        uTime: { value: 0 },
+        uScroll: { value: 0 },
+        uMouse: { value: new THREE.Vector2(0,0) }
+    },
     vertexShader: `
         varying vec2 vUv;
-        varying float vNoise;
+        varying float vDistort;
         uniform float uTime;
         uniform float uScroll;
         void main() {
             vUv = uv;
-            float n = sin(position.x * 3.0 + uTime) * cos(position.y * 3.0 + uTime);
-            vNoise = n * (0.5 + uScroll * 2.0);
-            vec3 p = position + normal * vNoise;
+            float distortion = sin(position.y * 2.0 + uTime) * cos(position.x * 2.0 + uTime) * (0.2 + uScroll);
+            vDistort = distortion;
+            vec3 p = position + normal * distortion;
             gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
         }
     `,
     fragmentShader: `
-        varying float vNoise;
         varying vec2 vUv;
+        varying float vDistort;
         uniform float uTime;
         void main() {
-            vec3 colorA = vec3(0.1, 0.0, 0.0); // Deep Dark
-            vec3 colorB = vec3(1.0, 0.2, 0.0); // Orange Flame
-            vec3 colorC = vec3(1.0, 0.8, 0.0); // Bright Gold
+            vec3 fireInner = vec3(1.0, 0.3, 0.0);
+            vec3 fireOuter = vec3(0.2, 0.0, 0.0);
+            vec3 magicGlow = vec3(0.0, 0.5, 1.0);
             
-            vec3 finalColor = mix(colorA, colorB, vNoise + 0.5);
-            finalColor = mix(finalColor, colorC, pow(vNoise, 3.0));
+            vec3 color = mix(fireOuter, fireInner, vDistort + 0.5);
+            color += magicGlow * pow(vDistort, 3.0) * 2.0; // Blue magic sparks
             
-            float alpha = smoothstep(-1.0, 1.0, vNoise + 0.8);
-            gl_FragColor = vec4(finalColor, alpha);
+            float edge = 1.0 - length(vUv - 0.5) * 2.0;
+            gl_FragColor = vec4(color, edge);
         }
-    `
+    `,
+    transparent: true,
+    side: THREE.DoubleSide
 });
 
-const sphere = new THREE.Mesh(new THREE.IcosahedronGeometry(2, 64), material);
-scene.add(sphere);
-camera.position.z = 5;
+const core = new THREE.Mesh(new THREE.IcosahedronGeometry(2, 64), fireMaterial);
+scene.add(core);
 
-let targetScroll = 0, currentScroll = 0;
+// Background Starfield
+const stars = new THREE.Points(
+    new THREE.BufferGeometry().setFromPoints(Array(1000).fill().map(() => new THREE.Vector3().randomDirection().multiplyScalar(10))),
+    new THREE.PointsMaterial({ color: 0xff6600, size: 0.02 })
+);
+scene.add(stars);
+
+camera.position.z = 6;
+
+// Interaction
+const cursor = document.getElementById('cursor');
+window.addEventListener('mousemove', (e) => {
+    const x = (e.clientX / window.innerWidth) * 2 - 1;
+    const y = -(e.clientY / window.innerHeight) * 2 + 1;
+    fireMaterial.uniforms.uMouse.value.set(x, y);
+    cursor.style.transform = `translate(${e.clientX - 20}px, ${e.clientY - 20}px)`;
+    document.getElementById('coords').textContent = `${e.clientX}, ${e.clientY}`;
+});
+
 const lenis = new Lenis();
+let targetScroll = 0;
 lenis.on('scroll', (e) => {
     targetScroll = e.progress;
-    bc.postMessage({ scroll: e.progress });
+    document.getElementById('depth').textContent = (e.progress * 100).toFixed(2) + "%";
 });
 
 function animate(t) {
     lenis.raf(t);
-    currentScroll += (targetScroll - currentScroll) * 0.05;
-    material.uniforms.uTime.value = t * 0.002;
-    material.uniforms.uScroll.value = currentScroll;
-    sphere.rotation.y += 0.01 + (currentScroll * 0.05);
+    const scroll = targetScroll;
+    fireMaterial.uniforms.uTime.value = t * 0.001;
+    fireMaterial.uniforms.uScroll.value = scroll;
+    
+    document.body.style.setProperty('--scroll', scroll);
+    core.rotation.y += 0.005 + (scroll * 0.05);
+    core.scale.setScalar(1 + scroll);
+    
+    stars.rotation.y -= 0.0005;
+    
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
 }
