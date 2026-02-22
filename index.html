@@ -3,39 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
-    <title>EMAL // SINGULARITY</title>
+    <title>EMAL // BEYOND_INFINITY</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.27/bundled/lenis.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100;900&display=swap');
         * { margin:0; padding:0; box-sizing:border-box; cursor: none; }
-        body { background: #000; color: #fff; font-family: 'Outfit', sans-serif; overflow:hidden; height: 2000vh; }
+        html, body { background: #000; color: #fff; font-family: 'Outfit', sans-serif; height: 10000px; width: 100%; overflow-x: hidden; }
         
-        #canvas-container { position:fixed; inset:0; z-index:0; }
+        #canvas-container { position:fixed; inset:0; z-index:0; pointer-events: none; }
         
-        /* The "Masterpiece" Filter Stack */
-        .overlay { position:fixed; inset:0; z-index:5; pointer-events:none; 
-            background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.8) 100%); 
-            backdrop-filter: contrast(1.2) brightness(1.1) saturate(1.1);
-        }
-        .noise { position:fixed; inset:0; z-index:999; opacity:0.15; pointer-events:none; background:url('https://grainy-gradients.vercel.app/noise.svg'); mix-blend-mode: overlay; }
+        /* Masterpiece Layers */
+        .noise { position:fixed; inset:0; z-index:999; opacity:0.12; pointer-events:none; background:url('https://grainy-gradients.vercel.app/noise.svg'); mix-blend-mode: overlay; }
+        .overlay { position:fixed; inset:0; z-index:5; pointer-events:none; background: radial-gradient(circle at center, transparent 20%, #000 100%); }
         
-        .hud { position:fixed; inset:0; padding:60px; z-index:100; pointer-events:none; mix-blend-mode: difference; }
-        .nav { display:flex; justify-content:space-between; font-size:10px; letter-spacing:0.8em; font-weight:100; text-transform: uppercase; }
+        .hud { position:fixed; inset:0; padding:50px; z-index:100; pointer-events:none; mix-blend-mode: difference; }
+        .nav { display:flex; justify-content:space-between; font-size:10px; letter-spacing:0.8em; font-weight:100; text-transform: uppercase; opacity: 0.5; }
         
         .content { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
         .card { 
-            opacity: 0; transform: scale(0.2) translateZ(-500px); filter: blur(50px);
-            transition: all 1.8s cubic-bezier(0.16, 1, 0.3, 1);
+            opacity: 0; transform: scale(0.5) translateY(100px); filter: blur(30px);
+            transition: all 1.5s cubic-bezier(0.16, 1, 0.3, 1);
             text-align: center; 
         }
-        .card.active { opacity: 1; transform: scale(1) translateZ(0); filter: blur(0px); }
+        .card.active { opacity: 1; transform: scale(1) translateY(0); filter: blur(0px); }
         
-        h2 { font-size: 22vw; font-weight: 900; letter-spacing: -0.1em; line-height: 0.7; text-transform: uppercase; margin:0; position: relative; }
-        h2::after { content: attr(data-text); position: absolute; left: 2px; text-shadow: -1px 0 #ff00c1; top: 0; color: #fff; overflow: hidden; clip: rect(0,900px,0,0); animation: noise-anim 2s infinite linear alternate-reverse; }
-        
-        #shutter { position:fixed; inset:0; background:#000; z-index:10000; transition: opacity 2s cubic-bezier(0.7,0,0.3,1); }
-        #cursor { position: fixed; width: 80px; height: 80px; border: 0.5px solid rgba(255,255,255,0.2); border-radius: 50%; pointer-events: none; z-index: 1000; transition: transform 0.3s cubic-bezier(0, 0.5, 0.5, 1); }
+        h2 { font-size: 18vw; font-weight: 900; letter-spacing: -0.08em; line-height: 0.8; margin:0; }
+        p { font-size: 10px; letter-spacing: 12px; opacity: 0.4; margin-top: 30px; }
+
+        #shutter { position:fixed; inset:0; background:#000; z-index:10000; transition: opacity 2s ease; }
+        #cursor { position: fixed; width: 40px; height: 40px; border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; pointer-events: none; z-index: 1000; transition: transform 0.1s linear; }
     </style>
 </head>
 <body>
@@ -47,92 +44,75 @@
 
     <div class="hud">
         <div class="nav">
-            <div>EMAL_SYSTEMS_v.INFINITY</div>
-            <div id="p-count">COORD: 0.0000</div>
+            <div>EMAL // INFINITY</div>
+            <div id="status">FLIGHT_READY</div>
         </div>
     </div>
 
-    <div class="content"><div class="card" id="c1"><h2 data-text="AETHER">AETHER</h2><p style="letter-spacing:20px; opacity:0.3; margin-top:20px;">01 // ORIGIN</p></div></div>
-    <div class="content"><div class="card" id="c2"><h2 data-text="CHROMA">CHROMA</h2><p style="letter-spacing:20px; opacity:0.3; margin-top:20px;">02 // KINETICS</p></div></div>
-    <div class="content"><div class="card" id="c3"><h2 data-text="ZENITH">ZENITH</h2><p style="letter-spacing:20px; opacity:0.3; margin-top:20px;">03 // TERMINUS</p></div></div>
+    <div class="content"><div class="card" id="c1"><h2>VOID</h2><p>THE BEGINNING</p></div></div>
+    <div class="content"><div class="card" id="c2"><h2>FLOW</h2><p>CREATIVE LOGIC</p></div></div>
+    <div class="content"><div class="card" id="c3"><h2>BEYOND</h2><p>THE TERMINUS</p></div></div>
 
 <script>
-window.scrollTo(0,0);
+// Prevent scroll-memory bugs
 if (history.scrollRestoration) history.scrollRestoration = "manual";
+window.scrollTo(0, 0);
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.01, 2000);
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.01, 1000);
 const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-// --- THE 11/10 GEOMETRY: FRACTAL TUBE ---
+// --- THE INFINITE PATH ---
 const points = [];
-for (let i = 0; i <= 60; i++) {
-    points.push(new THREE.Vector3(Math.sin(i * 0.2) * 6, Math.cos(i * 0.3) * 6, i * 30));
+for (let i = 0; i <= 40; i++) {
+    points.push(new THREE.Vector3(Math.sin(i * 0.4) * 4, Math.cos(i * 0.5) * 4, i * 20));
 }
 const curve = new THREE.CatmullRomCurve3(points, true);
-const tubeGeo = new THREE.TubeGeometry(curve, 512, 4, 32, true);
-
-const material = new THREE.ShaderMaterial({
-    uniforms: { uTime: { value: 0 }, uScroll: { value: 0 }, uColor: { value: new THREE.Color(0x555555) } },
-    side: THREE.BackSide,
-    transparent: true,
-    vertexShader: `
-        varying vec2 vUv;
-        uniform float uTime;
-        void main() {
-            vUv = uv;
-            vec3 p = position;
-            p.x += sin(p.z * 0.02 + uTime) * 2.0;
-            p.y += cos(p.z * 0.02 + uTime) * 2.0;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
-        }
-    `,
-    fragmentShader: `
-        varying vec2 vUv;
-        uniform float uTime;
-        uniform float uScroll;
-        void main() {
-            float grid = smoothstep(0.95, 1.0, sin(vUv.x * 150.0 + uTime)) * 0.5;
-            float pulse = smoothstep(0.9, 1.0, sin(vUv.y * 10.0 - uTime * 2.0));
-            vec3 color = mix(vec3(0.01), vec3(1.0), grid + pulse * 0.2);
-            gl_FragColor = vec4(color, 0.8);
-        }
-    `
-});
-
+const tubeGeo = new THREE.TubeGeometry(curve, 256, 3, 16, true);
+const material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, transparent: true, opacity: 0.05 });
 const tunnel = new THREE.Mesh(tubeGeo, material);
 scene.add(tunnel);
 
-// Interstellar Particles
-const starCount = 25000;
+// Star Particles (20,000 for 11/10 look)
+const starCount = 20000;
 const starPos = new Float32Array(starCount * 3);
-for(let i=0; i<starCount*3; i++) starPos[i] = (Math.random()-0.5) * 400;
+for(let i=0; i<starCount*3; i++) starPos[i] = (Math.random()-0.5) * 200;
 const starGeo = new THREE.BufferGeometry();
 starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.008, transparent: true, opacity: 0.8 }));
+const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.01, transparent: true, opacity: 0.7 }));
 scene.add(stars);
 
-// --- THE ENGINE ---
-const lenis = new Lenis({ lerp: 0.02, infinite: true });
-let scrollProgress = 0;
+// --- LENIS FIX ---
+const lenis = new Lenis({
+    lerp: 0.05,
+    smoothWheel: true,
+    infinite: false // Keep false for initial scroll stability
+});
+
+let progress = 0;
+lenis.on('scroll', (e) => {
+    progress = e.progress;
+    document.getElementById('status').textContent = `DEPTH: ${(progress * 100).toFixed(1)}%`;
+});
 
 function animate(t) {
     lenis.raf(t);
-    const loop = (scrollProgress % 1 + 1) % 1;
     
-    camera.position.copy(curve.getPointAt(loop));
-    camera.lookAt(curve.getPointAt((loop + 0.015) % 1));
-    camera.rotation.z += Math.sin(t * 0.0003) * 0.5; // Barrel Roll
+    // Smooth Camera Follow
+    const loop = (progress % 1 + 1) % 1;
+    const camPos = curve.getPointAt(loop);
+    const lookAtPos = curve.getPointAt((loop + 0.01) % 1);
+    camera.position.copy(camPos);
+    camera.lookAt(lookAtPos);
+    camera.rotation.z += Math.sin(t * 0.0005) * 0.2; // The Igloo Roll
 
-    material.uniforms.uTime.value = t * 0.001;
-    document.getElementById('p-count').textContent = "COORD: " + loop.toFixed(4);
-    
-    check(loop, 0.12, 'c1');
-    check(loop, 0.45, 'c2');
-    check(loop, 0.80, 'c3');
+    // Trigger Content
+    check(loop, 0.1, 'c1');
+    check(loop, 0.4, 'c2');
+    check(loop, 0.7, 'c3');
 
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
@@ -140,19 +120,19 @@ function animate(t) {
 
 function check(p, target, id) {
     const el = document.getElementById(id);
-    el.classList.toggle('active', p > target && p < target + 0.1);
+    const isActive = p > target && p < target + 0.15;
+    el.classList.toggle('active', isActive);
 }
 
-lenis.on('scroll', (e) => { scrollProgress = e.animatedScroll / 25000; });
-
-window.addEventListener('mousemove', (e) => {
-    document.getElementById('cursor').style.transform = `translate(${e.clientX - 40}px, ${e.clientY - 40}px)`;
-});
-
-setTimeout(() => { 
+// Kickstart
+setTimeout(() => {
     document.getElementById('shutter').style.opacity = 0;
     setTimeout(() => document.getElementById('shutter').remove(), 2000);
 }, 1000);
+
+window.addEventListener('mousemove', (e) => {
+    document.getElementById('cursor').style.transform = `translate(${e.clientX - 20}px, ${e.clientY - 20}px)`;
+});
 
 requestAnimationFrame(animate);
 </script>
