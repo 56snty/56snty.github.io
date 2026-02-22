@@ -2,84 +2,123 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-    <title>ZENITH // EMAL.DEV</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>IGLOO // EMAL.DEV</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.27/bundled/lenis.min.js"></script>
     <style>
+        :root { --bg: #0a0a0b; --text: #e4e4e7; }
         * { margin:0; padding:0; box-sizing:border-box; cursor: none; }
-        body { background: #000; color: #fff; font-family: monospace; overflow:hidden; height: 400vh; }
-        #canvas-container { position:fixed; inset:0; z-index:0; touch-action: none; }
-        .ui { position:fixed; inset:0; padding:20px; pointer-events:none; z-index:100; display:flex; flex-direction:column; justify-content:space-between; mix-blend-mode: difference; }
-        h1 { position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); font-size:18vw; font-weight:900; letter-spacing:-0.05em; text-align:center; width:100%; }
-        .mobile-hint { position:fixed; bottom:80px; left:50%; transform:translateX(-50%); font-size:8px; opacity:0.4; letter-spacing:2px; }
+        body { background: var(--bg); color: var(--text); font-family: "Inter", sans-serif; overflow-x:hidden; height: 500vh; }
+        
+        /* The Igloo.inc Grain Overlay */
+        .noise {
+            position: fixed; inset: 0; z-index: 999; pointer-events: none;
+            background: url('https://grainy-gradients.vercel.app/noise.svg');
+            opacity: 0.05; contrast: 150%;
+        }
+
+        #canvas-container { position:fixed; inset:0; z-index:0; }
+        
+        .ui { position:fixed; inset:0; padding:50px; z-index:100; pointer-events:none; }
+        .nav { display:flex; justify-content:space-between; font-size:10px; letter-spacing:0.3em; text-transform:uppercase; font-weight:700; opacity:0.5; }
+        
+        .hero { position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); text-align:center; width:100%; }
+        h1 { font-size:15vw; font-weight:900; letter-spacing:-0.06em; line-height:0.8; margin:0; pointer-events:auto; }
+        
+        #custom-cursor { 
+            position: fixed; width: 12px; height: 12px; background: #fff; border-radius: 50%; 
+            pointer-events: none; z-index: 1000; mix-blend-mode: difference; transition: transform 0.1s ease-out; 
+        }
     </style>
 </head>
 <body>
+    <div class="noise"></div>
+    <div id="custom-cursor"></div>
     <div id="canvas-container"></div>
+    
     <div class="ui">
-        <div style="display:flex; justify-content:space-between; font-size:9px; opacity:0.6;">
-            <div>EMAL.ZENITH_MOBILE_V8.1</div>
-            <div id="sync-status">● SYSTEM_READY</div>
+        <div class="nav">
+            <div>EMAL.STUDIO</div>
+            <div>STATUS: ONLINE</div>
         </div>
-        <h1>ZENITH</h1>
-        <div class="mobile-hint">SCROLL_TO_IGNITE</div>
+        <div class="hero">
+            <h1 id="title">ICE_CORE</h1>
+        </div>
     </div>
 
 <script>
+// --- THREE.JS IGLOO SETUP ---
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-// Optimized Fire Material for Mobile
-const material = new THREE.ShaderMaterial({
-    uniforms: { uTime: { value: 0 }, uScroll: { value: 0 } },
-    vertexShader: `
-        varying float vN;
-        uniform float uTime;
-        uniform float uScroll;
-        void main() {
-            float n = sin(position.x * 2.0 + uTime) * cos(position.y * 2.0 + uTime);
-            vN = n * (0.2 + uScroll * 1.5);
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position + normal * vN, 1.0);
-        }
-    `,
-    fragmentShader: `
-        varying float vN;
-        void main() {
-            vec3 fire = mix(vec3(0.1, 0.0, 0.0), vec3(1.0, 0.4, 0.0), vN + 0.5);
-            fire += vec3(0.0, 0.2, 0.8) * pow(vN, 4.0); // Magic Glow
-            gl_FragColor = vec4(fire, 1.0);
-        }
-    `
+// Physical Glass Material (Igloo style)
+const material = new THREE.MeshPhysicalMaterial({
+    color: 0xffffff,
+    metalness: 0,
+    roughness: 0.1,
+    transmission: 1.0, // Glassy look
+    thickness: 2.0,
+    ior: 1.5,
+    iridescence: 1.0,
+    iridescenceIOR: 1.3,
+    sheen: 1.0,
+    sheenColor: 0x00ffff
 });
 
-// Lower poly geometry (32 instead of 64) for mobile stability
-const core = new THREE.Mesh(new THREE.IcosahedronGeometry(2, 32), material);
-scene.add(core);
+// Use Octahedron for that "Ice Block" procedural look
+const geometry = new THREE.OctahedronGeometry(2, 40); 
+const ice = new THREE.Mesh(geometry, material);
+scene.add(ice);
+
+const light = new THREE.DirectionalLight(0xffffff, 2);
+light.position.set(5, 5, 5);
+scene.add(light);
+scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
 camera.position.z = 5;
 
-const lenis = new Lenis();
-let scroll = 0;
-lenis.on('scroll', (e) => { 
-    scroll = e.progress;
-    document.querySelector('h1').style.filter = `blur(${scroll * 20}px)`;
+// --- INTERACTIONS ---
+const cursor = document.getElementById('custom-cursor');
+window.addEventListener('mousemove', (e) => {
+    cursor.style.transform = `translate(${e.clientX - 6}px, ${e.clientY - 6}px)`;
+    // Tilt effect
+    ice.rotation.x = (e.clientY / window.innerHeight) - 0.5;
+    ice.rotation.y = (e.clientX / window.innerWidth) - 0.5;
+});
+
+const lenis = new Lenis({ lerp: 0.05 });
+let scrollProgress = 0;
+lenis.on('scroll', (e) => {
+    scrollProgress = e.progress;
+    // Glitchy Scale
+    ice.scale.setScalar(1 + Math.sin(scrollProgress * 10) * 0.1 + scrollProgress);
 });
 
 function animate(t) {
     lenis.raf(t);
-    material.uniforms.uTime.value = t * 0.0015;
-    material.uniforms.uScroll.value = scroll;
-    core.rotation.y += 0.005 + (scroll * 0.03);
+    
+    // Wave Deformation
+    const pos = ice.geometry.attributes.position;
+    for(let i=0; i<pos.count; i++) {
+        let x = pos.getX(i);
+        let y = pos.getY(i);
+        let z = pos.getZ(i);
+        let wave = Math.sin(x * 1.5 + t * 0.002) * 0.1;
+        pos.setZ(i, 2 + wave);
+    }
+    pos.needsUpdate = true;
+    
+    ice.rotation.z += 0.002;
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
 }
 requestAnimationFrame(animate);
 
-// Resize fix for mobile rotation
 window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
