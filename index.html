@@ -2,136 +2,89 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
     <title>ZENITH // EMAL.DEV</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.27/bundled/lenis.min.js"></script>
     <style>
         * { margin:0; padding:0; box-sizing:border-box; cursor: none; }
-        body { background: #000; color: #fff; font-family: 'Courier New', monospace; overflow-x:hidden; height: 400vh; }
-        #canvas-container { position:fixed; inset:0; z-index:0; }
-        .overlay { position:fixed; inset:0; pointer-events:none; z-index:10; background: radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.8) 100%); }
-        .ui-grid { position:fixed; inset:0; padding:40px; display:flex; flex-direction:column; justify-content:space-between; z-index:100; mix-blend-mode: difference; }
-        .header { display:flex; justify-content:space-between; font-size:10px; letter-spacing:4px; opacity:0.7; }
-        .big-title { position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); width:100%; text-align:center; }
-        h1 { font-size:18vw; font-weight:900; letter-spacing:-0.05em; line-height:0.8; filter: blur(calc(var(--scroll) * 20px)); transition: filter 0.1s linear; }
-        #cursor { position:fixed; width:40px; height:40px; border:1px solid rgba(255,100,0,0.5); border-radius:50%; pointer-events:none; z-index:1000; transition: transform 0.1s ease-out; }
+        body { background: #000; color: #fff; font-family: monospace; overflow:hidden; height: 400vh; }
+        #canvas-container { position:fixed; inset:0; z-index:0; touch-action: none; }
+        .ui { position:fixed; inset:0; padding:20px; pointer-events:none; z-index:100; display:flex; flex-direction:column; justify-content:space-between; mix-blend-mode: difference; }
+        h1 { position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); font-size:18vw; font-weight:900; letter-spacing:-0.05em; text-align:center; width:100%; }
+        .mobile-hint { position:fixed; bottom:80px; left:50%; transform:translateX(-50%); font-size:8px; opacity:0.4; letter-spacing:2px; }
     </style>
 </head>
 <body>
-    <div id="cursor"></div>
     <div id="canvas-container"></div>
-    <div class="overlay"></div>
-    
-    <div class="ui-grid">
-        <div class="header">
-            <div>EMAL.ZENITH_V8</div>
-            <div id="sync-indicator">● STANDALONE_HQ</div>
+    <div class="ui">
+        <div style="display:flex; justify-content:space-between; font-size:9px; opacity:0.6;">
+            <div>EMAL.ZENITH_MOBILE_V8.1</div>
+            <div id="sync-status">● SYSTEM_READY</div>
         </div>
-        <div class="big-title">
-            <h1 id="txt">ZENITH</h1>
-        </div>
-        <div class="header" style="align-items:flex-end;">
-            <div>COORD: <span id="coords">0,0</span></div>
-            <div style="text-align:right;">SCROLL_DEPTH<br><span id="depth">0.00%</span></div>
-        </div>
+        <h1>ZENITH</h1>
+        <div class="mobile-hint">SCROLL_TO_IGNITE</div>
     </div>
 
 <script>
-const container = document.getElementById('canvas-container');
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
-renderer.setSize(window.innerWidth, window.innerHeight); renderer.setClearColor(0x000000, 1);
-renderer.setPixelRatio(window.devicePixelRatio);
-container.appendChild(renderer.domElement);
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-// --- MAGICAL FIRE SHADER ---
-const fireMaterial = new THREE.ShaderMaterial({
-    uniforms: {
-        uTime: { value: 0 },
-        uScroll: { value: 0 },
-        uMouse: { value: new THREE.Vector2(0,0) }
-    },
+// Optimized Fire Material for Mobile
+const material = new THREE.ShaderMaterial({
+    uniforms: { uTime: { value: 0 }, uScroll: { value: 0 } },
     vertexShader: `
-        varying vec2 vUv;
-        varying float vDistort;
+        varying float vN;
         uniform float uTime;
         uniform float uScroll;
         void main() {
-            vUv = uv;
-            float distortion = sin(position.y * 2.0 + uTime) * cos(position.x * 2.0 + uTime) * (0.2 + uScroll);
-            vDistort = distortion;
-            vec3 p = position + normal * distortion;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+            float n = sin(position.x * 2.0 + uTime) * cos(position.y * 2.0 + uTime);
+            vN = n * (0.2 + uScroll * 1.5);
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position + normal * vN, 1.0);
         }
     `,
     fragmentShader: `
-        varying vec2 vUv;
-        varying float vDistort;
-        uniform float uTime;
+        varying float vN;
         void main() {
-            vec3 fireInner = vec3(1.0, 0.3, 0.0);
-            vec3 fireOuter = vec3(0.2, 0.0, 0.0);
-            vec3 magicGlow = vec3(0.0, 0.5, 1.0);
-            
-            vec3 color = mix(fireOuter, fireInner, vDistort + 0.5);
-            color += magicGlow * pow(vDistort, 3.0) * 2.0; // Blue magic sparks
-            
-            float edge = 1.0 - length(vUv - 0.5) * 2.0;
-            gl_FragColor = vec4(color, edge);
+            vec3 fire = mix(vec3(0.1, 0.0, 0.0), vec3(1.0, 0.4, 0.0), vN + 0.5);
+            fire += vec3(0.0, 0.2, 0.8) * pow(vN, 4.0); // Magic Glow
+            gl_FragColor = vec4(fire, 1.0);
         }
-    `,
-    transparent: true,
-    side: THREE.DoubleSide
+    `
 });
 
-const core = new THREE.Mesh(new THREE.IcosahedronGeometry(2, 64), fireMaterial);
+// Lower poly geometry (32 instead of 64) for mobile stability
+const core = new THREE.Mesh(new THREE.IcosahedronGeometry(2, 32), material);
 scene.add(core);
-
-// Background Starfield
-const stars = new THREE.Points(
-    new THREE.BufferGeometry().setFromPoints(Array(1000).fill().map(() => new THREE.Vector3().randomDirection().multiplyScalar(10))),
-    new THREE.PointsMaterial({ color: 0xff6600, size: 0.02 })
-);
-scene.add(stars);
-
-camera.position.z = 6;
-
-// Interaction
-const cursor = document.getElementById('cursor');
-window.addEventListener('mousemove', (e) => {
-    const x = (e.clientX / window.innerWidth) * 2 - 1;
-    const y = -(e.clientY / window.innerHeight) * 2 + 1;
-    fireMaterial.uniforms.uMouse.value.set(x, y);
-    cursor.style.transform = `translate(${e.clientX - 20}px, ${e.clientY - 20}px)`;
-    document.getElementById('coords').textContent = `${e.clientX}, ${e.clientY}`;
-});
+camera.position.z = 5;
 
 const lenis = new Lenis();
-let targetScroll = 0;
-lenis.on('scroll', (e) => {
-    targetScroll = e.progress;
-    document.getElementById('depth').textContent = (e.progress * 100).toFixed(2) + "%";
+let scroll = 0;
+lenis.on('scroll', (e) => { 
+    scroll = e.progress;
+    document.querySelector('h1').style.filter = `blur(${scroll * 20}px)`;
 });
 
 function animate(t) {
     lenis.raf(t);
-    const scroll = targetScroll;
-    fireMaterial.uniforms.uTime.value = t * 0.001;
-    fireMaterial.uniforms.uScroll.value = scroll;
-    
-    document.body.style.setProperty('--scroll', scroll);
-    core.rotation.y += 0.005 + (scroll * 0.05);
-    core.scale.setScalar(1 + scroll);
-    
-    stars.rotation.y -= 0.0005;
-    
+    material.uniforms.uTime.value = t * 0.0015;
+    material.uniforms.uScroll.value = scroll;
+    core.rotation.y += 0.005 + (scroll * 0.03);
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
 }
 requestAnimationFrame(animate);
+
+// Resize fix for mobile rotation
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
 </script>
 </body>
 </html>
-
