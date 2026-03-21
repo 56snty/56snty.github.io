@@ -1,340 +1,554 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>LOWKEY — QUANTUM</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<style>
-:root { --red: #FF003C; --w: #ffffff; --b: #030303; }
-* { margin: 0; padding: 0; box-sizing: border-box; user-select: none; touch-action: none; -webkit-tap-highlight-color: transparent; }
-html, body { background: var(--b); color: var(--w); overflow: hidden; width: 100vw; height: 100vh; cursor: crosshair; font-family: 'Space Mono', monospace; -webkit-font-smoothing: antialiased; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4G Boosting | Premium Rank Ascension | Vanguard Intelligence</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Clash+Display:wght@600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #007AFF;
+            --bg-dark: #020202;
+            --console-bg: rgba(15, 20, 25, 0.4);
+            --border: rgba(255, 255, 255, 0.05);
+            --tracker-glow: rgba(22, 163, 74, 0.2);
+            --primary-glow: rgba(0, 122, 255, 0.4);
+        }
 
-#cv { position: fixed; inset: 0; z-index: 1; }
-.vig { position: fixed; inset: 0; z-index: 50; pointer-events: none; background: radial-gradient(circle at 50% 50%, transparent 20%, rgba(3,3,4,0.98) 100%); }
-.scan { position: fixed; inset: 0; z-index: 52; pointer-events: none; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.1) 2px, rgba(0,0,0,0.1) 4px); }
+        body {
+            background-color: var(--bg-dark);
+            color: #FFFFFF;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            display: flex; flex-direction: column; min-height: 100vh;
+        }
+        
+        .clash { font-family: 'Clash Display', sans-serif; }
 
-#boot { position: fixed; inset: 0; z-index: 800; background: var(--b); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 40px; transition: opacity 1.5s ease; }
-#boot.gone { opacity: 0; pointer-events: none; }
-.bmark { font-family: 'Bebas Neue', sans-serif; font-size: clamp(50px, 12vw, 120px); letter-spacing: 0.1em; color: var(--w); }
-.bsub { font-size: 10px; letter-spacing: 0.4em; color: rgba(255,255,255,0.3); text-transform: uppercase; }
-.bline { width: min(250px, 60vw); height: 1px; background: rgba(255,255,255,0.1); position: relative; overflow: hidden; }
-.bprog { position: absolute; inset: 0; background: var(--red); width: 0%; transition: width 2s cubic-bezier(0.8,0,0.2,1); }
+        .bg-glow {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 80vw; height: 80vh; background: radial-gradient(circle, rgba(0, 122, 255, 0.04) 0%, transparent 60%);
+            z-index: -2; pointer-events: none;
+        }
 
-.hud { position: fixed; inset: 0; z-index: 100; pointer-events: none; padding: env(safe-area-inset-top, 30px) env(safe-area-inset-right, 30px) env(safe-area-inset-bottom, 30px) env(safe-area-inset-left, 30px); display: flex; flex-direction: column; justify-content: space-between; mix-blend-mode: difference; }
-.htop { display: flex; justify-content: space-between; align-items: flex-start; }
-.brand { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.3em; color: rgba(255,255,255,0.9); opacity: 0; transition: opacity 2s 0.5s; }
-.brand span { color: var(--red); }
-.snum { font-size: 10px; letter-spacing: 0.2em; color: rgba(255,255,255,0.4); opacity: 0; transition: color 0.3s, opacity 2s 0.7s; text-align: right; }
-.brand.on, .snum.on { opacity: 1; }
-.hbot { display: flex; align-items: center; gap: 20px; opacity: 0; transition: opacity 2s 0.9s; }
-.hbot.on { opacity: 1; }
-.vv { font-size: 10px; letter-spacing: 0.1em; color: var(--red); width: 90px; font-variant-numeric: tabular-nums; font-weight: 700; }
-.pbar { flex: 1; height: 1px; background: rgba(255,255,255,0.15); position: relative; }
-.pfill { position: absolute; inset-block: 0; left: 0; background: var(--red); width: 0%; box-shadow: 0 0 10px var(--red); }
-.phead { position: absolute; top: -4px; width: 9px; height: 9px; background: #fff; border-radius: 50%; transform: translateX(-50%); left: 0%; }
+        .command-console {
+            background: var(--console-bg);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid var(--border);
+            border-radius: 40px;
+            box-shadow: 0 40px 100px -20px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.05);
+            width: 100%; max-width: 1100px; margin: 0 auto;
+        }
 
-.sect { position: fixed; inset: 0; z-index: 20; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; will-change: opacity, transform; }
-.sect h2 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(3rem, 12vw, 15rem); line-height: 0.85; letter-spacing: 0.02em; text-transform: uppercase; text-align: center; margin: 0; padding: 0 10px; }
-.sect h2.ou { color: transparent; -webkit-text-stroke: 1px rgba(255,255,255,0.7); }
-.sect h2.fi { color: #fff; }
-.sect h2.rd { color: var(--red); text-shadow: 0 0 40px rgba(255,0,60,0.4); }
-.sect .ey { font-size: 10px; letter-spacing: 0.4em; color: rgba(255,255,255,0.4); margin-bottom: 20px; text-transform: uppercase; }
-.sect .rl { width: 40px; height: 2px; background: var(--red); margin-top: 20px; opacity: 0.8; }
-</style>
+        .tab-radio input:checked + div {
+            background: rgba(255, 255, 255, 0.1); color: #fff;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .tab-radio-blue input:checked + div {
+            background: var(--primary); color: #fff;
+            box-shadow: 0 4px 20px rgba(0, 122, 255, 0.3);
+        }
+        .tab-content { transition: all 0.3s; color: rgba(255,255,255,0.4); }
+
+        .radio-card input:checked + div {
+            border-color: var(--primary); background: rgba(0, 122, 255, 0.05);
+            box-shadow: inset 0 0 20px rgba(0, 122, 255, 0.05), 0 4px 15px rgba(0, 122, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .rank-img-container {
+            position: relative; display: flex; align-items: center; justify-content: center;
+        }
+        .rank-img {
+            object-fit: contain; transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.4s ease;
+            filter: drop-shadow(0 0 20px rgba(0, 122, 255, 0.1)); z-index: 10;
+        }
+        .rank-img.updating { transform: scale(0.6) translateY(20px); opacity: 0; }
+        
+        .val-size { width: 130px; height: 130px; }
+        .lol-size { width: 190px; height: 190px; }
+
+        .counter-btn {
+            width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1); font-size: 24px; display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s; color: white;
+        }
+        .counter-btn:hover { background: rgba(0, 122, 255, 0.1); border-color: var(--primary); color: var(--primary); }
+
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='rgba(255,255,255,0.3)'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-position: right 1.5rem center; background-repeat: no-repeat; background-size: 1.2em;
+        }
+
+        .tracker-active {
+            border-color: #16a34a !important;
+            box-shadow: 0 0 30px -5px var(--tracker-glow);
+        }
+        #val-tracker-input:focus { border-color: #16a34a; }
+
+        .btn-primary-blue {
+            background: linear-gradient(135deg, #007AFF 0%, #004BCC 100%);
+            border: 1px solid rgba(0, 122, 255, 0.3);
+            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.3), inset 0 1px 0 rgba(255,255,255,0.2);
+            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .btn-primary-blue:hover {
+            box-shadow: 0 10px 40px rgba(0, 122, 255, 0.5), inset 0 1px 0 rgba(255,255,255,0.3);
+            transform: translateY(-3px) scale(1.02);
+            filter: brightness(1.1);
+        }
+
+        .mode-hidden { display: none !important; }
+        #ticket-modal { backdrop-filter: blur(20px); background: rgba(0,0,0,0.8); }
+    </style>
 </head>
-<body>
+<body class="pt-24 pb-6 px-4 md:px-8">
 
-<div id="boot">
-  <div class="bmark" id="btext">SYSTEM</div>
-  <div class="bline"><div class="bprog" id="bp"></div></div>
-  <div class="bsub">Quantum Engine — Online</div>
-</div>
+    <div class="bg-glow"></div>
 
-<div id="cv"></div>
-<div class="vig"></div><div class="scan"></div>
+    <nav class="fixed top-0 left-0 w-full z-50 bg-black/40 backdrop-blur-md border-b border-white/5 px-6 py-4 flex justify-between items-center">
+        <div class="clash text-xl font-bold tracking-widest text-white">4G<span class="text-[#007AFF]">BOOST</span></div>
+        <a href="https://discord.gg/F8bPnjXeGZ" target="_blank" class="text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-white transition flex items-center gap-2">
+            <span>Support via Discord</span> <span class="text-[#007AFF]">➔</span>
+        </a>
+    </nav>
 
-<div class="hud">
-  <div class="htop">
-    <div class="brand" id="brand">LOWKEY<span>.</span></div>
-    <div class="snum" id="snum">PHASE_01 / 04<br><span style="font-size: 8px; opacity: 0.5;">INERTIAL DAMPENING: ACTIVE</span></div>
-  </div>
-  <div class="hbot" id="hbot">
-    <span class="vv" id="vel">MASS: 0.00</span>
-    <div class="pbar"><div class="pfill" id="pf"></div><div class="phead" id="ph"></div></div>
-  </div>
-</div>
+    <main class="flex-1 flex flex-col items-center justify-center w-full mt-8">
+        
+        <div class="text-center mb-10">
+            <h1 class="clash text-4xl md:text-6xl font-bold text-white tracking-tight mb-4">Elite Ascension.</h1>
+            <p class="text-sm text-slate-500 tracking-widest uppercase">Configure your trajectory</p>
+        </div>
 
-<div class="sect" id="s0"><div class="ey">001 — Origin</div><h2 class="fi">SPATIAL</h2><h2 class="ou">ENGINEERING</h2><div class="rl"></div></div>
-<div class="sect" id="s1"><div class="ey">002 — Sync</div><h2 class="ou">QUANTUM</h2><h2 class="fi">ENTANGLED</h2><div class="rl"></div></div>
-<div class="sect" id="s2"><div class="ey">003 — Philosophy</div><h2 class="fi">CREATIVE</h2><h2 class="rd">DESTRUCTION</h2><div class="rl"></div></div>
-<div class="sect" id="s3"><div class="ey">004 — Apex</div><h2 class="ou">THE</h2><h2 class="rd">SINGULARITY</h2><div class="rl"></div></div>
+        <div class="command-console p-6 md:p-12 relative">
+            
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-10 border-b border-white/5 pb-8">
+                <div class="flex bg-black/50 p-1.5 rounded-full border border-white/5 w-full md:w-auto">
+                    <label class="tab-radio cursor-pointer flex-1 md:flex-none">
+                        <input type="radio" name="game" value="Valorant" class="absolute opacity-0" checked onchange="handleGameChange()">
+                        <div class="tab-content px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest text-center">Valorant</div>
+                    </label>
+                    <label class="tab-radio cursor-pointer flex-1 md:flex-none">
+                        <input type="radio" name="game" value="League" class="absolute opacity-0" onchange="handleGameChange()">
+                        <div class="tab-content px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest text-center">League</div>
+                    </label>
+                </div>
 
-<script>
-const bText = document.getElementById('btext');
-const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-let iterations = 0;
-const scramble = setInterval(() => {
-    bText.innerText = bText.innerText.split("").map((l, i) => {
-        if(i < iterations) return "LOWKEY"[i];
-        return chars[Math.floor(Math.random() * chars.length)];
-    }).join("");
-    if(iterations >= 6) clearInterval(scramble);
-    iterations += 1/4;
-}, 30);
+                <div class="flex bg-black/50 p-1.5 rounded-full border border-white/5 w-full md:w-auto overflow-x-auto no-scrollbar">
+                    <label class="tab-radio-blue cursor-pointer whitespace-nowrap">
+                        <input type="radio" name="mode" value="Rank Boost" class="absolute opacity-0" checked onchange="updateUI()">
+                        <div class="tab-content px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest">Rank Push</div>
+                    </label>
+                    <label class="tab-radio-blue cursor-pointer whitespace-nowrap">
+                        <input type="radio" name="mode" value="Net Wins" class="absolute opacity-0" onchange="updateUI()">
+                        <div class="tab-content px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest">Net Wins</div>
+                    </label>
+                    <label class="tab-radio-blue cursor-pointer whitespace-nowrap">
+                        <input type="radio" name="mode" value="Placements" class="absolute opacity-0" onchange="updateUI()">
+                        <div class="tab-content px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest">Placements</div>
+                    </label>
+                </div>
+            </div>
 
-const bootEl=document.getElementById('boot'), bp=document.getElementById('bp');
-setTimeout(() => bp.style.width = '100%', 300);
-setTimeout(() => { 
-    bootEl.classList.add('gone'); 
-    setTimeout(()=>bootEl.remove(), 1500); 
-    ['brand','snum','hbot'].forEach(id => document.getElementById(id).classList.add('on'));
-}, 2200);
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+                
+                <div class="lg:col-span-8 space-y-8">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-6 md:gap-10 items-center">
+                        <div class="flex flex-col items-center">
+                            <label id="left-label" class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-6">Current Standing</label>
+                            <div id="current-container" class="rank-img-container val-size mb-6">
+                                <img id="current-img" class="rank-img" src="" alt="Current Rank" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'><circle cx=\'50\' cy=\'50\' r=\'40\' fill=\'none\' stroke=\'%23007AFF\' stroke-width=\'2\' stroke-dasharray=\'4,4\'/></svg>'">
+                            </div>
+                            <select id="current-select" class="w-full max-w-[240px] bg-black/50 border border-white/10 rounded-full px-6 py-4 text-sm font-bold outline-none focus:border-white/30 text-center appearance-none cursor-pointer" onchange="updateUI()"></select>
+                        </div>
 
-const scene = new THREE.Scene();
-scene.fog = new THREE.FogExp2(0x030303, 0.012);
+                        <div id="center-divider" class="hidden md:flex flex-col items-center justify-center opacity-30">
+                            <div class="w-px h-16 bg-gradient-to-b from-transparent to-white mb-4"></div>
+                            <span class="text-xl">➔</span>
+                            <div class="w-px h-16 bg-gradient-to-t from-transparent to-white mt-4"></div>
+                        </div>
 
-const camera = new THREE.PerspectiveCamera(65, innerWidth/innerHeight, 0.1, 1500);
-camera.up.set(0, 1, 0);
+                        <div id="ui-target-rank" class="flex flex-col items-center">
+                            <label class="text-[10px] text-[#007AFF] font-bold uppercase tracking-widest mb-6">Target Objective</label>
+                            <div id="desired-container" class="rank-img-container val-size mb-6">
+                                <img id="desired-img" class="rank-img filter saturate-150" src="" alt="Desired Rank" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'><circle cx=\'50\' cy=\'50\' r=\'40\' fill=\'none\' stroke=\'%23007AFF\' stroke-width=\'2\' stroke-dasharray=\'4,4\'/></svg>'">
+                            </div>
+                            <select id="desired-select" class="w-full max-w-[240px] bg-[#007AFF]/5 border border-[#007AFF]/30 rounded-full px-6 py-4 text-sm font-bold text-[#007AFF] outline-none text-center appearance-none cursor-pointer" onchange="updateUI()"></select>
+                        </div>
 
-const mainR = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance', alpha: false });
-mainR.setSize(innerWidth, innerHeight);
-const pixelRatio = window.innerWidth < 768 ? Math.min(window.devicePixelRatio, 1.5) : Math.min(window.devicePixelRatio, 2);
-mainR.setPixelRatio(pixelRatio);
-document.getElementById('cv').replaceWith(mainR.domElement);
-mainR.domElement.id = 'cv';
+                        <div id="ui-target-counter" class="mode-hidden flex-col items-center justify-center h-full">
+                            <label id="counter-label" class="text-[10px] text-[#007AFF] font-bold uppercase tracking-widest mb-6">Target Quantity</label>
+                            <div class="flex items-center gap-8 py-8">
+                                <button onclick="adjustCounter(-1)" class="counter-btn">−</button>
+                                <div class="text-8xl font-black clash text-white drop-shadow-[0_0_30px_rgba(0,122,255,0.3)] w-24 text-center" id="counter-value">3</div>
+                                <button onclick="adjustCounter(1)" class="counter-btn">+</button>
+                            </div>
+                        </div>
+                    </div>
 
-const SN=`vec4 _p(vec4 x){return mod(((x*34.)+1.)*x,289.);}vec4 _ti(vec4 r){return 1.79284291400159-.85373472095314*r;}float snoise(vec3 v){const vec2 C=vec2(1./6.,1./3.);const vec4 D=vec4(0.,.5,1.,2.);vec3 i=floor(v+dot(v,C.yyy));vec3 x0=v-i+dot(i,C.xxx);vec3 g=step(x0.yzx,x0.xyz);vec3 l=1.-g;vec3 i1=min(g.xyz,l.zxy);vec3 i2=max(g.xyz,l.zxy);vec3 x1=x0-i1+C.xxx;vec3 x2=x0-i2+C.xxx*2.;vec3 x3=x0-1.+C.xxx*3.;i=mod(i,289.);vec4 p=_p(_p(_p(i.z+vec4(0.,i1.z,i2.z,1.))+i.y+vec4(0.,i1.y,i2.y,1.))+i.x+vec4(0.,i1.x,i2.x,1.));float n_=1./7.;vec3 ns=n_*D.wyz-D.xzx;vec4 j=p-49.*floor(p*ns.z*ns.z);vec4 x_=floor(j*ns.z);vec4 y_=floor(j-7.*x_);vec4 x=x_*ns.x+ns.yyyy;vec4 y=y_*ns.x+ns.yyyy;vec4 h=1.-abs(x)-abs(y);vec4 b0=vec4(x.xy,y.xy);vec4 b1=vec4(x.zw,y.zw);vec4 s0=floor(b0)*2.+1.;vec4 s1=floor(b1)*2.+1.;vec4 sh=-step(h,vec4(0.));vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy;vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;vec3 p0=vec3(a0.xy,h.x);vec3 p1=vec3(a0.zw,h.y);vec3 p2=vec3(a1.xy,h.z);vec3 p3=vec3(a1.zw,h.w);vec4 norm=_ti(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));p0*=norm.x;p1*=norm.y;p2*=norm.z;p3*=norm.w;return 42.*dot(vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)),vec4(1.));}`;
+                    <div id="val-tracker-module" class="bg-black/30 p-6 md:p-8 rounded-3xl border border-white/5 transition-all duration-300">
+                        <div class="flex items-center justify-between mb-5">
+                            <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-3">
+                                <span class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.8)]"></span> Vanguard Integration
+                            </h3>
+                        </div>
+                        <div class="flex flex-col md:flex-row items-center gap-3">
+                            <input type="text" id="val-tracker-input" placeholder="Riot ID #TAG (e.g., TenZ#NA1)" class="w-full bg-[#111] border border-white/10 rounded-full px-6 py-3.5 text-sm font-medium text-white outline-none focus:border-green-500 transition">
+                            <button onclick="searchTracker()" id="val-tracker-btn" class="w-full md:w-auto bg-white/5 hover:bg-green-500/10 text-slate-300 hover:text-green-400 px-8 py-3.5 rounded-full font-bold text-xs tracking-widest uppercase transition shrink-0 border border-white/10 hover:border-green-500/30">Link Profile</button>
+                        </div>
+                        <div id="tracker-status" class="text-[10px] mt-3 ml-4 text-slate-500 font-medium">Provide your Riot ID to securely embed your match history.</div>
+                    </div>
 
-const coreGeo = new THREE.IcosahedronGeometry(13, 64);
-const coreMat = new THREE.ShaderMaterial({
-  uniforms: { uT: { value: 0 }, uV: { value: 0 } },
-  vertexShader: `
-    uniform float uT, uV; varying vec3 vN, vVP; varying float vD; ${SN}
-    void main() {
-      vN = normalMatrix * normal; vec3 p = position; 
-      float t = uT * 0.15; // Slowed down idle breathing
-      float n = snoise(p*0.3 + t) + snoise(p*0.8 - t*1.2)*0.5;
-      float amp = 0.3 + uV * 4.0; // Scaled down visual explosion for elegance
-      p += normal * n * amp; vD = n * amp;
-      vec4 mv = modelViewMatrix * vec4(p, 1.0);
-      vVP = -mv.xyz; gl_Position = projectionMatrix * mv;
-    }`,
-  fragmentShader: `
-    uniform float uV; varying vec3 vN, vVP; varying float vD;
-    void main() {
-      vec3 N = normalize(vN); vec3 V = normalize(vVP);
-      float fr = pow(clamp(1.0 - abs(dot(N, V)), 0.0, 1.0), 2.5);
-      vec3 col = vec3(0.01); 
-      float vein = smoothstep(-0.4, 0.4, vD * 0.3);
-      vec3 vc = mix(vec3(0.2, 0.0, 0.0), vec3(1.0, 0.0, 0.1), vein);
-      col = mix(col, vc, fr * (0.5 + uV * 1.5));
-      vec3 chrome = mix(vec3(0.2), vec3(0.9), uV * 0.5);
-      vec3 aberration = vec3(1.0, 0.0, 0.2) * uV * fr; 
-      col = mix(col, chrome, pow(fr, 5.0) * (0.5 + uV));
-      col += aberration * 0.5;
-      gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
-    }`
-});
-const core = new THREE.Mesh(coreGeo, coreMat);
-scene.add(core);
+                    <div class="pt-2">
+                        <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-[#007AFF]"></span> Modification Protocols
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            
+                            <label class="cursor-pointer relative radio-card group">
+                                <input type="checkbox" id="addon-offline" class="absolute opacity-0" onchange="updateUI()" checked>
+                                <div class="border border-white/10 bg-black/40 rounded-2xl p-4 transition-all h-full">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <div class="font-bold text-white text-sm">Offline Mod</div>
+                                        <span class="text-[9px] text-green-400 font-bold bg-green-400/10 px-2 py-1 rounded">FREE</span>
+                                    </div>
+                                    <p class="text-[10px] text-slate-500 leading-relaxed pr-2">Booster plays in offline mode so no friends can see or message you.</p>
+                                </div>
+                            </label>
 
-const glowMat = new THREE.MeshBasicMaterial({ color: 0xff003c, transparent: true, opacity: 0.15, blending: THREE.AdditiveBlending, depthWrite: false });
-const glowMesh = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), glowMat);
-scene.add(glowMesh);
+                            <label class="cursor-pointer relative radio-card group">
+                                <input type="checkbox" id="addon-stream" class="absolute opacity-0" onchange="updateUI()">
+                                <div class="border border-white/10 bg-black/40 rounded-2xl p-4 transition-all h-full">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <div class="font-bold text-white text-sm">Stream</div>
+                                        <span class="text-[9px] text-[#007AFF] font-bold bg-[#007AFF]/10 px-2 py-1 rounded">+30%</span>
+                                    </div>
+                                    <p class="text-[10px] text-slate-500 leading-relaxed pr-2">Live stream your games to watch how the booster plays.</p>
+                                </div>
+                            </label>
 
-const PC = window.innerWidth < 768 ? 2000 : 5000;
-const pp = new Float32Array(PC * 3), ps = new Float32Array(PC);
-for(let i=0; i<PC; i++){
-  const r = 40 + Math.random() * 60;
-  const th = Math.random() * Math.PI * 2, ph = Math.acos(Math.random() * 2 - 1);
-  pp[i*3] = r * Math.sin(ph) * Math.cos(th); pp[i*3+1] = r * Math.sin(ph) * Math.sin(th); pp[i*3+2] = r * Math.cos(ph);
-  ps[i] = 0.4 + Math.random() * 1.5;
-}
-const pGeo = new THREE.BufferGeometry(); pGeo.setAttribute('position', new THREE.BufferAttribute(pp, 3)); pGeo.setAttribute('aSize', new THREE.BufferAttribute(ps, 1));
+                            <label class="cursor-pointer relative radio-card group">
+                                <input type="checkbox" id="addon-agents" class="absolute opacity-0" onchange="updateUI()">
+                                <div class="border border-white/10 bg-black/40 rounded-2xl p-4 transition-all h-full">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <div class="font-bold text-white text-sm">Specific Agents</div>
+                                        <span class="text-[9px] text-[#007AFF] font-bold bg-[#007AFF]/10 px-2 py-1 rounded">+20%</span>
+                                    </div>
+                                    <p class="text-[10px] text-slate-500 leading-relaxed pr-2">Booster will play only the Agents that you choose.</p>
+                                </div>
+                            </label>
 
-const pMat = new THREE.ShaderMaterial({
-  uniforms: { uV: { value: 0 } },
-  vertexShader: `
-    attribute float aSize; uniform float uV; varying float vA;
-    void main() {
-      vec3 p = position; vec4 mv = modelViewMatrix * vec4(p, 1.0);
-      mv.z += uV * 20.0 * aSize; float d = length(mv.xyz);
-      vA = smoothstep(120.0, 30.0, d) * 0.6; gl_PointSize = aSize * (200.0 / d); gl_Position = projectionMatrix * mv;
-    }`,
-  fragmentShader: `varying float vA; void main() { float d = length(gl_PointCoord - 0.5) * 2.0; if(d > 1.0) discard; gl_FragColor = vec4(1.0, 1.0, 1.0, smoothstep(1.0, 0.0, d) * vA); }`,
-  transparent: true, depthWrite: false, blending: THREE.AdditiveBlending
-});
-scene.add(new THREE.Points(pGeo, pMat));
+                            <label class="cursor-pointer relative radio-card group">
+                                <input type="checkbox" id="addon-priority" class="absolute opacity-0" onchange="updateUI()">
+                                <div class="border border-white/10 bg-black/40 rounded-2xl p-4 transition-all h-full">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <div class="font-bold text-white text-sm">Priority</div>
+                                        <span class="text-[9px] text-[#007AFF] font-bold bg-[#007AFF]/10 px-2 py-1 rounded">+20%</span>
+                                    </div>
+                                    <p class="text-[10px] text-slate-500 leading-relaxed pr-2">We will place your order at the absolute top of the queue.</p>
+                                </div>
+                            </label>
 
-// ── QUANTUM ENTANGLEMENT ────────────────────────────────
-const bc = new BroadcastChannel('lowkey_quantum');
-let remoteX = window.screenX, remoteY = window.screenY;
-let isLinked = false;
-let lastPing = 0;
-let remoteTargetProgress = null; 
-const snum = document.getElementById('snum');
+                            <label class="cursor-pointer relative radio-card group md:col-span-2">
+                                <input type="checkbox" id="addon-duo" class="absolute opacity-0" onchange="updateUI()">
+                                <div class="border border-white/10 bg-black/40 rounded-2xl p-4 transition-all h-full">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <div class="font-bold text-white text-sm">Duo Queue</div>
+                                        <span class="text-[9px] text-[#007AFF] font-bold bg-[#007AFF]/10 px-2 py-1 rounded">+100%</span>
+                                    </div>
+                                    <p class="text-[10px] text-slate-500 leading-relaxed">
+                                        Duo with one of our boosters to help you win while keeping credentials safe. 
+                                        <span class="block mt-1"><strong class="text-white/70">NOTE:</strong> Since rank systems are based on performance, this option is 100% more expensive.</span>
+                                    </p>
+                                </div>
+                            </label>
 
-const tetherGeo = new THREE.CylinderGeometry(0.3, 0.3, 800, 8);
-const tetherMat = new THREE.MeshBasicMaterial({ color: 0xff003c, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false });
-const tether = new THREE.Mesh(tetherGeo, tetherMat);
-tether.rotation.x = Math.PI / 2;
-tether.visible = false;
-scene.add(tether);
+                        </div>
+                    </div>
+                </div>
 
-bc.onmessage = (e) => {
-    isLinked = true;
-    lastPing = Date.now();
-    remoteX = e.data.x; 
-    remoteY = e.data.y;
-    
-    snum.innerHTML = "QUANTUM LINK [ACTIVE]<br><span style='font-size: 8px; opacity: 0.5;'>NEURAL TETHER: SECURE</span>";
-    snum.style.color = "#FF003C";
+                <div class="lg:col-span-4 relative">
+                    <div class="sticky-summary p-6 md:p-8">
+                        
+                        <div class="space-y-3 mb-8">
+                            <div class="flex justify-between items-center bg-black/40 p-4 rounded-2xl border border-white/5">
+                                <span class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Environment</span>
+                                <span class="font-bold text-white text-sm" id="summ-game">Valorant</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-black/40 p-4 rounded-2xl border border-white/5">
+                                <span class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Protocol</span>
+                                <span class="font-bold text-white text-sm" id="summ-mode">Rank Push</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-black/40 p-4 rounded-2xl border border-white/5">
+                                <span class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Vector</span>
+                                <div class="text-right flex items-center gap-2 text-sm" id="summ-progress-container"></div>
+                            </div>
+                        </div>
 
-    if(e.data.type === 'sync') {
-        // Sync targets instead of direct velocity for smooth dual-window scrolling
-        remoteTargetProgress = e.data.tProg;
-    }
-};
+                        <div class="bg-[#007AFF]/10 rounded-2xl p-6 mb-6 border border-[#007AFF]/20 text-center">
+                            <span class="text-[#007AFF] font-bold text-[10px] uppercase tracking-widest block mb-2">Final Authorization</span>
+                            <p class="text-[11px] text-white/90 font-medium leading-relaxed px-2">You need to create a ticket to learn prices and talk about details for your boost order.</p>
+                        </div>
 
-setInterval(() => {
-    let myX = window.screenX + innerWidth/2;
-    let myY = window.screenY + innerHeight/2;
-    bc.postMessage({ type: 'sync', x: myX, y: myY, tProg: targetProgress });
-    
-    if(Date.now() - lastPing > 1000 && isLinked) {
-        isLinked = false;
-        tether.visible = false;
-        snum.innerHTML = `PHASE_0${active + 1} / 04<br><span style="font-size: 8px; opacity: 0.5;">INERTIAL DAMPENING: ACTIVE</span>`;
-        snum.style.color = "rgba(255,255,255,0.4)";
-    }
-}, 50);
+                        <button onclick="generateTicketAndEmail()" id="checkout-btn" class="w-full btn-primary-blue py-5 rounded-full font-bold text-sm tracking-widest uppercase mb-6">
+                            Generate Ticket
+                        </button>
 
-const camPath = new THREE.CatmullRomCurve3([
-  new THREE.Vector3(  0,  60,  80), new THREE.Vector3(-55,  30,  60), new THREE.Vector3(-85,   5,   5),
-  new THREE.Vector3(-60, -35, -55), new THREE.Vector3(  0, -60, -85), new THREE.Vector3( 60, -20, -55),
-  new THREE.Vector3( 85,  10,   5), new THREE.Vector3( 55,  45,  60), new THREE.Vector3(  0,  20,  25),
-  new THREE.Vector3(-20,  -5, -18), new THREE.Vector3( 30,  25,  25), 
-], true, 'catmullrom', 0.5);
+                        <div class="text-center">
+                            <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mb-3">Accepted Gateways</p>
+                            <div class="flex flex-wrap justify-center items-center gap-x-4 gap-y-2 text-[10px] font-bold text-white/60">
+                                <span>PAYPAL</span>
+                                <span>STRIPE</span>
+                                <span>BTC</span>
+                                <span>VENMO</span>
+                                <span>CASHAPP</span>
+                                <span>CREDIT CARD</span>
+                            </div>
+                        </div>
 
-// ── HEAVY PHYSICS ENGINE ────────────────────────────────
-let currentProgress = 0;
-let targetProgress = 0;
-let velocity = 0;
+                    </div>
+                </div>
 
-function injectForce(d) { 
-    // Drastically scale down input force to prevent hyper-speed. 
-    // Scroll down (positive delta) = move forward (positive target)
-    let force = Math.max(-40, Math.min(40, d)); 
-    targetProgress += force * 0.0003; 
-}
+            </div>
+        </div>
+    </main>
 
-window.addEventListener('wheel', e => injectForce(e.deltaY), {passive: true});
-let dy0 = 0;
-window.addEventListener('touchstart', e => { dy0 = e.touches[0].clientY; }, {passive: true});
-window.addEventListener('touchmove', e => { injectForce(dy0 - e.touches[0].clientY); dy0 = e.touches[0].clientY; }, {passive: true});
+    <footer class="w-full text-center py-6 mt-auto z-10 relative">
+        <p class="text-[10px] text-slate-500 font-bold tracking-widest uppercase">
+            Made by <span class="text-white">4owkey</span> with love <span class="text-[#007AFF]">💙</span>
+        </p>
+    </footer>
 
-const sects = [
-  { el: document.getElementById('s0'), at: 0.02 }, { el: document.getElementById('s1'), at: 0.25 },
-  { el: document.getElementById('s2'), at: 0.50 }, { el: document.getElementById('s3'), at: 0.82 }
-];
-let active = 0;
-const pf = document.getElementById('pf'), ph = document.getElementById('ph'), vv = document.getElementById('vel');
+    <div id="ticket-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
+        <div class="bg-[#0A0A0A] border border-[#007AFF]/40 p-8 md:p-10 rounded-[40px] max-w-sm w-full shadow-[0_0_100px_rgba(0,122,255,0.15)] relative text-center">
+            <button onclick="document.getElementById('ticket-modal').classList.add('hidden')" class="absolute top-6 right-6 text-slate-500 hover:text-white bg-white/5 w-8 h-8 rounded-full flex items-center justify-center transition">✕</button>
+            <div class="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center text-green-500 text-3xl mx-auto mb-6">✓</div>
+            <h2 class="clash text-2xl font-bold mb-2">Manifest Generated</h2>
+            <p class="text-slate-400 text-xs mb-8 px-4 leading-relaxed">Copy the secure hash below and submit it in Discord.</p>
+            
+            <div class="bg-black border border-white/5 rounded-2xl p-6 mb-8 text-left">
+                <div class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mb-1 text-center">Authentication String</div>
+                <div class="font-mono text-[#007AFF] font-bold text-2xl tracking-widest text-center" id="modal-ticket-id">#TKT-XXXX</div>
+                <hr class="border-white/5 my-4">
+                <div class="text-[10px] font-medium font-mono whitespace-pre-line text-white/70 leading-relaxed" id="modal-order-details"></div>
+            </div>
 
-// ── RENDER LOOP ─────────────────────────────────────────
-const clock = new THREE.Clock();
-const qCurrent = new THREE.Quaternion(); 
+            <button onclick="copyToClipboard()" id="copy-btn" class="w-full bg-white text-black py-4 rounded-full font-bold text-sm tracking-wide mb-3 hover:bg-slate-200 transition">Copy Details</button>
+            <a href="https://discord.gg/F8bPnjXeGZ" target="_blank" class="w-full bg-[#111] border border-white/10 text-white py-4 rounded-full font-bold text-sm tracking-wide flex justify-center items-center hover:bg-[#222] transition">Open Discord Hub</a>
+        </div>
+    </div>
 
-function animate() {
-  const dt = clock.getDelta(), el = clock.elapsedTime;
+    <script>
+        emailjs.init("YOUR_PUBLIC_KEY_HERE"); 
+        const EMAILJS_SERVICE_ID = "YOUR_SERVICE_ID_HERE";
+        const EMAILJS_TEMPLATE_ID = "YOUR_TEMPLATE_ID_HERE";
 
-  // Quantum sync: Gently blend remote target with local target
-  if (remoteTargetProgress !== null) {
-      targetProgress += (remoteTargetProgress - targetProgress) * 0.05;
-  }
+        const VAL_API = "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/";
+        const valRanks = [
+            { name: "Iron 1", url: VAL_API+"3/largeicon.png" }, { name: "Iron 2", url: VAL_API+"4/largeicon.png" }, { name: "Iron 3", url: VAL_API+"5/largeicon.png" },
+            { name: "Bronze 1", url: VAL_API+"6/largeicon.png" }, { name: "Bronze 2", url: VAL_API+"7/largeicon.png" }, { name: "Bronze 3", url: VAL_API+"8/largeicon.png" },
+            { name: "Silver 1", url: VAL_API+"9/largeicon.png" }, { name: "Silver 2", url: VAL_API+"10/largeicon.png" }, { name: "Silver 3", url: VAL_API+"11/largeicon.png" },
+            { name: "Gold 1", url: VAL_API+"12/largeicon.png" }, { name: "Gold 2", url: VAL_API+"13/largeicon.png" }, { name: "Gold 3", url: VAL_API+"14/largeicon.png" },
+            { name: "Platinum 1", url: VAL_API+"15/largeicon.png" }, { name: "Platinum 2", url: VAL_API+"16/largeicon.png" }, { name: "Platinum 3", url: VAL_API+"17/largeicon.png" },
+            { name: "Diamond 1", url: VAL_API+"18/largeicon.png" }, { name: "Diamond 2", url: VAL_API+"19/largeicon.png" }, { name: "Diamond 3", url: VAL_API+"20/largeicon.png" },
+            { name: "Ascendant 1", url: VAL_API+"21/largeicon.png" }, { name: "Ascendant 2", url: VAL_API+"22/largeicon.png" }, { name: "Ascendant 3", url: VAL_API+"23/largeicon.png" },
+            { name: "Immortal 1", url: VAL_API+"24/largeicon.png" }, { name: "Immortal 2", url: VAL_API+"25/largeicon.png" }, { name: "Immortal 3", url: VAL_API+"26/largeicon.png" },
+            { name: "Radiant", url: VAL_API+"27/largeicon.png" }
+        ];
 
-  // MASSIVE INERTIAL DAMPENING
-  // Instead of snapping to the target, the camera chases it slowly.
-  let previousProgress = currentProgress;
-  currentProgress += (targetProgress - currentProgress) * 0.02; // Very heavy Lerp (0.02)
-  
-  // Visual velocity is based on the gap between current and target, creating a natural acceleration/deceleration curve
-  let rawVel = Math.abs(targetProgress - currentProgress) * 50;
-  velocity += (rawVel - velocity) * 0.1; 
+        const LOL_API = "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblem/";
+        const lolRanks = [
+            { name: "Iron", url: LOL_API+"emblem-iron.png" }, { name: "Bronze", url: LOL_API+"emblem-bronze.png" },
+            { name: "Silver", url: LOL_API+"emblem-silver.png" }, { name: "Gold", url: LOL_API+"emblem-gold.png" },
+            { name: "Platinum", url: LOL_API+"emblem-platinum.png" }, { name: "Emerald", url: LOL_API+"emblem-emerald.png" },
+            { name: "Diamond", url: LOL_API+"emblem-diamond.png" }, { name: "Master", url: LOL_API+"emblem-master.png" },
+            { name: "Grandmaster", url: LOL_API+"emblem-grandmaster.png" }, { name: "Challenger", url: LOL_API+"emblem-challenger.png" }
+        ];
 
-  const t = ((currentProgress % 1) + 1) % 1; // Ensure t wraps safely
+        let currentDataset = valRanks;
+        let activeCounter = 3;
+        let maxCounter = 10;
+        let orderString = "";
+        let currentTicketId = "";
+        let trackerValidatedName = "";
 
-  const pos = camPath.getPointAt(t);
-  const tan = camPath.getTangentAt(t);
-  const upBase = new THREE.Vector3(0,1,0);
-  const right = new THREE.Vector3().crossVectors(tan, upBase).normalize();
-  const upTarget = new THREE.Vector3().crossVectors(right, tan).normalize();
-  const m = new THREE.Matrix4().lookAt(pos, pos.clone().add(tan), upTarget);
-  const qTarget = new THREE.Quaternion().setFromRotationMatrix(m);
-  qCurrent.slerp(qTarget, 0.03); // Slower, heavier camera banking
-  
-  camera.position.copy(pos);
-  camera.quaternion.copy(qCurrent);
-  camera.lookAt(0,0,0);
+        window.onload = () => { populateDropdowns(); updateUI(); };
 
-  // Quantum Tether Logic
-  if (isLinked) {
-      tether.visible = true;
-      let myX = window.screenX + innerWidth/2;
-      let myY = window.screenY + innerHeight/2;
-      let diffX = (remoteX - myX) * 0.1;
-      let diffY = (myY - remoteY) * 0.1; 
-      tether.position.copy(camera.position);
-      let targetPos = new THREE.Vector3(camera.position.x + diffX, camera.position.y + diffY, camera.position.z - 100);
-      tether.lookAt(targetPos);
-      let fwd = new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion);
-      tether.position.add(fwd.multiplyScalar(5));
-      tether.scale.set(1 + velocity, 1 + velocity, 1);
-  }
+        function populateDropdowns() {
+            const curSel = document.getElementById('current-select');
+            const desSel = document.getElementById('desired-select');
+            curSel.innerHTML = ''; desSel.innerHTML = '';
+            currentDataset.forEach((r, i) => {
+                curSel.add(new Option(r.name, i));
+                desSel.add(new Option(r.name, i));
+            });
+            curSel.selectedIndex = Math.floor(currentDataset.length / 3); 
+            desSel.selectedIndex = Math.floor((currentDataset.length / 3) * 2);
+        }
 
-  const fovT = 65 + velocity * 10; // Less aggressive FOV stretch
-  camera.fov += (fovT - camera.fov) * 0.1;
-  camera.updateProjectionMatrix();
+        function handleGameChange() {
+            const game = document.querySelector('input[name="game"]:checked').value;
+            currentDataset = game === "Valorant" ? valRanks : lolRanks;
+            populateDropdowns();
+            updateUI();
+        }
 
-  coreMat.uniforms.uT.value = el;
-  coreMat.uniforms.uV.value = Math.min(velocity, 3);
-  pMat.uniforms.uV.value = velocity;
-  
-  glowMesh.scale.setScalar(1 + Math.min(velocity, 2) * 0.2);
-  glowMesh.lookAt(camera.position);
-  core.rotation.y += dt * 0.05; core.rotation.z += dt * 0.02;
+        function adjustCounter(delta) {
+            activeCounter += delta;
+            if (activeCounter < 1) activeCounter = 1;
+            if (activeCounter > maxCounter) activeCounter = maxCounter;
+            document.getElementById('counter-value').innerText = activeCounter;
+            updateUI(true); 
+        }
 
-  let ni = 0, nd = 9;
-  sects.forEach((s, i) => {
-    const d = Math.min(Math.abs(t - s.at), 1 - Math.abs(t - s.at));
-    // Widened the visibility window from 0.08 to 0.15 so text stays on screen longer
-    const W = 0.15; 
-    const op = Math.max(0, 1 - d/W);
-    // Scale comes from deeper back (0.6) and stops at 1.0 for more dramatic depth
-    const scale = 0.6 + op * 0.4; 
-    
-    s.el.style.opacity = op;
-    s.el.style.transform = `scale(${scale}) translate3d(0,0,0)`;
-    if(d < nd) { nd = d; ni = i; }
-  });
-  
-  if(ni !== active && !isLinked) { active = ni; snum.innerHTML = `PHASE_0${active + 1} / 04<br><span style="font-size: 8px; opacity: 0.5;">INERTIAL DAMPENING: ACTIVE</span>`; }
+        function updateUI(skipImageAnimation = false) {
+            const game = document.querySelector('input[name="game"]:checked').value;
+            const mode = document.querySelector('input[name="mode"]:checked').value;
+            const currIdx = parseInt(document.getElementById('current-select').value);
+            let desIdx = parseInt(document.getElementById('desired-select').value);
+            
+            const uiRank = document.getElementById('ui-target-rank');
+            const uiCounter = document.getElementById('ui-target-counter');
+            const centerDivider = document.getElementById('center-divider');
+            const leftLabel = document.getElementById('left-label');
+            const counterLabel = document.getElementById('counter-label');
+            const cContainer = document.getElementById('current-container');
+            const dContainer = document.getElementById('desired-container');
+            const trackerModule = document.getElementById('val-tracker-module');
 
-  vv.textContent = `MASS: ${(velocity*10).toFixed(2)}`;
-  const pct = t * 100;
-  pf.style.width = pct + '%'; ph.style.left = pct + '%';
+            if (game === "Valorant") {
+                cContainer.classList.add('val-size'); cContainer.classList.remove('lol-size');
+                dContainer.classList.add('val-size'); dContainer.classList.remove('lol-size');
+                trackerModule.classList.remove('hidden');
+            } else {
+                cContainer.classList.add('lol-size'); cContainer.classList.remove('val-size');
+                dContainer.classList.add('lol-size'); dContainer.classList.remove('val-size');
+                trackerModule.classList.add('hidden');
+            }
 
-  mainR.render(scene, camera);
-  requestAnimationFrame(animate);
-}
+            if (mode === "Rank Boost") {
+                uiRank.classList.remove('mode-hidden'); uiCounter.classList.add('mode-hidden'); uiCounter.classList.remove('flex'); centerDivider.classList.remove('hidden');
+                leftLabel.innerText = "Current Standing";
+                if (desIdx <= currIdx) { desIdx = currIdx + 1; if(desIdx >= currentDataset.length) desIdx = currentDataset.length - 1; document.getElementById('desired-select').selectedIndex = desIdx; }
+            } else {
+                uiRank.classList.add('mode-hidden'); uiCounter.classList.remove('mode-hidden'); uiCounter.classList.add('flex'); centerDivider.classList.add('hidden');
+                if (mode === "Net Wins") { leftLabel.innerText = "Current Standing"; counterLabel.innerText = "Target Net Wins"; maxCounter = 20; }
+                else if (mode === "Placements") { leftLabel.innerText = "Previous Season Rank"; counterLabel.innerText = "Placement Matches"; maxCounter = 5; if (activeCounter > 5) activeCounter = 5; document.getElementById('counter-value').innerText = activeCounter; }
+            }
 
-animate();
+            if (!skipImageAnimation) {
+                const cImg = document.getElementById('current-img');
+                const dImg = document.getElementById('desired-img');
+                cImg.classList.add('updating'); dImg.classList.add('updating');
+                
+                setTimeout(() => {
+                    cImg.src = currentDataset[currIdx].url; cImg.classList.remove('updating'); 
+                    if (mode === "Rank Boost") { dImg.src = currentDataset[desIdx].url; dImg.classList.remove('updating'); }
+                }, 200);
+            }
 
-window.addEventListener('resize', () => {
-  camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
-  mainR.setSize(innerWidth, innerHeight);
-});
-</script>
+            let addonsActive = [];
+            if (document.getElementById('addon-offline').checked) addonsActive.push("Offline");
+            if (document.getElementById('addon-stream').checked) addonsActive.push("Stream (+30%)");
+            if (document.getElementById('addon-agents').checked) addonsActive.push("Agents (+20%)");
+            if (document.getElementById('addon-priority').checked) addonsActive.push("Priority (+20%)");
+            if (document.getElementById('addon-duo').checked) addonsActive.push("Duo (+100%)");
+
+            document.getElementById('summ-game').innerText = game;
+            document.getElementById('summ-mode').innerText = mode === "Rank Boost" ? "Rank Push" : mode;
+
+            const progressContainer = document.getElementById('summ-progress-container');
+            if (mode === "Rank Boost") {
+                progressContainer.innerHTML = `<span class="font-bold text-slate-300">${currentDataset[currIdx].name}</span> <span class="text-[#007AFF] text-[10px] font-black mx-1">➔</span> <span class="font-bold text-[#007AFF]">${currentDataset[desIdx].name}</span>`;
+                orderString = `GAME: ${game}\nMODE: Rank Push\nPROGRESS: ${currentDataset[currIdx].name} -> ${currentDataset[desIdx].name}\nADDONS: ${addonsActive.length > 0 ? addonsActive.join(", ") : "None"}`;
+            } else if (mode === "Net Wins") {
+                progressContainer.innerHTML = `<span class="font-bold text-slate-300">${currentDataset[currIdx].name}</span> <span class="text-[#007AFF] text-[10px] font-black mx-1">+</span> <span class="font-bold text-[#007AFF]">${activeCounter} Wins</span>`;
+                orderString = `GAME: ${game}\nMODE: Net Wins\nCURRENT: ${currentDataset[currIdx].name}\nWINS WANTED: ${activeCounter}\nADDONS: ${addonsActive.length > 0 ? addonsActive.join(", ") : "None"}`;
+            } else if (mode === "Placements") {
+                progressContainer.innerHTML = `<span class="font-bold text-slate-400 text-xs">Prev: ${currentDataset[currIdx].name}</span> <span class="text-white/20 mx-1">|</span> <span class="font-bold text-[#007AFF]">${activeCounter} Matches</span>`;
+                orderString = `GAME: ${game}\nMODE: Placements\nPREV RANK: ${currentDataset[currIdx].name}\nMATCHES: ${activeCounter}\nADDONS: ${addonsActive.length > 0 ? addonsActive.join(", ") : "None"}`;
+            }
+        }
+
+        function searchTracker() {
+            const input = document.getElementById('val-tracker-input');
+            const name = input.value.trim();
+            const status = document.getElementById('tracker-status');
+            const consoleModule = document.getElementById('val-tracker-module');
+
+            if (!name || !name.includes('#')) {
+                status.innerText = "❌ Please use 'Name#Tag' format (e.g., TenZ#NA1).";
+                status.classList.remove('text-slate-500', 'text-green-400');
+                status.classList.add('text-red-400');
+                consoleModule.classList.remove('tracker-active');
+                finalTrackerUrl = "";
+                return;
+            }
+
+            const [nick, tag] = name.split('#');
+            finalTrackerUrl = `https://tracker.gg/valorant/profile/riot/${encodeURIComponent(nick)}%23${encodeURIComponent(tag)}/overview`;
+
+            status.innerHTML = `✅ Profile linked securely. URL has been embedded into your order manifest.`;
+            status.classList.remove('text-slate-500', 'text-red-400');
+            status.classList.add('text-green-400');
+            consoleModule.classList.add('tracker-active');
+            input.classList.add('border-green-500');
+            document.getElementById('val-tracker-btn').innerText = "✓ Linked";
+        }
+
+        function generateTicketAndEmail() {
+            const btn = document.getElementById('checkout-btn');
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = "Processing..."; btn.disabled = true;
+
+            const randID = Math.floor(1000 + Math.random() * 9000);
+            const game = document.querySelector('input[name="game"]:checked').value;
+            const prefix = game === "Valorant" ? "VAL" : "LOL";
+            currentTicketId = `#TKT-${randID}-${prefix}`;
+            
+            let finalOrderDetails = orderString;
+            if (game === "Valorant" && finalTrackerUrl) {
+                finalOrderDetails += `\nVANGUARD_LINK: ${finalTrackerUrl}`;
+            }
+
+            const templateParams = { ticket_id: currentTicketId, manifest_details: finalOrderDetails };
+
+            emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
+                .finally(function() {
+                    btn.innerHTML = originalHtml; btn.disabled = false;
+                    document.getElementById('modal-ticket-id').innerText = currentTicketId;
+                    document.getElementById('modal-order-details').innerText = finalOrderDetails;
+                    document.getElementById('ticket-modal').classList.remove('hidden');
+                    document.getElementById('ticket-modal').classList.add('flex');
+                    document.getElementById('copy-btn').innerText = "Copy Details";
+                    document.getElementById('copy-btn').classList.remove('bg-green-500', 'text-white');
+                    document.getElementById('copy-btn').classList.add('bg-white', 'text-black');
+                });
+        }
+
+        function copyToClipboard() {
+            let fullCopy = `${currentTicketId}\n\n`;
+            const game = document.querySelector('input[name="game"]:checked').value;
+            
+            let detailedDetails = orderString;
+            if (game === "Valorant" && finalTrackerUrl) {
+                detailedDetails += `\nVANGUARD_LINK: ${finalTrackerUrl}`;
+            }
+            
+            navigator.clipboard.writeText(fullCopy + detailedDetails).then(() => {
+                const btn = document.getElementById('copy-btn');
+                btn.innerText = "✓ Hash Copied";
+                btn.classList.remove('bg-white', 'text-black');
+                btn.classList.add('bg-green-500', 'text-white');
+            });
+        }
+    </script>
 </body>
 </html>
