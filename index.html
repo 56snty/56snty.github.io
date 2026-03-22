@@ -30,7 +30,7 @@
         
         .clash { font-family: 'Clash Display', sans-serif; }
 
-        /* --- 2026 AMBIENT BACKGROUND --- */
+        /* --- AMBIENT BACKGROUND --- */
         .bg-grid {
             position: fixed; inset: 0; z-index: -3;
             background-image: 
@@ -63,7 +63,7 @@
             position: relative; overflow: hidden;
         }
 
-        /* --- CINEMATIC LIGHT SWEEPS (AFTER EFFECTS STYLE) --- */
+        /* --- CINEMATIC LIGHT SWEEPS --- */
         .sweep-card { position: relative; overflow: hidden; }
         .sweep-card::after {
             content: ''; position: absolute; top: 0; left: -150%; width: 50%; height: 100%;
@@ -371,9 +371,6 @@
     </div>
 
     <script>
-        // --- FORMSPREE WEBHOOK INTEGRATION ---
-        const FORMSPREE_ENDPOINT = "YOUR_FORMSPREE_URL_HERE";
-
         // --- 2026 MOUSE SPOTLIGHT EFFECT ---
         document.getElementById('main-console').addEventListener('mousemove', function(e) {
             const rect = this.getBoundingClientRect();
@@ -383,7 +380,6 @@
             this.style.setProperty('--mouse-y', `${y}px`);
         });
 
-        // VALORANT & LEAGUE DATA
         const VAL_API = "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/";
         const valRanks = [
             { name: "Iron 1", url: VAL_API+"3/largeicon.png" }, { name: "Iron 2", url: VAL_API+"4/largeicon.png" }, { name: "Iron 3", url: VAL_API+"5/largeicon.png" },
@@ -537,40 +533,65 @@
             document.getElementById('val-tracker-btn').innerText = "✓ Linked";
         }
 
+        // --- DISCORD WEBHOOK INTEGRATION ---
         function generateTicketAndEmail() {
             const btn = document.getElementById('checkout-btn');
             const originalHtml = btn.innerHTML;
-            btn.innerHTML = "Logging Order..."; btn.disabled = true;
+            btn.innerHTML = "Processing..."; btn.disabled = true;
 
             const randID = Math.floor(1000 + Math.random() * 9000);
             const game = document.querySelector('input[name="game"]:checked').value;
+            const mode = document.querySelector('input[name="mode"]:checked').value;
             const prefix = game === "Valorant" ? "VAL" : "LOL";
             currentTicketId = `#TKT-${randID}-${prefix}`;
             
             let finalOrderDetails = orderString;
+            
+            // Your Discord Webhook URL
+            const DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1412863989670608977/u5_jHeN0Uhb6laYlec03sBYALL7AJ51jUgyNwmindE1YeO-bEhynDVUvQVvwH5kFa7qB";
+            
+            // Construct the Discord Rich Embed
+            const embedPayload = {
+                username: "Vanguard Intelligence",
+                embeds: [{
+                    title: `🚨 New Ticket Generated: ${currentTicketId}`,
+                    description: `A user has finalized an order manifest on the site. Await their arrival.\n\n**Manifest Details:**\n\`\`\`\n${orderString}\n\`\`\``,
+                    color: 31487, // Electric Blue in decimal
+                    timestamp: new Date().toISOString(),
+                    footer: { text: "4G Boosting • Vanguard Web System" }
+                }]
+            };
+
+            // Inject the Tracker Link directly into the Discord Embed if it exists
             if (game === "Valorant" && finalTrackerUrl) {
                 finalOrderDetails += `\n\nVANGUARD_LINK: ${finalTrackerUrl}`;
+                embedPayload.embeds[0].fields = [{
+                    name: "🔗 Vanguard Intelligence Link",
+                    value: `[Click Here to View Tracker.gg Profile](${finalTrackerUrl})`,
+                    inline: false
+                }];
             }
 
-            // Secure Webhook / Database fetch
-            if(FORMSPREE_ENDPOINT && FORMSPREE_ENDPOINT !== "YOUR_FORMSPREE_URL_HERE") {
-                fetch(FORMSPREE_ENDPOINT, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                    body: JSON.stringify({ Ticket_ID: currentTicketId, Game: game, Order_Details: finalOrderDetails })
-                }).catch(err => console.log("Database bypass", err));
-            }
-
-            setTimeout(() => {
-                btn.innerHTML = originalHtml; btn.disabled = false;
-                document.getElementById('modal-ticket-id').innerText = currentTicketId;
-                document.getElementById('modal-order-details').innerText = finalOrderDetails;
-                document.getElementById('ticket-modal').classList.remove('hidden');
-                document.getElementById('ticket-modal').classList.add('flex');
-                document.getElementById('copy-btn').innerText = "Copy Details";
-                document.getElementById('copy-btn').classList.remove('bg-green-500', 'text-white');
-                document.getElementById('copy-btn').classList.add('bg-white', 'text-black');
-            }, 600);
+            // Fire the Webhook to your testing channel
+            fetch(DISCORD_WEBHOOK, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(embedPayload)
+            })
+            .then(() => console.log("Discord Webhook fired successfully"))
+            .catch(err => console.error("Discord Webhook failed", err))
+            .finally(() => {
+                setTimeout(() => {
+                    btn.innerHTML = originalHtml; btn.disabled = false;
+                    document.getElementById('modal-ticket-id').innerText = currentTicketId;
+                    document.getElementById('modal-order-details').innerText = finalOrderDetails;
+                    document.getElementById('ticket-modal').classList.remove('hidden');
+                    document.getElementById('ticket-modal').classList.add('flex');
+                    document.getElementById('copy-btn').innerText = "Copy Details";
+                    document.getElementById('copy-btn').classList.remove('bg-green-500', 'text-white');
+                    document.getElementById('copy-btn').classList.add('bg-white', 'text-black');
+                }, 600);
+            });
         }
 
         function copyToClipboard() {
