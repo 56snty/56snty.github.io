@@ -94,8 +94,6 @@
         .tab-radio-blue input:checked + div { background: var(--primary); color: #fff; box-shadow: 0 4px 20px rgba(0, 122, 255, 0.4); }
         .tab-content { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); color: rgba(255,255,255,0.4); }
 
-        .addon-pill input:checked + div { border-color: var(--primary-light); color: var(--primary-light); background: rgba(0, 122, 255, 0.1); }
-
         /* --- HOLOGRAM RANK PHASING --- */
         .rank-img-container { position: relative; display: flex; align-items: center; justify-content: center; }
         .rank-img { object-fit: contain; transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease; filter: drop-shadow(0 0 25px rgba(0, 122, 255, 0.15)); z-index: 10; }
@@ -236,6 +234,7 @@
                         <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                             <span class="w-2 h-2 rounded-full bg-[#007AFF] shadow-[0_0_10px_rgba(0,122,255,0.8)]"></span> Modification Protocols
                         </h3>
+                        
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             
                             <label class="cursor-pointer relative radio-card group sweep-card">
@@ -282,7 +281,29 @@
                                 </div>
                             </label>
 
-                            <label class="cursor-pointer relative radio-card group sweep-card md:col-span-2">
+                            <label class="cursor-pointer relative radio-card group sweep-card">
+                                <input type="checkbox" id="addon-role" class="absolute opacity-0" onchange="updateUI()">
+                                <div class="border border-white/10 bg-black/40 rounded-2xl p-4 transition-all h-full relative z-10">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <div class="font-bold text-white text-sm drop-shadow-md">Role/Lane Lock</div>
+                                        <span class="text-[9px] text-[#3395FF] font-bold bg-[#007AFF]/15 border border-[#007AFF]/30 px-2 py-1 rounded">+20%</span>
+                                    </div>
+                                    <p class="text-[10px] text-slate-400 leading-relaxed pr-2">Exclusively queue your primary lane/role for an authentic history.</p>
+                                </div>
+                            </label>
+
+                            <label class="cursor-pointer relative radio-card group sweep-card">
+                                <input type="checkbox" id="addon-vpn" class="absolute opacity-0" onchange="updateUI()">
+                                <div class="border border-white/10 bg-black/40 rounded-2xl p-4 transition-all h-full relative z-10">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <div class="font-bold text-white text-sm drop-shadow-md">Proxy VPN</div>
+                                        <span class="text-[9px] text-[#3395FF] font-bold bg-[#007AFF]/15 border border-[#007AFF]/30 px-2 py-1 rounded">+15%</span>
+                                    </div>
+                                    <p class="text-[10px] text-slate-400 leading-relaxed pr-2">Dedicated geolocation masking to ensure zero account-sharing flags.</p>
+                                </div>
+                            </label>
+
+                            <label class="cursor-pointer relative radio-card group sweep-card md:col-span-2 mt-2">
                                 <input type="checkbox" id="addon-duo" class="absolute opacity-0" onchange="updateUI()">
                                 <div class="border border-white/10 bg-black/40 rounded-2xl p-4 transition-all h-full relative z-10">
                                     <div class="flex justify-between items-center mb-1">
@@ -485,11 +506,13 @@
             }
 
             let addonsActive = [];
-            if (document.getElementById('addon-offline').checked) addonsActive.push("Offline");
+            if (document.getElementById('addon-offline').checked) addonsActive.push("Offline Mod (Free)");
             if (document.getElementById('addon-stream').checked) addonsActive.push("Stream (+30%)");
-            if (document.getElementById('addon-agents').checked) addonsActive.push("Agents (+20%)");
+            if (document.getElementById('addon-agents').checked) addonsActive.push("Specific Agents (+20%)");
             if (document.getElementById('addon-priority').checked) addonsActive.push("Priority (+20%)");
-            if (document.getElementById('addon-duo').checked) addonsActive.push("Duo (+100%)");
+            if (document.getElementById('addon-role').checked) addonsActive.push("Role/Lane Lock (+20%)");
+            if (document.getElementById('addon-vpn').checked) addonsActive.push("Proxy VPN (+15%)");
+            if (document.getElementById('addon-duo').checked) addonsActive.push("Duo Queue (+100%)");
 
             document.getElementById('summ-game').innerText = game;
             document.getElementById('summ-mode').innerText = mode === "Rank Boost" ? "Rank Push" : mode;
@@ -497,13 +520,13 @@
             const progressContainer = document.getElementById('summ-progress-container');
             if (mode === "Rank Boost") {
                 progressContainer.innerHTML = `<span class="font-bold text-slate-300">${currentDataset[currIdx].name}</span> <span class="text-[#007AFF] text-[10px] font-black mx-1">➔</span> <span class="font-bold text-[#007AFF]">${currentDataset[desIdx].name}</span>`;
-                orderString = `GAME: ${game}\nMODE: Rank Push\nPROGRESS: ${currentDataset[currIdx].name} -> ${currentDataset[desIdx].name}\nADDONS: ${addonsActive.length > 0 ? addonsActive.join(", ") : "None"}`;
+                orderString = `GAME: ${game}\nMODE: Rank Push\nPROGRESS: ${currentDataset[currIdx].name} -> ${currentDataset[desIdx].name}\nADDONS: ${addonsActive.length > 0 ? addonsActive.join("\n- ") : "None"}`;
             } else if (mode === "Net Wins") {
                 progressContainer.innerHTML = `<span class="font-bold text-slate-300">${currentDataset[currIdx].name}</span> <span class="text-[#007AFF] text-[10px] font-black mx-1">+</span> <span class="font-bold text-[#007AFF]">${activeCounter} Wins</span>`;
-                orderString = `GAME: ${game}\nMODE: Net Wins\nCURRENT: ${currentDataset[currIdx].name}\nWINS WANTED: ${activeCounter}\nADDONS: ${addonsActive.length > 0 ? addonsActive.join(", ") : "None"}`;
+                orderString = `GAME: ${game}\nMODE: Net Wins\nCURRENT: ${currentDataset[currIdx].name}\nWINS WANTED: ${activeCounter}\nADDONS: ${addonsActive.length > 0 ? addonsActive.join("\n- ") : "None"}`;
             } else if (mode === "Placements") {
                 progressContainer.innerHTML = `<span class="font-bold text-slate-400 text-xs">Prev: ${currentDataset[currIdx].name}</span> <span class="text-white/20 mx-1">|</span> <span class="font-bold text-[#007AFF]">${activeCounter} Matches</span>`;
-                orderString = `GAME: ${game}\nMODE: Placements\nPREV RANK: ${currentDataset[currIdx].name}\nMATCHES: ${activeCounter}\nADDONS: ${addonsActive.length > 0 ? addonsActive.join(", ") : "None"}`;
+                orderString = `GAME: ${game}\nMODE: Placements\nPREV RANK: ${currentDataset[currIdx].name}\nMATCHES: ${activeCounter}\nADDONS: ${addonsActive.length > 0 ? addonsActive.join("\n- ") : "None"}`;
             }
         }
 
@@ -547,10 +570,8 @@
             
             let finalOrderDetails = orderString;
             
-            // Your Discord Webhook URL
             const DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1412863989670608977/u5_jHeN0Uhb6laYlec03sBYALL7AJ51jUgyNwmindE1YeO-bEhynDVUvQVvwH5kFa7qB";
             
-            // Construct the Discord Rich Embed
             const embedPayload = {
                 username: "Vanguard Intelligence",
                 embeds: [{
@@ -562,7 +583,6 @@
                 }]
             };
 
-            // Inject the Tracker Link directly into the Discord Embed if it exists
             if (game === "Valorant" && finalTrackerUrl) {
                 finalOrderDetails += `\n\nVANGUARD_LINK: ${finalTrackerUrl}`;
                 embedPayload.embeds[0].fields = [{
@@ -572,7 +592,6 @@
                 }];
             }
 
-            // Fire the Webhook to your testing channel
             fetch(DISCORD_WEBHOOK, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -596,14 +615,8 @@
 
         function copyToClipboard() {
             let fullCopy = `${currentTicketId}\n\n`;
-            const game = document.querySelector('input[name="game"]:checked').value;
             
-            let detailedDetails = orderString;
-            if (game === "Valorant" && finalTrackerUrl) {
-                detailedDetails += `\n\nVANGUARD_LINK: ${finalTrackerUrl}`;
-            }
-            
-            navigator.clipboard.writeText(fullCopy + detailedDetails).then(() => {
+            navigator.clipboard.writeText(fullCopy + document.getElementById('modal-order-details').innerText).then(() => {
                 const btn = document.getElementById('copy-btn');
                 btn.innerText = "✓ Hash Copied";
                 btn.classList.remove('bg-white', 'text-black');
