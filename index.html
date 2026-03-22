@@ -13,13 +13,11 @@
         :root {
             --primary: #007AFF;
             --primary-light: #66B2FF;
-            
-            /* Default: Navy Blue Theme */
             --bg-color: #030B1A; 
             --nav-bg: rgba(3, 11, 26, 0.7);
             --card-bg: rgba(255, 255, 255, 0.05);
             --card-hover: rgba(255, 255, 255, 0.08);
-            --panel-bg: rgba(0, 23, 61, 0.8);
+            --panel-bg: rgba(0, 23, 61, 0.95);
             --modal-bg: #051024;
             --border-color: rgba(255, 255, 255, 0.1);
             --input-bg: rgba(0, 0, 0, 0.4);
@@ -29,12 +27,11 @@
         }
 
         [data-theme="black"] {
-            /* Preset: Pure Black & Blue Theme */
             --bg-color: #000000;
             --nav-bg: rgba(0, 0, 0, 0.85);
             --card-bg: rgba(0, 122, 255, 0.04);
             --card-hover: rgba(0, 122, 255, 0.08);
-            --panel-bg: rgba(0, 0, 0, 0.85);
+            --panel-bg: rgba(0, 0, 0, 0.95);
             --modal-bg: #000000;
             --border-color: rgba(0, 122, 255, 0.3);
             --input-bg: rgba(0, 122, 255, 0.05);
@@ -43,33 +40,21 @@
             --orb-2: rgba(0, 122, 255, 0.05);
         }
 
-        /* --- CUSTOM SCROLLBAR --- */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--bg-color);
-            border-left: 1px solid var(--border-color);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(0, 122, 255, 0.4);
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(0, 122, 255, 0.8);
-        }
-        * {
-            scrollbar-width: thin;
-            scrollbar-color: rgba(0, 122, 255, 0.4) var(--bg-color);
-        }
+        /* --- CUSTOM SCROLLBARS --- */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); border-left: 1px solid var(--border-color); }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 122, 255, 0.4); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0, 122, 255, 0.8); }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; border: none; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0, 122, 255, 0.4); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(0, 122, 255, 0.8); }
 
         body {
-            background-color: var(--bg-color);
-            color: #FFFFFF;
+            background-color: var(--bg-color); color: #FFFFFF;
             font-family: 'Plus Jakarta Sans', sans-serif;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden; -webkit-font-smoothing: antialiased;
             display: flex; flex-direction: column; min-height: 100vh;
             transition: background-color 0.5s ease;
         }
@@ -79,109 +64,79 @@
         /* --- AMBIENT BACKGROUND --- */
         .bg-grid {
             position: fixed; inset: 0; z-index: -3;
-            background-image: 
-                linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
-                linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+            background-image: linear-gradient(to right, var(--grid-color) 1px, transparent 1px), linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
             background-size: 60px 60px;
-            mask-image: radial-gradient(circle at 50% 30%, black 30%, transparent 80%);
-            -webkit-mask-image: radial-gradient(circle at 50% 30%, black 30%, transparent 80%);
+            mask-image: radial-gradient(circle at 50% 30%, black 30%, transparent 80%); -webkit-mask-image: radial-gradient(circle at 50% 30%, black 30%, transparent 80%);
             transition: background-image 0.5s ease;
         }
-
-        .ambient-orb {
-            position: fixed; border-radius: 50%; filter: blur(120px); z-index: -2;
-            animation: floatOrb 25s infinite ease-in-out alternate; opacity: 0.4;
-            transition: background 0.5s ease;
-        }
+        .ambient-orb { position: fixed; border-radius: 50%; filter: blur(120px); z-index: -2; animation: floatOrb 25s infinite ease-in-out alternate; opacity: 0.4; transition: background 0.5s ease; }
         .orb-1 { top: -10%; left: 10%; width: 50vw; height: 50vw; background: var(--orb-1); }
         .orb-2 { bottom: -20%; right: 5%; width: 60vw; height: 60vw; background: var(--orb-2); animation-delay: -12s; }
+        @keyframes floatOrb { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(50px, 50px) scale(1.1); } }
 
-        @keyframes floatOrb {
-            0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(50px, 50px) scale(1.1); }
-        }
-
-        /* --- THE COMMAND CONSOLE & SPOTLIGHT --- */
+        /* --- THE COMMAND CONSOLE --- */
         .command-console {
             background: radial-gradient(800px circle at var(--mouse-x, 50%) var(--mouse-y, -200%), rgba(255,255,255,0.08), transparent 40%), var(--card-bg);
             backdrop-filter: blur(50px); -webkit-backdrop-filter: blur(50px);
             border: 1px solid var(--border-color); border-radius: 40px;
             box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255,255,255,0.05);
-            width: 100%; max-width: 1100px; margin: 0 auto;
-            position: relative; overflow: hidden;
+            width: 100%; max-width: 1100px; margin: 0 auto; position: relative; overflow: visible;
             transition: background 0.5s ease, border-color 0.5s ease;
         }
 
-        /* --- CINEMATIC LIGHT SWEEPS --- */
+        /* --- CINEMATIC LIGHT SWEEPS & CARDS --- */
         .sweep-card { position: relative; overflow: hidden; border: 1px solid var(--border-color); background: var(--card-bg); transition: all 0.3s ease; }
         .sweep-card:hover { background: var(--card-hover); border-color: var(--primary); }
-        .sweep-card::after {
-            content: ''; position: absolute; top: 0; left: -150%; width: 50%; height: 100%;
-            background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent);
-            transform: skewX(-25deg); transition: 0.7s ease; z-index: 1; pointer-events: none;
-        }
+        .sweep-card::after { content: ''; position: absolute; top: 0; left: -150%; width: 50%; height: 100%; background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent); transform: skewX(-25deg); transition: 0.7s ease; z-index: 1; pointer-events: none; }
         .sweep-card:hover::after { left: 200%; transition: 0.7s ease; }
+        .radio-card input:checked + div { border-color: var(--primary); background: rgba(0, 122, 255, 0.15); box-shadow: inset 0 0 20px rgba(0, 122, 255, 0.1), 0 8px 25px rgba(0, 122, 255, 0.2); transform: translateY(-3px); }
 
-        .radio-card input:checked + div {
-            border-color: var(--primary); background: rgba(0, 122, 255, 0.15);
-            box-shadow: inset 0 0 20px rgba(0, 122, 255, 0.1), 0 8px 25px rgba(0, 122, 255, 0.2);
-            transform: translateY(-3px);
-        }
-
-        /* --- STAGGERED ENTRANCE ANIMATIONS --- */
-        .stagger-1 { animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
-        .stagger-2 { animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards; opacity: 0; }
-        .stagger-3 { animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards; opacity: 0; }
-        .stagger-4 { animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards; opacity: 0; }
-        
-        @keyframes slideUpFade {
-            0% { opacity: 0; transform: translateY(40px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-
-        /* --- TAB TOGGLES --- */
+        /* --- TAB TOGGLES & RANKS --- */
         .tab-radio input:checked + div { background: var(--card-hover); color: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 1px solid var(--border-color); }
         .tab-radio-blue input:checked + div { background: var(--primary); color: #fff; box-shadow: 0 4px 20px rgba(0, 122, 255, 0.5); }
         .tab-content { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); color: rgba(255,255,255,0.5); border: 1px solid transparent; }
-
-        /* --- HOLOGRAM RANK PHASING --- */
         .rank-img-container { position: relative; display: flex; align-items: center; justify-content: center; }
         .rank-img { object-fit: contain; transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease; filter: drop-shadow(0 0 25px rgba(0, 122, 255, 0.3)); z-index: 10; }
         .rank-img.updating { transform: scale(0.5) translateY(30px) rotateY(15deg); opacity: 0; }
-        .val-size { width: 140px; height: 140px; }
-        .lol-size { width: 200px; height: 200px; }
+        .val-size { width: 140px; height: 140px; } .lol-size { width: 200px; height: 200px; }
 
-        /* --- ACTION BUTTON --- */
+        /* --- ACTION BUTTON (WEBKIT BUG FIXED) --- */
         .btn-primary-blue {
-            position: relative; 
-            background: linear-gradient(135deg, #007AFF 0%, #0044CC 100%);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 0 25px rgba(0, 122, 255, 0.5), inset 0 1px 0 rgba(255,255,255,0.4);
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
-            overflow: hidden;
-            isolation: isolate; 
-            color: #FFFFFF !important; 
+            position: relative; background: linear-gradient(135deg, #007AFF 0%, #0044CC 100%); border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 25px rgba(0, 122, 255, 0.5), inset 0 1px 0 rgba(255,255,255,0.4); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
+            overflow: hidden; 
+            transform: translateZ(0); /* FIX: Forces hardware acceleration, stops text from disappearing under negative z-index on mobile Safari */
         }
-        .btn-primary-blue::before {
-            content: ''; position: absolute; inset: -2px; border-radius: 50%;
-            background: conic-gradient(from 0deg, transparent, rgba(255,255,255,0.6), transparent);
-            animation: rotatePulse 4s linear infinite; z-index: -1; opacity: 0.5;
-        }
+        .btn-primary-blue::before { content: ''; position: absolute; inset: -2px; border-radius: 50%; background: conic-gradient(from 0deg, transparent, rgba(255,255,255,0.6), transparent); animation: rotatePulse 4s linear infinite; z-index: -1; opacity: 0.5; }
         @keyframes rotatePulse { 100% { transform: rotate(360deg); } }
-        
-        .btn-primary-blue:hover {
-            box-shadow: 0 10px 40px rgba(0, 122, 255, 0.8), inset 0 1px 0 rgba(255,255,255,0.6);
-            transform: translateY(-3px) scale(1.02); filter: brightness(1.15);
-        }
+        .btn-primary-blue:hover { box-shadow: 0 10px 40px rgba(0, 122, 255, 0.8), inset 0 1px 0 rgba(255,255,255,0.6); transform: translateY(-3px) scale(1.02) translateZ(0); filter: brightness(1.15); }
 
-        /* --- MISC --- */
+        /* --- TOAST NOTIFICATIONS --- */
+        #toast-container { position: fixed; bottom: 20px; left: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast { background: var(--panel-bg); border: 1px solid var(--border-color); backdrop-filter: blur(10px); padding: 12px 20px; display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transform: translateX(-120%); opacity: 0; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); border-radius: 16px; }
+        .toast.show { transform: translateX(0); opacity: 1; }
+
+        /* --- FAQ ACCORDION --- */
+        .faq-item { border-bottom: 1px solid var(--border-color); }
+        .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out, padding 0.4s ease; }
+        .faq-input:checked ~ .faq-answer { max-height: 200px; padding-bottom: 1rem; }
+        .faq-icon { transition: transform 0.3s; }
+        .faq-input:checked ~ label .faq-icon { transform: rotate(45deg); }
+
+        /* --- UI HELPERS --- */
         .counter-btn { width: 48px; height: 48px; border-radius: 50%; background: var(--card-bg); border: 1px solid var(--border-color); font-size: 24px; display: flex; align-items: center; justify-content: center; transition: all 0.3s; color: white; }
         .counter-btn:hover { background: rgba(0, 122, 255, 0.2); border-color: var(--primary-light); color: var(--primary-light); transform: scale(1.1); }
-        select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='rgba(255,255,255,0.5)'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E"); background-position: right 1.5rem center; background-repeat: no-repeat; background-size: 1.2em; }
         .tracker-active { border-color: var(--primary-light) !important; box-shadow: 0 0 40px -5px rgba(0,122,255,0.3); }
         #val-tracker-input:focus { border-color: var(--primary-light); box-shadow: 0 0 20px rgba(0, 122, 255, 0.2); }
         .mode-hidden { display: none !important; }
         #ticket-modal { backdrop-filter: blur(30px); }
+        
+        /* Stagger animations */
+        .stagger-1 { animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+        .stagger-2 { animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards; opacity: 0; }
+        .stagger-3 { animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards; opacity: 0; }
+        .stagger-4 { animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards; opacity: 0; }
+        @keyframes slideUpFade { 0% { opacity: 0; transform: translateY(40px); } 100% { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="pt-24 pb-6 px-4 md:px-8">
@@ -190,16 +145,16 @@
     <div class="ambient-orb orb-1"></div>
     <div class="ambient-orb orb-2"></div>
 
+    <div id="toast-container"></div>
+
     <nav class="fixed top-0 left-0 w-full z-50 bg-[var(--nav-bg)] backdrop-blur-xl border-b border-[var(--border-color)] px-6 py-4 flex justify-between items-center stagger-1 shadow-lg transition-colors duration-500">
         <div class="clash text-xl font-bold tracking-widest text-white drop-shadow-[0_0_15px_rgba(0,122,255,0.8)]">4G<span class="text-[#007AFF]">BOOST</span></div>
-        
         <div class="flex items-center gap-6">
             <a href="https://discord.gg/F8bPnjXeGZ" target="_blank" class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-blue-200 hover:text-white transition flex items-center gap-2 group">
                 <span class="hidden md:inline">Support via Discord</span>
                 <span class="md:hidden">Discord</span> 
                 <span class="text-[#007AFF] group-hover:translate-x-1 transition-transform">➔</span>
             </a>
-            
             <button onclick="toggleTheme()" class="w-10 h-10 flex items-center justify-center rounded-full bg-[var(--card-bg)] border border-[var(--border-color)] hover:bg-[#007AFF]/20 transition-all text-sm group">
                 <span id="theme-icon" class="group-hover:scale-110 transition-transform">🌑</span>
             </button>
@@ -213,9 +168,9 @@
             <p class="text-sm text-[#66B2FF] font-medium tracking-[0.2em] uppercase drop-shadow-[0_0_10px_rgba(102,178,255,0.4)]">Configure your trajectory</p>
         </div>
 
-        <div class="command-console p-6 md:p-12 relative stagger-3" id="main-console">
+        <div class="command-console p-6 md:p-12 relative stagger-3 mb-16" id="main-console">
             
-            <div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-10 border-b border-[var(--border-color)] pb-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-10 border-b border-[var(--border-color)] pb-8 relative z-30">
                 <div class="flex bg-[var(--card-bg)] p-1.5 rounded-full border border-[var(--border-color)] w-full md:w-auto shadow-inner transition-colors duration-500">
                     <label class="tab-radio cursor-pointer flex-1 md:flex-none">
                         <input type="radio" name="game" value="Valorant" class="absolute opacity-0" checked onchange="handleGameChange()">
@@ -245,15 +200,24 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
                 
-                <div class="lg:col-span-8 space-y-8">
+                <div class="lg:col-span-8 space-y-8 relative z-[60]">
                     
-                    <div class="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-6 md:gap-10 items-center">
-                        <div class="flex flex-col items-center">
+                    <div class="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-6 md:gap-10 items-center relative z-[70]">
+                        
+                        <div class="flex flex-col items-center w-full">
                             <label id="left-label" class="text-[10px] text-blue-200 font-bold uppercase tracking-widest mb-6">Current Standing</label>
                             <div id="current-container" class="rank-img-container val-size mb-6">
-                                <img id="current-img" class="rank-img" src="" alt="Current Rank" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'><circle cx=\'50\' cy=\'50\' r=\'40\' fill=\'none\' stroke=\'%23007AFF\' stroke-width=\'2\' stroke-dasharray=\'4,4\'/></svg>'">
+                                <img id="current-img" class="rank-img" src="" alt="Current Rank">
                             </div>
-                            <select id="current-select" class="w-full max-w-[240px] bg-[var(--card-bg)] border border-[var(--border-color)] rounded-full px-6 py-4 text-sm font-bold outline-none focus:border-white/50 text-center appearance-none cursor-pointer hover:bg-[var(--card-hover)] transition"></select>
+                            
+                            <div class="relative w-full max-w-[240px]">
+                                <button id="current-dropdown-btn" class="w-full bg-[var(--card-bg)] border border-[var(--border-color)] rounded-full px-6 py-4 text-sm font-bold text-white outline-none flex justify-between items-center hover:bg-[var(--card-hover)] transition shadow-inner" onclick="toggleCustomDropdown('current')">
+                                    <span id="current-rank-text" class="truncate">Select Rank</span>
+                                    <svg class="w-4 h-4 text-blue-200/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </button>
+                                <div id="current-dropdown-list" class="absolute z-[100] w-full mt-2 max-h-56 overflow-y-auto bg-[var(--panel-bg)] border border-[var(--border-color)] rounded-xl hidden flex-col shadow-[0_10px_40px_rgba(0,0,0,0.8)] backdrop-blur-xl custom-scrollbar">
+                                    </div>
+                            </div>
                         </div>
 
                         <div id="center-divider" class="hidden md:flex flex-col items-center justify-center opacity-50">
@@ -262,12 +226,20 @@
                             <div class="w-px h-16 bg-gradient-to-t from-transparent to-[#007AFF] mt-4"></div>
                         </div>
 
-                        <div id="ui-target-rank" class="flex flex-col items-center">
+                        <div id="ui-target-rank" class="flex flex-col items-center w-full">
                             <label class="text-[10px] text-[#66B2FF] font-bold uppercase tracking-widest mb-6 drop-shadow-[0_0_8px_rgba(0,122,255,0.5)]">Target Objective</label>
                             <div id="desired-container" class="rank-img-container val-size mb-6">
-                                <img id="desired-img" class="rank-img filter saturate-150" src="" alt="Desired Rank" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'><circle cx=\'50\' cy=\'50\' r=\'40\' fill=\'none\' stroke=\'%23007AFF\' stroke-width=\'2\' stroke-dasharray=\'4,4\'/></svg>'">
+                                <img id="desired-img" class="rank-img filter saturate-150" src="" alt="Desired Rank">
                             </div>
-                            <select id="desired-select" class="w-full max-w-[240px] bg-[#007AFF]/15 border border-[#007AFF]/50 rounded-full px-6 py-4 text-sm font-bold text-white outline-none text-center appearance-none cursor-pointer hover:bg-[#007AFF]/25 transition" onchange="updateUI()"></select>
+                            
+                            <div class="relative w-full max-w-[240px]">
+                                <button id="desired-dropdown-btn" class="w-full bg-[#007AFF]/15 border border-[#007AFF]/50 rounded-full px-6 py-4 text-sm font-bold text-white outline-none flex justify-between items-center hover:bg-[#007AFF]/25 transition shadow-inner" onclick="toggleCustomDropdown('desired')">
+                                    <span id="desired-rank-text" class="truncate">Select Rank</span>
+                                    <svg class="w-4 h-4 text-blue-200/80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </button>
+                                <div id="desired-dropdown-list" class="absolute z-[100] w-full mt-2 max-h-56 overflow-y-auto bg-[var(--panel-bg)] border border-[#007AFF]/50 rounded-xl hidden flex-col shadow-[0_10px_40px_rgba(0,122,255,0.3)] backdrop-blur-xl custom-scrollbar">
+                                    </div>
+                            </div>
                         </div>
 
                         <div id="ui-target-counter" class="mode-hidden flex-col items-center justify-center h-full">
@@ -280,7 +252,7 @@
                         </div>
                     </div>
 
-                    <div id="val-tracker-module" class="sweep-card p-6 md:p-8 rounded-3xl transition-all duration-500 shadow-inner">
+                    <div id="val-tracker-module" class="sweep-card p-6 md:p-8 rounded-3xl transition-all duration-500 shadow-inner relative z-10">
                         <div class="flex items-center justify-between mb-5 relative z-10">
                             <h3 class="text-[11px] font-bold text-blue-100 uppercase tracking-widest flex items-center gap-3">
                                 <span class="w-2 h-2 rounded-full bg-white shadow-[0_0_12px_rgba(255,255,255,1)] animate-pulse"></span> Vanguard Integration
@@ -293,13 +265,12 @@
                         <div id="tracker-status" class="text-[10px] mt-3 ml-4 text-blue-200/60 font-medium relative z-10">Provide your Riot ID to securely embed your match history.</div>
                     </div>
 
-                    <div class="pt-2">
+                    <div class="pt-2 relative z-0">
                         <h3 class="text-[11px] font-bold text-blue-100 uppercase tracking-widest mb-4 flex items-center gap-2">
                             <span class="w-2 h-2 rounded-full bg-[#007AFF] shadow-[0_0_10px_rgba(0,122,255,0.8)]"></span> Modification Protocols
                         </h3>
                         
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 relative z-10">
                             <label class="cursor-pointer relative radio-card group sweep-card rounded-2xl">
                                 <input type="checkbox" id="addon-offline" class="absolute opacity-0" onchange="updateUI()" checked>
                                 <div class="border border-transparent rounded-2xl p-4 transition-all h-full relative z-10">
@@ -312,6 +283,17 @@
                             </label>
 
                             <label class="cursor-pointer relative radio-card group sweep-card rounded-2xl">
+                                <input type="checkbox" id="addon-agents" class="absolute opacity-0" onchange="toggleAgentPanel(); updateUI()">
+                                <div class="border border-transparent rounded-2xl p-4 transition-all h-full relative z-10">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <div class="font-bold text-white text-sm drop-shadow-md">Specific Agents</div>
+                                        <span class="text-[9px] text-[#66B2FF] font-bold bg-[#007AFF]/20 border border-[#007AFF]/40 px-2 py-1 rounded">+20%</span>
+                                    </div>
+                                    <p class="text-[10px] text-blue-100/70 leading-relaxed pr-2">Booster will play only the Agents that you choose.</p>
+                                </div>
+                            </label>
+
+                            <label class="cursor-pointer relative radio-card group sweep-card rounded-2xl">
                                 <input type="checkbox" id="addon-stream" class="absolute opacity-0" onchange="updateUI()">
                                 <div class="border border-transparent rounded-2xl p-4 transition-all h-full relative z-10">
                                     <div class="flex justify-between items-center mb-1">
@@ -319,17 +301,6 @@
                                         <span class="text-[9px] text-[#66B2FF] font-bold bg-[#007AFF]/20 border border-[#007AFF]/40 px-2 py-1 rounded">+30%</span>
                                     </div>
                                     <p class="text-[10px] text-blue-100/70 leading-relaxed pr-2">Live stream your games to watch how the booster plays.</p>
-                                </div>
-                            </label>
-
-                            <label class="cursor-pointer relative radio-card group sweep-card rounded-2xl">
-                                <input type="checkbox" id="addon-agents" class="absolute opacity-0" onchange="updateUI()">
-                                <div class="border border-transparent rounded-2xl p-4 transition-all h-full relative z-10">
-                                    <div class="flex justify-between items-center mb-1">
-                                        <div class="font-bold text-white text-sm drop-shadow-md">Specific Agents</div>
-                                        <span class="text-[9px] text-[#66B2FF] font-bold bg-[#007AFF]/20 border border-[#007AFF]/40 px-2 py-1 rounded">+20%</span>
-                                    </div>
-                                    <p class="text-[10px] text-blue-100/70 leading-relaxed pr-2">Booster will play only the Agents that you choose.</p>
                                 </div>
                             </label>
 
@@ -379,12 +350,24 @@
                                     </p>
                                 </div>
                             </label>
-
                         </div>
+
+                        <div id="agent-selection-container" class="max-h-0 opacity-0 overflow-visible transition-all duration-500 ease-in-out relative z-30">
+                            <div class="mt-4 p-5 bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl shadow-inner">
+                                <label class="text-[10px] text-[#66B2FF] font-bold uppercase tracking-widest mb-3 block" id="agent-panel-title">Select Preferred Operatives</label>
+                                <div class="relative">
+                                    <div id="selected-agents-chips" class="flex flex-wrap gap-2 mb-3 empty:mb-0"></div>
+                                    <input type="text" id="agent-search" placeholder="Search operatives..." class="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-[#007AFF] transition shadow-inner" onkeyup="filterAgents()" onclick="toggleCustomDropdown('agent')">
+                                    <div id="agent-dropdown" class="absolute z-[100] w-full mt-2 max-h-48 overflow-y-auto bg-[var(--panel-bg)] border border-[var(--border-color)] rounded-xl hidden flex-col shadow-[0_10px_40px_rgba(0,0,0,0.8)] backdrop-blur-xl custom-scrollbar">
+                                        </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
-                <div class="lg:col-span-4 relative">
+                <div class="lg:col-span-4 relative z-[40]">
                     <div class="sticky top-28 bg-[var(--panel-bg)] backdrop-blur-2xl rounded-[32px] p-6 md:p-8 border border-[var(--border-color)] shadow-[0_20px_50px_rgba(0,0,0,0.8)] transition-colors duration-500">
                         
                         <div class="flex items-center justify-center gap-3 mb-6 pb-6 border-b border-[var(--border-color)]">
@@ -398,6 +381,15 @@
                             <div class="flex flex-col text-left">
                                 <span class="text-[11px] font-bold text-white tracking-wide">Rated 4.9/5</span>
                                 <span class="text-[9px] text-blue-200/50 uppercase tracking-widest">By 2,000+ Players</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-8">
+                            <div class="flex justify-between items-center bg-[var(--card-bg)] p-4 rounded-2xl border border-[var(--border-color)]">
+                                <span class="text-[10px] text-blue-200/80 font-bold uppercase tracking-widest flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span> Est. Completion Time
+                                </span>
+                                <span class="text-sm font-black text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]" id="live-eta">1-2 Days</span>
                             </div>
                         </div>
 
@@ -421,44 +413,60 @@
                             <p class="text-[11px] text-white/90 font-medium leading-relaxed px-2">A ticket is required to finalize pricing and operational details.</p>
                         </div>
 
-                        <button onclick="generateTicketAndEmail()" id="checkout-btn" class="w-full btn-primary-blue py-5 rounded-full font-bold text-xs tracking-widest uppercase mb-4 flex justify-center items-center gap-3 relative overflow-hidden z-10 text-white">
-                            <span class="relative z-10 text-white">Join the discord and create ticket</span>
+                        <button onclick="generateTicketAndEmail()" id="checkout-btn" class="w-full btn-primary-blue py-5 rounded-full font-bold text-xs tracking-widest uppercase mb-4 flex justify-center items-center gap-3 relative z-10">
+                            <span style="position: relative; z-index: 50; color: #FFFFFF !important;">Join the discord & Create Ticket</span>
                         </button>
 
                         <div class="flex flex-wrap justify-center gap-x-5 gap-y-2 mb-8 text-[9px] font-bold text-blue-200/50 uppercase tracking-widest">
-                            <div class="flex items-center gap-1.5">
-                                <svg class="w-3.5 h-3.5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                                <span>256-bit AES</span>
-                            </div>
-                            <div class="flex items-center gap-1.5">
-                                <svg class="w-3.5 h-3.5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                                <span>VPN Active</span>
-                            </div>
-                            <div class="flex items-center gap-1.5">
-                                <svg class="w-3.5 h-3.5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
-                                <span>Zero Ban Rate</span>
-                            </div>
+                            <div class="flex items-center gap-1.5"><svg class="w-3.5 h-3.5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg><span>256-bit AES</span></div>
+                            <div class="flex items-center gap-1.5"><svg class="w-3.5 h-3.5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg><span>VPN Active</span></div>
+                            <div class="flex items-center gap-1.5"><svg class="w-3.5 h-3.5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg><span>Zero Ban Rate</span></div>
                         </div>
 
                         <div class="text-center pt-2 border-t border-[var(--border-color)]">
                             <p class="text-[9px] text-blue-200/50 font-bold uppercase tracking-widest mb-3">Accepted Gateways</p>
                             <div class="flex flex-wrap justify-center items-center gap-x-4 gap-y-2 text-[10px] font-bold text-white/40">
-                                <span class="hover:text-white transition cursor-default">PAYPAL</span>
-                                <span class="hover:text-white transition cursor-default">STRIPE</span>
-                                <span class="hover:text-white transition cursor-default">BTC</span>
-                                <span class="hover:text-white transition cursor-default">VENMO</span>
-                                <span class="hover:text-white transition cursor-default">CASHAPP</span>
+                                <span class="cursor-default">PAYPAL</span><span class="cursor-default">STRIPE</span><span class="cursor-default">BTC</span><span class="cursor-default">VENMO</span><span class="cursor-default">CASHAPP</span>
                             </div>
                         </div>
 
                     </div>
                 </div>
+            </div>
+        </div>
 
+        <div class="w-full max-w-3xl mx-auto mb-16 stagger-4 px-4">
+            <h2 class="clash text-2xl font-bold text-center mb-8 text-white">Vanguard Guarantees</h2>
+            <div class="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-3xl overflow-hidden shadow-lg transition-colors duration-500">
+                <div class="faq-item">
+                    <input type="checkbox" id="faq1" class="faq-input hidden">
+                    <label for="faq1" class="flex justify-between items-center p-6 cursor-pointer hover:bg-[var(--card-hover)] transition">
+                        <span class="font-bold text-sm text-white">Is my account secure during the process?</span>
+                        <span class="faq-icon text-[#007AFF] text-xl">+</span>
+                    </label>
+                    <div class="faq-answer px-6 text-xs text-blue-200/70 leading-relaxed">Absolutely. We use military-grade 256-bit AES encryption for all credentials and mandate our Vanguard Agents to use dedicated VPNs localized to your region, ensuring zero account sharing flags from Riot or Riot Vanguard.</div>
+                </div>
+                <div class="faq-item">
+                    <input type="checkbox" id="faq2" class="faq-input hidden">
+                    <label for="faq2" class="flex justify-between items-center p-6 cursor-pointer hover:bg-[var(--card-hover)] transition">
+                        <span class="font-bold text-sm text-white">Who will be assigned to my trajectory?</span>
+                        <span class="faq-icon text-[#007AFF] text-xl">+</span>
+                    </label>
+                    <div class="faq-answer px-6 text-xs text-blue-200/70 leading-relaxed">Your account is assigned exclusively to verified Radiant (Valorant) or Challenger (League) tier operatives. We heavily vet our boosters to ensure absolute professionalism and top-tier performance.</div>
+                </div>
+                <div class="faq-item border-none">
+                    <input type="checkbox" id="faq3" class="faq-input hidden">
+                    <label for="faq3" class="flex justify-between items-center p-6 cursor-pointer hover:bg-[var(--card-hover)] transition">
+                        <span class="font-bold text-sm text-white">What if I want a refund?</span>
+                        <span class="faq-icon text-[#007AFF] text-xl">+</span>
+                    </label>
+                    <div class="faq-answer px-6 text-xs text-blue-200/70 leading-relaxed">We offer a highly flexible refund policy. If your operative has not begun your order, you are entitled to a full 100% refund immediately upon request in our Discord hub. Partial refunds are issued if an order is stopped midway.</div>
+                </div>
             </div>
         </div>
     </main>
 
-    <footer class="w-full text-center py-8 mt-auto z-10 relative stagger-4">
+    <footer class="w-full text-center py-8 mt-auto z-10 relative stagger-4 border-t border-[var(--border-color)] bg-[var(--nav-bg)]">
         <p class="text-[10px] text-blue-200/60 font-bold tracking-widest uppercase">
             Made by <span class="text-white hover:text-[#007AFF] transition cursor-pointer">4owkey</span> with love <span class="text-[#007AFF] animate-pulse">💙</span>
         </p>
@@ -466,187 +474,290 @@
 
     <div id="ticket-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-black/60">
         <div class="bg-[var(--modal-bg)] border border-[#007AFF]/50 p-8 md:p-10 rounded-[40px] max-w-sm w-full shadow-[0_0_100px_rgba(0,122,255,0.4)] relative text-center sweep-card transition-colors duration-500">
-            <button onclick="document.getElementById('ticket-modal').classList.add('hidden')" class="absolute top-6 right-6 text-blue-200/50 hover:text-white bg-white/5 hover:bg-white/10 w-8 h-8 rounded-full flex items-center justify-center transition z-20">✕</button>
-            <div class="w-20 h-20 bg-[#007AFF]/20 rounded-full flex items-center justify-center text-[#66B2FF] text-3xl mx-auto mb-6 shadow-[0_0_30px_rgba(0,122,255,0.4)] relative z-20">✓</div>
-            <h2 class="clash text-2xl font-bold mb-2 relative z-20 text-white">Manifest Generated</h2>
-            <p class="text-blue-200/70 text-xs mb-8 px-4 leading-relaxed relative z-20">Copy the secure hash below and submit it to our operators in Discord.</p>
-            
-            <div class="bg-[var(--input-bg)] border border-[var(--border-color)] rounded-2xl p-6 mb-8 text-left relative z-20 shadow-inner">
+            <button onclick="document.getElementById('ticket-modal').classList.add('hidden')" class="absolute top-6 right-6 text-blue-200/50 hover:text-white bg-white/5 w-8 h-8 rounded-full">✕</button>
+            <div class="w-20 h-20 bg-[#007AFF]/20 rounded-full flex items-center justify-center text-[#66B2FF] text-3xl mx-auto mb-6 relative z-20">✓</div>
+            <h2 class="clash text-2xl font-bold mb-2 text-white">Manifest Generated</h2>
+            <p class="text-blue-200/70 text-xs mb-8">Copy the secure hash below and submit it to our operators in Discord.</p>
+            <div class="bg-[var(--input-bg)] border border-[var(--border-color)] rounded-2xl p-6 mb-8 text-left shadow-inner">
                 <div class="text-[9px] text-blue-200/50 font-bold uppercase tracking-widest mb-1 text-center">Authentication String</div>
-                <div class="font-mono text-[#66B2FF] font-bold text-2xl tracking-widest text-center drop-shadow-[0_0_10px_rgba(102,178,255,0.5)]" id="modal-ticket-id">#TKT-XXXX</div>
+                <div class="font-mono text-[#66B2FF] font-bold text-2xl text-center" id="modal-ticket-id">#TKT-XXXX</div>
                 <hr class="border-[var(--border-color)] my-4">
-                <div class="text-[10px] font-medium font-mono whitespace-pre-line text-white/80 leading-relaxed" id="modal-order-details"></div>
+                <div class="text-[10px] font-medium font-mono whitespace-pre-line text-white/80 max-h-40 overflow-y-auto pr-2 custom-scrollbar" id="modal-order-details"></div>
             </div>
-
-            <button onclick="copyToClipboard()" id="copy-btn" class="w-full bg-white text-black py-4 rounded-full font-bold text-sm tracking-wide mb-3 hover:bg-blue-50 transition relative z-20 shadow-[0_0_20px_rgba(255,255,255,0.3)]">Copy Details</button>
-            <a href="https://discord.gg/F8bPnjXeGZ" target="_blank" class="w-full bg-[#007AFF]/10 border border-[#007AFF]/30 text-white py-4 rounded-full font-bold text-sm tracking-wide flex justify-center items-center hover:bg-[#007AFF]/20 transition relative z-20">Open Discord Hub</a>
+            <button onclick="copyToClipboard()" id="copy-btn" class="w-full bg-white text-black py-4 rounded-full font-bold text-sm mb-3 hover:bg-gray-200 transition">Copy Details</button>
+            <a href="https://discord.gg/F8bPnjXeGZ" target="_blank" class="w-full bg-[#007AFF]/10 border border-[#007AFF]/30 text-white py-4 rounded-full font-bold text-sm flex justify-center items-center hover:bg-[#007AFF]/20 transition">Open Discord Hub</a>
         </div>
     </div>
 
     <script>
-        // --- THEME TOGGLE LOGIC ---
-        function toggleTheme() {
-            const htmlTag = document.documentElement;
-            const icon = document.getElementById('theme-icon');
-            
-            if (htmlTag.getAttribute('data-theme') === 'black') {
-                htmlTag.removeAttribute('data-theme');
-                icon.innerText = '🌑'; 
-            } else {
-                htmlTag.setAttribute('data-theme', 'black');
-                icon.innerText = '☀️'; 
-            }
-        }
-
-        // --- 2026 MOUSE SPOTLIGHT EFFECT ---
-        document.getElementById('main-console').addEventListener('mousemove', function(e) {
-            const rect = this.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            this.style.setProperty('--mouse-x', `${x}px`);
-            this.style.setProperty('--mouse-y', `${y}px`);
-        });
-
+        // --- DATA DICTIONARIES ---
         const VAL_API = "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/";
         const valRanks = [
-            { name: "Iron 1", url: VAL_API+"3/largeicon.png" }, { name: "Iron 2", url: VAL_API+"4/largeicon.png" }, { name: "Iron 3", url: VAL_API+"5/largeicon.png" },
-            { name: "Bronze 1", url: VAL_API+"6/largeicon.png" }, { name: "Bronze 2", url: VAL_API+"7/largeicon.png" }, { name: "Bronze 3", url: VAL_API+"8/largeicon.png" },
-            { name: "Silver 1", url: VAL_API+"9/largeicon.png" }, { name: "Silver 2", url: VAL_API+"10/largeicon.png" }, { name: "Silver 3", url: VAL_API+"11/largeicon.png" },
-            { name: "Gold 1", url: VAL_API+"12/largeicon.png" }, { name: "Gold 2", url: VAL_API+"13/largeicon.png" }, { name: "Gold 3", url: VAL_API+"14/largeicon.png" },
-            { name: "Platinum 1", url: VAL_API+"15/largeicon.png" }, { name: "Platinum 2", url: VAL_API+"16/largeicon.png" }, { name: "Platinum 3", url: VAL_API+"17/largeicon.png" },
-            { name: "Diamond 1", url: VAL_API+"18/largeicon.png" }, { name: "Diamond 2", url: VAL_API+"19/largeicon.png" }, { name: "Diamond 3", url: VAL_API+"20/largeicon.png" },
-            { name: "Ascendant 1", url: VAL_API+"21/largeicon.png" }, { name: "Ascendant 2", url: VAL_API+"22/largeicon.png" }, { name: "Ascendant 3", url: VAL_API+"23/largeicon.png" },
-            { name: "Immortal 1", url: VAL_API+"24/largeicon.png" }, { name: "Immortal 2", url: VAL_API+"25/largeicon.png" }, { name: "Immortal 3", url: VAL_API+"26/largeicon.png" },
-            { name: "Radiant", url: VAL_API+"27/largeicon.png" }
+            { name: "Iron 1", url: VAL_API+"3/smallicon.png", large: VAL_API+"3/largeicon.png" }, { name: "Iron 2", url: VAL_API+"4/smallicon.png", large: VAL_API+"4/largeicon.png" }, { name: "Iron 3", url: VAL_API+"5/smallicon.png", large: VAL_API+"5/largeicon.png" },
+            { name: "Bronze 1", url: VAL_API+"6/smallicon.png", large: VAL_API+"6/largeicon.png" }, { name: "Bronze 2", url: VAL_API+"7/smallicon.png", large: VAL_API+"7/largeicon.png" }, { name: "Bronze 3", url: VAL_API+"8/smallicon.png", large: VAL_API+"8/largeicon.png" },
+            { name: "Silver 1", url: VAL_API+"9/smallicon.png", large: VAL_API+"9/largeicon.png" }, { name: "Silver 2", url: VAL_API+"10/smallicon.png", large: VAL_API+"10/largeicon.png" }, { name: "Silver 3", url: VAL_API+"11/smallicon.png", large: VAL_API+"11/largeicon.png" },
+            { name: "Gold 1", url: VAL_API+"12/smallicon.png", large: VAL_API+"12/largeicon.png" }, { name: "Gold 2", url: VAL_API+"13/smallicon.png", large: VAL_API+"13/largeicon.png" }, { name: "Gold 3", url: VAL_API+"14/smallicon.png", large: VAL_API+"14/largeicon.png" },
+            { name: "Platinum 1", url: VAL_API+"15/smallicon.png", large: VAL_API+"15/largeicon.png" }, { name: "Platinum 2", url: VAL_API+"16/smallicon.png", large: VAL_API+"16/largeicon.png" }, { name: "Platinum 3", url: VAL_API+"17/smallicon.png", large: VAL_API+"17/largeicon.png" },
+            { name: "Diamond 1", url: VAL_API+"18/smallicon.png", large: VAL_API+"18/largeicon.png" }, { name: "Diamond 2", url: VAL_API+"19/smallicon.png", large: VAL_API+"19/largeicon.png" }, { name: "Diamond 3", url: VAL_API+"20/smallicon.png", large: VAL_API+"20/largeicon.png" },
+            { name: "Ascendant 1", url: VAL_API+"21/smallicon.png", large: VAL_API+"21/largeicon.png" }, { name: "Ascendant 2", url: VAL_API+"22/smallicon.png", large: VAL_API+"22/largeicon.png" }, { name: "Ascendant 3", url: VAL_API+"23/smallicon.png", large: VAL_API+"23/largeicon.png" },
+            { name: "Immortal 1", url: VAL_API+"24/smallicon.png", large: VAL_API+"24/largeicon.png" }, { name: "Immortal 2", url: VAL_API+"25/smallicon.png", large: VAL_API+"25/largeicon.png" }, { name: "Immortal 3", url: VAL_API+"26/smallicon.png", large: VAL_API+"26/largeicon.png" },
+            { name: "Radiant", url: VAL_API+"27/smallicon.png", large: VAL_API+"27/largeicon.png" }
         ];
 
         const LOL_API = "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblem/";
         const lolRanks = [
-            { name: "Iron", url: LOL_API+"emblem-iron.png" }, { name: "Bronze", url: LOL_API+"emblem-bronze.png" },
-            { name: "Silver", url: LOL_API+"emblem-silver.png" }, { name: "Gold", url: LOL_API+"emblem-gold.png" },
-            { name: "Platinum", url: LOL_API+"emblem-platinum.png" }, { name: "Emerald", url: LOL_API+"emblem-emerald.png" },
-            { name: "Diamond", url: LOL_API+"emblem-diamond.png" }, { name: "Master", url: LOL_API+"emblem-master.png" },
-            { name: "Grandmaster", url: LOL_API+"emblem-grandmaster.png" }, { name: "Challenger", url: LOL_API+"emblem-challenger.png" }
+            { name: "Iron", url: LOL_API+"emblem-iron.png", large: LOL_API+"emblem-iron.png" }, { name: "Bronze", url: LOL_API+"emblem-bronze.png", large: LOL_API+"emblem-bronze.png" },
+            { name: "Silver", url: LOL_API+"emblem-silver.png", large: LOL_API+"emblem-silver.png" }, { name: "Gold", url: LOL_API+"emblem-gold.png", large: LOL_API+"emblem-gold.png" },
+            { name: "Platinum", url: LOL_API+"emblem-platinum.png", large: LOL_API+"emblem-platinum.png" }, { name: "Emerald", url: LOL_API+"emblem-emerald.png", large: LOL_API+"emblem-emerald.png" },
+            { name: "Diamond", url: LOL_API+"emblem-diamond.png", large: LOL_API+"emblem-diamond.png" }, { name: "Master", url: LOL_API+"emblem-master.png", large: LOL_API+"emblem-master.png" },
+            { name: "Grandmaster", url: LOL_API+"emblem-grandmaster.png", large: LOL_API+"emblem-grandmaster.png" }, { name: "Challenger", url: LOL_API+"emblem-challenger.png", large: LOL_API+"emblem-challenger.png" }
         ];
 
+        const valorantAgents = ["Astra", "Breach", "Brimstone", "Chamber", "Clove", "Cypher", "Deadlock", "Fade", "Gekko", "Harbor", "Iso", "Jett", "KAY/O", "Killjoy", "Neon", "Omen", "Phoenix", "Raze", "Reyna", "Sage", "Skye", "Sova", "Viper", "Vyse", "Yoru"].sort();
+        const leagueChampions = ["Aatrox", "Ahri", "Akali", "Akshan", "Alistar", "Amumu", "Anivia", "Annie", "Aphelios", "Ashe", "Aurelion Sol", "Azir", "Bard", "Bel'Veth", "Blitzcrank", "Brand", "Braum", "Briar", "Caitlyn", "Camille", "Cassiopeia", "Cho'Gath", "Corki", "Darius", "Diana", "Dr. Mundo", "Draven", "Ekko", "Elise", "Evelynn", "Ezreal", "Fiddlesticks", "Fiora", "Fizz", "Galio", "Gangplank", "Garen", "Gnar", "Gragas", "Graves", "Gwen", "Hecarim", "Heimerdinger", "Hwei", "Illaoi", "Irelia", "Ivern", "Janna", "Jarvan IV", "Jax", "Jayce", "Jhin", "Jinx", "K'Sante", "Kai'Sa", "Kalista", "Karma", "Karthus", "Kassadin", "Katarina", "Kayle", "Kayn", "Kennen", "Kha'Zix", "Kindred", "Kled", "Kog'Maw", "LeBlanc", "Lee Sin", "Leona", "Lillia", "Lissandra", "Lucian", "Lulu", "Lux", "Malphite", "Malzahar", "Maokai", "Master Yi", "Milio", "Miss Fortune", "Mordekaiser", "Morgana", "Naafiri", "Nami", "Nasus", "Nautilus", "Neeko", "Nidalee", "Nilah", "Nocturne", "Nunu & Willump", "Olaf", "Orianna", "Ornn", "Pantheon", "Poppy", "Pyke", "Qiyana", "Quinn", "Rakan", "Rammus", "Rek'Sai", "Rell", "Renata Glasc", "Renekton", "Rengar", "Riven", "Rumble", "Ryze", "Samira", "Sejuani", "Senna", "Seraphine", "Sett", "Shaco", "Shen", "Shyvana", "Singed", "Sion", "Sivir", "Skarner", "Smolder", "Sona", "Soraka", "Swain", "Sylas", "Syndra", "Tahm Kench", "Taliyah", "Talon", "Taric", "Teemo", "Thresh", "Tristana", "Trundle", "Tryndamere", "Twisted Fate", "Twitch", "Udyr", "Urgot", "Varus", "Vayne", "Veigar", "Vel'Koz", "Vex", "Vi", "Viego", "Viktor", "Vladimir", "Volibear", "Warwick", "Wukong", "Xayah", "Xerath", "Xin Zhao", "Yasuo", "Yone", "Yorick", "Yuumi", "Zac", "Zed", "Zeri", "Ziggs", "Zilean", "Zoe", "Zyra"];
+
+        // --- STATE VARIABLES ---
         let currentDataset = valRanks;
+        let currIdx = 0;
+        let desIdx = 0;
         let activeCounter = 3;
         let maxCounter = 10;
         let orderString = "";
         let currentTicketId = "";
         let finalTrackerUrl = "";
+        let selectedAgents = [];
+        let currentAgentList = valorantAgents;
 
-        window.onload = () => { populateDropdowns(); updateUI(); };
+        window.onload = () => { buildRankDropdowns(); updateUI(); initToasts(); };
 
-        function populateDropdowns() {
-            const curSel = document.getElementById('current-select');
-            const desSel = document.getElementById('desired-select');
-            curSel.innerHTML = ''; desSel.innerHTML = '';
-            currentDataset.forEach((r, i) => {
-                curSel.add(new Option(r.name, i));
-                desSel.add(new Option(r.name, i));
+        // --- CUSTOM DROPDOWN LOGIC ---
+        function buildRankDropdowns() {
+            currIdx = Math.floor(currentDataset.length / 3); 
+            desIdx = Math.floor((currentDataset.length / 3) * 2);
+
+            const curList = document.getElementById('current-dropdown-list');
+            const desList = document.getElementById('desired-dropdown-list');
+            curList.innerHTML = ''; desList.innerHTML = '';
+
+            currentDataset.forEach((rank, index) => {
+                const createOption = (type, idx) => {
+                    const div = document.createElement('div');
+                    div.className = "px-4 py-3 text-sm text-white cursor-pointer hover:bg-[var(--card-hover)] transition border-b border-[var(--border-color)] last:border-none flex items-center gap-3";
+                    div.innerHTML = `<img src="${rank.url}" class="w-6 h-6 object-contain" alt="${rank.name}"> <span>${rank.name}</span>`;
+                    div.onclick = (e) => {
+                        e.stopPropagation();
+                        if(type === 'current') currIdx = idx;
+                        else desIdx = idx;
+                        toggleCustomDropdown(type, false);
+                        updateUI();
+                    };
+                    return div;
+                };
+                curList.appendChild(createOption('current', index));
+                desList.appendChild(createOption('desired', index));
             });
-            curSel.selectedIndex = Math.floor(currentDataset.length / 3); 
-            desSel.selectedIndex = Math.floor((currentDataset.length / 3) * 2);
         }
 
+        function toggleCustomDropdown(type, forceState) {
+            const listId = type === 'agent' ? 'agent-dropdown' : `${type}-dropdown-list`;
+            const list = document.getElementById(listId);
+            const isOpen = !list.classList.contains('hidden');
+            const shouldOpen = forceState !== undefined ? forceState : !isOpen;
+
+            // Close all dropdowns first
+            document.getElementById('current-dropdown-list').classList.add('hidden');
+            document.getElementById('desired-dropdown-list').classList.add('hidden');
+            document.getElementById('agent-dropdown').classList.add('hidden');
+
+            if (shouldOpen) {
+                list.classList.remove('hidden');
+                list.classList.add('flex');
+                if (type === 'agent') renderAgentDropdown(document.getElementById('agent-search').value.toLowerCase());
+            } else {
+                list.classList.add('hidden');
+                list.classList.remove('flex');
+            }
+        }
+
+        // Close dropdowns if clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#current-dropdown-btn') && !e.target.closest('#current-dropdown-list')) {
+                document.getElementById('current-dropdown-list')?.classList.add('hidden');
+            }
+            if (!e.target.closest('#desired-dropdown-btn') && !e.target.closest('#desired-dropdown-list')) {
+                document.getElementById('desired-dropdown-list')?.classList.add('hidden');
+            }
+            if (!e.target.closest('#agent-search') && !e.target.closest('#agent-dropdown')) {
+                document.getElementById('agent-dropdown')?.classList.add('hidden');
+            }
+        });
+
+        // --- AGENT SELECTION LOGIC ---
+        function toggleAgentPanel() {
+            const isChecked = document.getElementById('addon-agents').checked;
+            const panel = document.getElementById('agent-selection-container');
+            const searchInput = document.getElementById('agent-search');
+            
+            if (isChecked) {
+                panel.classList.remove('max-h-0', 'opacity-0');
+                panel.classList.add('max-h-[500px]', 'opacity-100');
+                document.getElementById('agent-panel-title').innerText = currentDataset === valRanks ? "Select Valorant Agents" : "Select League Champions";
+                searchInput.placeholder = currentDataset === valRanks ? "Search Agents..." : "Search Champions...";
+            } else {
+                panel.classList.remove('max-h-[500px]', 'opacity-100');
+                panel.classList.add('max-h-0', 'opacity-0');
+                toggleCustomDropdown('agent', false);
+            }
+        }
+
+        function filterAgents() {
+            renderAgentDropdown(document.getElementById('agent-search').value.toLowerCase());
+        }
+
+        function renderAgentDropdown(filterText = "") {
+            const dropdown = document.getElementById('agent-dropdown');
+            dropdown.innerHTML = "";
+            
+            const filtered = currentAgentList.filter(a => a.toLowerCase().includes(filterText) && !selectedAgents.includes(a));
+            
+            if (filtered.length === 0) {
+                dropdown.innerHTML = `<div class="p-3 text-xs text-blue-200/50 text-center">No matches found.</div>`;
+                return;
+            }
+
+            filtered.forEach(agent => {
+                const item = document.createElement('div');
+                item.className = "px-4 py-3 text-sm text-white cursor-pointer hover:bg-[var(--card-hover)] transition border-b border-[var(--border-color)] last:border-none";
+                item.innerText = agent;
+                item.onclick = (e) => {
+                    e.stopPropagation();
+                    selectedAgents.push(agent);
+                    document.getElementById('agent-search').value = "";
+                    renderSelectedChips();
+                    renderAgentDropdown();
+                    updateUI(true);
+                };
+                dropdown.appendChild(item);
+            });
+        }
+
+        function renderSelectedChips() {
+            const container = document.getElementById('selected-agents-chips');
+            container.innerHTML = "";
+            selectedAgents.forEach(agent => {
+                const chip = document.createElement('div');
+                chip.className = "flex items-center gap-1.5 bg-[#007AFF]/20 border border-[#007AFF]/40 text-[#66B2FF] px-3 py-1.5 rounded-full text-xs font-bold shadow-inner";
+                chip.innerHTML = `<span>${agent}</span><button onclick="removeAgent('${agent}')" class="text-[#66B2FF] hover:text-white transition w-4 h-4 flex items-center justify-center rounded-full hover:bg-white/10">✕</button>`;
+                container.appendChild(chip);
+            });
+        }
+
+        function removeAgent(agent) {
+            selectedAgents = selectedAgents.filter(a => a !== agent);
+            renderSelectedChips();
+            if(!document.getElementById('agent-dropdown').classList.contains('hidden')){
+                renderAgentDropdown(document.getElementById('agent-search').value.toLowerCase());
+            }
+            updateUI(true);
+        }
+
+        // --- CORE UI LOGIC ---
         function handleGameChange() {
-            const game = document.querySelector('input[name="game"]:checked').value;
-            currentDataset = game === "Valorant" ? valRanks : lolRanks;
-            populateDropdowns();
-            updateUI();
+            const isVal = document.querySelector('input[name="game"]:checked').value === "Valorant";
+            currentDataset = isVal ? valRanks : lolRanks;
+            
+            currentAgentList = isVal ? valorantAgents : leagueChampions;
+            selectedAgents = [];
+            renderSelectedChips();
+            document.getElementById('agent-search').value = "";
+            
+            if(document.getElementById('addon-agents').checked) toggleAgentPanel();
+
+            buildRankDropdowns(); updateUI();
         }
 
         function adjustCounter(delta) {
             activeCounter += delta;
-            if (activeCounter < 1) activeCounter = 1;
-            if (activeCounter > maxCounter) activeCounter = maxCounter;
-            document.getElementById('counter-value').innerText = activeCounter;
-            updateUI(true); 
+            if (activeCounter < 1) activeCounter = 1; if (activeCounter > maxCounter) activeCounter = maxCounter;
+            document.getElementById('counter-value').innerText = activeCounter; updateUI(true); 
+        }
+
+        function calculateETA(mode, currIdx, desIdx, activeCounter) {
+            let etaDays = 1;
+            if (mode === "Rank Boost") {
+                if (desIdx > currIdx) etaDays = Math.max(1, Math.ceil((desIdx - currIdx) * 0.4));
+            } else if (mode === "Net Wins") {
+                etaDays = Math.max(1, Math.ceil(activeCounter * 0.2));
+            } else if (mode === "Placements") {
+                etaDays = Math.max(1, Math.ceil(activeCounter * 0.3));
+            }
+            document.getElementById('live-eta').innerText = `${etaDays}-${etaDays+1} Days`;
         }
 
         function updateUI(skipImageAnimation = false) {
             const game = document.querySelector('input[name="game"]:checked').value;
             const mode = document.querySelector('input[name="mode"]:checked').value;
-            const currIdx = parseInt(document.getElementById('current-select').value) || 0;
-            let desIdx = parseInt(document.getElementById('desired-select').value) || 0;
             
-            const uiRank = document.getElementById('ui-target-rank');
-            const uiCounter = document.getElementById('ui-target-counter');
-            const centerDivider = document.getElementById('center-divider');
-            const leftLabel = document.getElementById('left-label');
-            const counterLabel = document.getElementById('counter-label');
-            const cContainer = document.getElementById('current-container');
-            const dContainer = document.getElementById('desired-container');
+            const uiRank = document.getElementById('ui-target-rank'), uiCounter = document.getElementById('ui-target-counter');
+            const centerDivider = document.getElementById('center-divider'), cContainer = document.getElementById('current-container'), dContainer = document.getElementById('desired-container');
             const trackerModule = document.getElementById('val-tracker-module');
 
             if (game === "Valorant") {
-                cContainer.classList.add('val-size'); cContainer.classList.remove('lol-size');
-                dContainer.classList.add('val-size'); dContainer.classList.remove('lol-size');
-                trackerModule.classList.remove('hidden');
+                cContainer.classList.add('val-size'); cContainer.classList.remove('lol-size'); dContainer.classList.add('val-size'); dContainer.classList.remove('lol-size'); trackerModule.classList.remove('hidden');
             } else {
-                cContainer.classList.add('lol-size'); cContainer.classList.remove('val-size');
-                dContainer.classList.add('lol-size'); dContainer.classList.remove('val-size');
-                trackerModule.classList.add('hidden');
+                cContainer.classList.add('lol-size'); cContainer.classList.remove('val-size'); dContainer.classList.add('lol-size'); dContainer.classList.remove('val-size'); trackerModule.classList.add('hidden');
             }
 
+            // Sync Button Texts
+            document.getElementById('current-rank-text').innerText = currentDataset[currIdx] ? currentDataset[currIdx].name : "Select Rank";
+
             if (mode === "Rank Boost") {
-                uiRank.classList.remove('mode-hidden'); 
-                uiCounter.classList.add('mode-hidden'); 
-                uiCounter.classList.remove('flex'); 
-                centerDivider.classList.remove('hidden');
-                centerDivider.classList.add('flex');
-                leftLabel.innerText = "Current Standing";
+                uiRank.classList.remove('mode-hidden'); uiCounter.classList.add('mode-hidden'); uiCounter.classList.remove('flex'); centerDivider.classList.remove('hidden'); centerDivider.classList.add('flex');
+                document.getElementById('left-label').innerText = "Current Standing";
                 
+                // Logic clamp
                 if (desIdx <= currIdx) { 
                     desIdx = currIdx + 1; 
                     if(desIdx >= currentDataset.length) desIdx = currentDataset.length - 1; 
-                    document.getElementById('desired-select').selectedIndex = desIdx; 
                 }
-            } else {
-                uiRank.classList.add('mode-hidden'); 
-                uiCounter.classList.remove('mode-hidden'); 
-                uiCounter.classList.add('flex'); 
-                centerDivider.classList.add('hidden');
-                centerDivider.classList.remove('flex');
+                document.getElementById('desired-rank-text').innerText = currentDataset[desIdx] ? currentDataset[desIdx].name : "Select Rank";
 
-                if (mode === "Net Wins") { 
-                    leftLabel.innerText = "Current Standing"; 
-                    counterLabel.innerText = "Target Net Wins"; 
-                    maxCounter = 20; 
-                } else if (mode === "Placements") { 
-                    leftLabel.innerText = "Previous Season Rank"; 
-                    counterLabel.innerText = "Placement Matches"; 
-                    maxCounter = 5; 
-                    if (activeCounter > 5) activeCounter = 5; 
-                    document.getElementById('counter-value').innerText = activeCounter; 
-                }
+            } else {
+                uiRank.classList.add('mode-hidden'); uiCounter.classList.remove('mode-hidden'); uiCounter.classList.add('flex'); centerDivider.classList.add('hidden'); centerDivider.classList.remove('flex');
+                if (mode === "Net Wins") { document.getElementById('left-label').innerText = "Current Standing"; document.getElementById('counter-label').innerText = "Target Net Wins"; maxCounter = 20; } 
+                else if (mode === "Placements") { document.getElementById('left-label').innerText = "Previous Season Rank"; document.getElementById('counter-label').innerText = "Placement Matches"; maxCounter = 5; if (activeCounter > 5) activeCounter = 5; document.getElementById('counter-value').innerText = activeCounter; }
             }
 
             if (!skipImageAnimation) {
-                const cImg = document.getElementById('current-img');
-                const dImg = document.getElementById('desired-img');
+                const cImg = document.getElementById('current-img'), dImg = document.getElementById('desired-img');
                 cImg.classList.add('updating'); dImg.classList.add('updating');
-                
                 setTimeout(() => {
-                    if(currentDataset[currIdx]) cImg.src = currentDataset[currIdx].url;
-                    cImg.classList.remove('updating'); 
-                    if (mode === "Rank Boost" && currentDataset[desIdx]) { dImg.src = currentDataset[desIdx].url; dImg.classList.remove('updating'); }
+                    if(currentDataset[currIdx]) cImg.src = currentDataset[currIdx].large; cImg.classList.remove('updating'); 
+                    if (mode === "Rank Boost" && currentDataset[desIdx]) { dImg.src = currentDataset[desIdx].large; dImg.classList.remove('updating'); }
                 }, 200);
             }
 
             let addonsActive = [];
-            const safeAddonCheck = (id, text) => { 
-                const el = document.getElementById(id); 
-                if(el && el.checked) addonsActive.push(text); 
-            };
-            safeAddonCheck('addon-offline', "Offline Mod (Free)");
-            safeAddonCheck('addon-stream', "Stream (+30%)");
-            safeAddonCheck('addon-agents', "Specific Agents (+20%)");
-            safeAddonCheck('addon-priority', "Priority (+20%)");
-            safeAddonCheck('addon-role', "Role/Lane Lock (+20%)");
-            safeAddonCheck('addon-vpn', "Proxy VPN (+15%)");
+            const safeAddonCheck = (id, text) => { if(document.getElementById(id) && document.getElementById(id).checked) addonsActive.push(text); };
+            
+            safeAddonCheck('addon-offline', "Offline Mod (Free)"); 
+            safeAddonCheck('addon-stream', "Stream (+30%)"); 
+            safeAddonCheck('addon-priority', "Priority (+20%)"); 
+            safeAddonCheck('addon-role', "Role/Lane Lock (+20%)"); 
+            safeAddonCheck('addon-vpn', "Proxy VPN (+15%)"); 
             safeAddonCheck('addon-duo', "Duo Queue (+100%)");
+
+            let agentString = "";
+            if (document.getElementById('addon-agents') && document.getElementById('addon-agents').checked) {
+                if (selectedAgents.length > 0) {
+                    agentString = `Specific Agents (+20%): ${selectedAgents.join(', ')}`;
+                    addonsActive.push(agentString);
+                } else {
+                    addonsActive.push("Specific Agents (+20%): [None Selected]");
+                }
+            }
+
+            calculateETA(mode, currIdx, desIdx, activeCounter);
 
             document.getElementById('summ-game').innerText = game;
             document.getElementById('summ-mode').innerText = mode === "Rank Boost" ? "Rank Push" : mode;
@@ -654,47 +765,65 @@
             const progressContainer = document.getElementById('summ-progress-container');
             if (mode === "Rank Boost") {
                 progressContainer.innerHTML = `<span class="font-bold text-blue-200/80">${currentDataset[currIdx].name}</span> <span class="text-[#66B2FF] text-[10px] font-black mx-1">➔</span> <span class="font-bold text-[#66B2FF]">${currentDataset[desIdx].name}</span>`;
-                orderString = `GAME: ${game}\nMODE: Rank Push\nPROGRESS: ${currentDataset[currIdx].name} -> ${currentDataset[desIdx].name}\nADDONS: ${addonsActive.length > 0 ? addonsActive.join("\n- ") : "None"}`;
+                orderString = `GAME: ${game}\nMODE: Rank Push\nPROGRESS: ${currentDataset[currIdx].name} -> ${currentDataset[desIdx].name}\nADDONS:\n- ${addonsActive.length > 0 ? addonsActive.join("\n- ") : "None"}`;
             } else if (mode === "Net Wins") {
                 progressContainer.innerHTML = `<span class="font-bold text-blue-200/80">${currentDataset[currIdx].name}</span> <span class="text-[#66B2FF] text-[10px] font-black mx-1">+</span> <span class="font-bold text-[#66B2FF]">${activeCounter} Wins</span>`;
-                orderString = `GAME: ${game}\nMODE: Net Wins\nCURRENT: ${currentDataset[currIdx].name}\nWINS WANTED: ${activeCounter}\nADDONS: ${addonsActive.length > 0 ? addonsActive.join("\n- ") : "None"}`;
+                orderString = `GAME: ${game}\nMODE: Net Wins\nCURRENT: ${currentDataset[currIdx].name}\nWINS WANTED: ${activeCounter}\nADDONS:\n- ${addonsActive.length > 0 ? addonsActive.join("\n- ") : "None"}`;
             } else if (mode === "Placements") {
                 progressContainer.innerHTML = `<span class="font-bold text-blue-200/80 text-xs">Prev: ${currentDataset[currIdx].name}</span> <span class="text-white/20 mx-1">|</span> <span class="font-bold text-[#66B2FF]">${activeCounter} Matches</span>`;
-                orderString = `GAME: ${game}\nMODE: Placements\nPREV RANK: ${currentDataset[currIdx].name}\nMATCHES: ${activeCounter}\nADDONS: ${addonsActive.length > 0 ? addonsActive.join("\n- ") : "None"}`;
+                orderString = `GAME: ${game}\nMODE: Placements\nPREV RANK: ${currentDataset[currIdx].name}\nMATCHES: ${activeCounter}\nADDONS:\n- ${addonsActive.length > 0 ? addonsActive.join("\n- ") : "None"}`;
+            }
+        }
+
+        // --- UTILITIES ---
+        function toggleTheme() {
+            const htmlTag = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            if (htmlTag.getAttribute('data-theme') === 'black') {
+                htmlTag.removeAttribute('data-theme'); icon.innerText = '🌑'; 
+            } else {
+                htmlTag.setAttribute('data-theme', 'black'); icon.innerText = '☀️'; 
             }
         }
 
         function searchTracker() {
-            const input = document.getElementById('val-tracker-input');
-            const name = input.value.trim();
-            const status = document.getElementById('tracker-status');
-            const consoleModule = document.getElementById('val-tracker-module');
-
+            const input = document.getElementById('val-tracker-input'), name = input.value.trim(), status = document.getElementById('tracker-status'), consoleModule = document.getElementById('val-tracker-module');
             if (!name || !name.includes('#')) {
-                status.innerText = "❌ Please use 'Name#Tag' format (e.g., TenZ#NA1).";
-                status.classList.remove('text-blue-200/60', 'text-[#66B2FF]');
-                status.classList.add('text-red-400');
-                consoleModule.classList.remove('tracker-active');
-                finalTrackerUrl = "";
-                return;
+                status.innerText = "❌ Please use 'Name#Tag' format (e.g., TenZ#NA1)."; status.classList.remove('text-blue-200/60', 'text-[#66B2FF]'); status.classList.add('text-red-400');
+                consoleModule.classList.remove('tracker-active'); finalTrackerUrl = ""; return;
             }
+            const [nick, tag] = name.split('#'); finalTrackerUrl = `https://tracker.gg/valorant/profile/riot/${encodeURIComponent(nick)}%23${encodeURIComponent(tag)}/overview`;
+            status.innerHTML = `✅ Profile linked securely. URL embedded into order manifest.`; status.classList.remove('text-blue-200/60', 'text-red-400'); status.classList.add('text-[#66B2FF]');
+            consoleModule.classList.add('tracker-active'); input.classList.add('border-[#007AFF]');
+            document.getElementById('val-tracker-btn').innerText = "✓ Linked"; document.getElementById('val-tracker-btn').classList.add('bg-[#007AFF]/30', 'border-[#007AFF]/60');
+        }
 
-            const [nick, tag] = name.split('#');
-            finalTrackerUrl = `https://tracker.gg/valorant/profile/riot/${encodeURIComponent(nick)}%23${encodeURIComponent(tag)}/overview`;
-
-            status.innerHTML = `✅ Profile linked securely. URL embedded into order manifest.`;
-            status.classList.remove('text-blue-200/60', 'text-red-400');
-            status.classList.add('text-[#66B2FF]');
-            consoleModule.classList.add('tracker-active');
-            input.classList.add('border-[#007AFF]');
-            document.getElementById('val-tracker-btn').innerText = "✓ Linked";
-            document.getElementById('val-tracker-btn').classList.add('bg-[#007AFF]/30', 'border-[#007AFF]/60');
+        function initToasts() {
+            const activities = [
+                "⚡ Vanguard operative just completed a Diamond 3 order.",
+                "✅ A user in the US just bought a Duo Boost.",
+                "🔥 Operative V1per claimed an Ascendant trajectory.",
+                "🛡️ Master Tier order finalized with VPN active.",
+                "⚡ A new placement order was just submitted."
+            ];
+            
+            setInterval(() => {
+                if(Math.random() > 0.4) return; 
+                const container = document.getElementById('toast-container');
+                const text = activities[Math.floor(Math.random() * activities.length)];
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                toast.innerHTML = `<span class="text-white text-[10px] font-bold tracking-wide">${text}</span>`;
+                container.appendChild(toast);
+                setTimeout(() => toast.classList.add('show'), 100);
+                setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 500); }, 4000);
+            }, 8000); 
         }
 
         function generateTicketAndEmail() {
             const btn = document.getElementById('checkout-btn');
             const originalHtml = btn.innerHTML;
-            btn.innerHTML = "<span class='relative z-10 text-white'>Processing Protocol...</span>"; btn.disabled = true;
+            btn.innerHTML = "<span style='position: relative; z-index: 50; color: #FFFFFF !important;'>Processing Protocol...</span>"; btn.disabled = true;
 
             const randID = Math.floor(1000 + Math.random() * 9000);
             const game = document.querySelector('input[name="game"]:checked').value;
@@ -702,58 +831,42 @@
             currentTicketId = `#TKT-${randID}-${prefix}`;
             
             let finalOrderDetails = orderString;
+            const liveEtaStr = document.getElementById('live-eta').innerText;
+            finalOrderDetails += `\nEST. COMPLETION: ${liveEtaStr}`;
             
             const DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1412863989670608977/u5_jHeN0Uhb6laYlec03sBYALL7AJ51jUgyNwmindE1YeO-bEhynDVUvQVvwH5kFa7qB";
-            
             const embedPayload = {
                 username: "Vanguard Intelligence",
                 embeds: [{
                     title: `🚨 New Ticket Generated: ${currentTicketId}`,
-                    description: `A user has finalized an order manifest on the site. Await their arrival in Discord.\n\n**Manifest Details:**\n\`\`\`\n${orderString}\n\`\`\``,
-                    color: 31487,
-                    timestamp: new Date().toISOString(),
-                    footer: { text: "4G Boosting • Vanguard Web System" }
+                    description: `A user has finalized an order manifest on the site. Await their arrival in Discord.\n\n**Manifest Details:**\n\`\`\`\n${orderString}\nEST. COMPLETION: ${liveEtaStr}\n\`\`\``,
+                    color: 31487, timestamp: new Date().toISOString(), footer: { text: "4G Boosting • Vanguard Web System" }
                 }]
             };
 
             if (game === "Valorant" && finalTrackerUrl) {
                 finalOrderDetails += `\n\nVANGUARD_LINK: ${finalTrackerUrl}`;
-                embedPayload.embeds[0].fields = [{
-                    name: "🔗 Vanguard Intelligence Link",
-                    value: `[Click Here to View Tracker.gg Profile](${finalTrackerUrl})`,
-                    inline: false
-                }];
+                embedPayload.embeds[0].fields = [{ name: "🔗 Vanguard Intelligence Link", value: `[Click Here to View Tracker.gg Profile](${finalTrackerUrl})`, inline: false }];
             }
 
-            fetch(DISCORD_WEBHOOK, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(embedPayload)
-            })
-            .then(() => console.log("Discord Webhook fired successfully"))
-            .catch(err => console.error("Discord Webhook failed", err))
+            fetch(DISCORD_WEBHOOK, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(embedPayload) })
+            .then(() => console.log("Discord Webhook fired successfully")).catch(err => console.error("Discord Webhook failed", err))
             .finally(() => {
                 setTimeout(() => {
                     btn.innerHTML = originalHtml; btn.disabled = false;
                     document.getElementById('modal-ticket-id').innerText = currentTicketId;
                     document.getElementById('modal-order-details').innerText = finalOrderDetails;
-                    document.getElementById('ticket-modal').classList.remove('hidden');
-                    document.getElementById('ticket-modal').classList.add('flex');
-                    document.getElementById('copy-btn').innerText = "Copy Details";
-                    document.getElementById('copy-btn').classList.remove('bg-[#007AFF]', 'text-white');
-                    document.getElementById('copy-btn').classList.add('bg-white', 'text-black');
+                    document.getElementById('ticket-modal').classList.remove('hidden'); document.getElementById('ticket-modal').classList.add('flex');
+                    document.getElementById('copy-btn').innerText = "Copy Details"; document.getElementById('copy-btn').classList.remove('bg-[#007AFF]', 'text-white'); document.getElementById('copy-btn').classList.add('bg-white', 'text-black');
                 }, 600);
             });
         }
 
         function copyToClipboard() {
             let fullCopy = `${currentTicketId}\n\n`;
-            
             navigator.clipboard.writeText(fullCopy + document.getElementById('modal-order-details').innerText).then(() => {
                 const btn = document.getElementById('copy-btn');
-                btn.innerText = "✓ Hash Copied";
-                btn.classList.remove('bg-white', 'text-black');
-                btn.classList.add('bg-[#007AFF]', 'text-white');
+                btn.innerText = "✓ Hash Copied"; btn.classList.remove('bg-white', 'text-black'); btn.classList.add('bg-[#007AFF]', 'text-white');
             });
         }
     </script>
