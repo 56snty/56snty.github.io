@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>4G Boosting | Premium Rank Ascension | Vanguard Intelligence</title>
+    <title>4G Boosting | Vanguard Intelligence | Elite Ascension</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Clash+Display:wght@600;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
             --primary: #007AFF;
-            --bg-dark: #020202;
-            --console-bg: rgba(15, 20, 25, 0.4);
-            --border: rgba(255, 255, 255, 0.05);
+            --primary-light: #3395FF;
+            --bg-dark: #020203;
+            --console-bg: rgba(10, 12, 16, 0.45);
+            --border: rgba(255, 255, 255, 0.04);
             --tracker-glow: rgba(22, 163, 74, 0.2);
             --primary-glow: rgba(0, 122, 255, 0.4);
         }
@@ -30,106 +30,132 @@
         
         .clash { font-family: 'Clash Display', sans-serif; }
 
-        .bg-glow {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 80vw; height: 80vh; background: radial-gradient(circle, rgba(0, 122, 255, 0.04) 0%, transparent 60%);
-            z-index: -2; pointer-events: none;
+        /* --- 2026 AMBIENT BACKGROUND --- */
+        .bg-grid {
+            position: fixed; inset: 0; z-index: -3;
+            background-image: 
+                linear-gradient(to right, rgba(255,255,255,0.015) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255,255,255,0.015) 1px, transparent 1px);
+            background-size: 60px 60px;
+            mask-image: radial-gradient(circle at 50% 30%, black 30%, transparent 80%);
+            -webkit-mask-image: radial-gradient(circle at 50% 30%, black 30%, transparent 80%);
         }
 
+        .ambient-orb {
+            position: fixed; border-radius: 50%; filter: blur(120px); z-index: -2;
+            animation: floatOrb 25s infinite ease-in-out alternate; opacity: 0.5;
+        }
+        .orb-1 { top: -10%; left: 10%; width: 50vw; height: 50vw; background: rgba(0, 122, 255, 0.15); }
+        .orb-2 { bottom: -20%; right: 5%; width: 60vw; height: 60vw; background: rgba(0, 200, 255, 0.08); animation-delay: -12s; }
+
+        @keyframes floatOrb {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(50px, 50px) scale(1.1); }
+        }
+
+        /* --- THE COMMAND CONSOLE & SPOTLIGHT --- */
         .command-console {
-            background: var(--console-bg);
-            backdrop-filter: blur(40px);
-            -webkit-backdrop-filter: blur(40px);
-            border: 1px solid var(--border);
-            border-radius: 40px;
-            box-shadow: 0 40px 100px -20px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.05);
+            background: radial-gradient(800px circle at var(--mouse-x, 50%) var(--mouse-y, -200%), rgba(255,255,255,0.06), transparent 40%), var(--console-bg);
+            backdrop-filter: blur(50px); -webkit-backdrop-filter: blur(50px);
+            border: 1px solid var(--border); border-radius: 40px;
+            box-shadow: 0 40px 100px -20px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.08);
             width: 100%; max-width: 1100px; margin: 0 auto;
+            position: relative; overflow: hidden;
         }
 
-        .tab-radio input:checked + div {
-            background: rgba(255, 255, 255, 0.1); color: #fff;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        /* --- CINEMATIC LIGHT SWEEPS (AFTER EFFECTS STYLE) --- */
+        .sweep-card { position: relative; overflow: hidden; }
+        .sweep-card::after {
+            content: ''; position: absolute; top: 0; left: -150%; width: 50%; height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,0.08), transparent);
+            transform: skewX(-25deg); transition: 0.7s ease; z-index: 1; pointer-events: none;
         }
-        .tab-radio-blue input:checked + div {
-            background: var(--primary); color: #fff;
-            box-shadow: 0 4px 20px rgba(0, 122, 255, 0.3);
-        }
-        .tab-content { transition: all 0.3s; color: rgba(255,255,255,0.4); }
+        .sweep-card:hover::after { left: 200%; transition: 0.7s ease; }
 
         .radio-card input:checked + div {
-            border-color: var(--primary); background: rgba(0, 122, 255, 0.05);
-            box-shadow: inset 0 0 20px rgba(0, 122, 255, 0.05), 0 4px 15px rgba(0, 122, 255, 0.1);
-            transform: translateY(-2px);
+            border-color: var(--primary-light); background: rgba(0, 122, 255, 0.08);
+            box-shadow: inset 0 0 20px rgba(0, 122, 255, 0.05), 0 8px 25px rgba(0, 122, 255, 0.15);
+            transform: translateY(-3px);
         }
 
-        .rank-img-container {
-            position: relative; display: flex; align-items: center; justify-content: center;
-        }
-        .rank-img {
-            object-fit: contain; transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.4s ease;
-            filter: drop-shadow(0 0 20px rgba(0, 122, 255, 0.1)); z-index: 10;
-        }
-        .rank-img.updating { transform: scale(0.6) translateY(20px); opacity: 0; }
+        /* --- STAGGERED ENTRANCE ANIMATIONS --- */
+        .stagger-1 { animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+        .stagger-2 { animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards; opacity: 0; }
+        .stagger-3 { animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards; opacity: 0; }
+        .stagger-4 { animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards; opacity: 0; }
         
-        .val-size { width: 130px; height: 130px; }
-        .lol-size { width: 190px; height: 190px; }
-
-        .counter-btn {
-            width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.1); font-size: 24px; display: flex; align-items: center; justify-content: center;
-            transition: all 0.3s; color: white;
-        }
-        .counter-btn:hover { background: rgba(0, 122, 255, 0.1); border-color: var(--primary); color: var(--primary); }
-
-        select {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='rgba(255,255,255,0.3)'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-            background-position: right 1.5rem center; background-repeat: no-repeat; background-size: 1.2em;
+        @keyframes slideUpFade {
+            0% { opacity: 0; transform: translateY(40px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
 
-        .tracker-active {
-            border-color: #16a34a !important;
-            box-shadow: 0 0 30px -5px var(--tracker-glow);
-        }
-        #val-tracker-input:focus { border-color: #16a34a; }
+        /* --- TAB TOGGLES --- */
+        .tab-radio input:checked + div { background: rgba(255, 255, 255, 0.1); color: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .tab-radio-blue input:checked + div { background: var(--primary); color: #fff; box-shadow: 0 4px 20px rgba(0, 122, 255, 0.4); }
+        .tab-content { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); color: rgba(255,255,255,0.4); }
 
+        .addon-pill input:checked + div { border-color: var(--primary-light); color: var(--primary-light); background: rgba(0, 122, 255, 0.1); }
+
+        /* --- HOLOGRAM RANK PHASING --- */
+        .rank-img-container { position: relative; display: flex; align-items: center; justify-content: center; }
+        .rank-img { object-fit: contain; transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease; filter: drop-shadow(0 0 25px rgba(0, 122, 255, 0.15)); z-index: 10; }
+        .rank-img.updating { transform: scale(0.5) translateY(30px) rotateY(15deg); opacity: 0; }
+        .val-size { width: 140px; height: 140px; }
+        .lol-size { width: 200px; height: 200px; }
+
+        /* --- PULSING ACTION BUTTON --- */
         .btn-primary-blue {
-            background: linear-gradient(135deg, #007AFF 0%, #004BCC 100%);
-            border: 1px solid rgba(0, 122, 255, 0.3);
-            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.3), inset 0 1px 0 rgba(255,255,255,0.2);
-            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            position: relative; background: linear-gradient(135deg, #007AFF 0%, #004BCC 100%);
+            border: 1px solid rgba(0, 122, 255, 0.5);
+            box-shadow: 0 0 20px rgba(0, 122, 255, 0.3), inset 0 1px 0 rgba(255,255,255,0.2);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); overflow: hidden;
         }
+        .btn-primary-blue::before {
+            content: ''; position: absolute; inset: -2px; border-radius: 50%;
+            background: conic-gradient(from 0deg, transparent, rgba(255,255,255,0.5), transparent);
+            animation: rotatePulse 4s linear infinite; z-index: -1; opacity: 0.5;
+        }
+        @keyframes rotatePulse { 100% { transform: rotate(360deg); } }
+        
         .btn-primary-blue:hover {
-            box-shadow: 0 10px 40px rgba(0, 122, 255, 0.5), inset 0 1px 0 rgba(255,255,255,0.3);
-            transform: translateY(-3px) scale(1.02);
-            filter: brightness(1.1);
+            box-shadow: 0 10px 40px rgba(0, 122, 255, 0.6), inset 0 1px 0 rgba(255,255,255,0.3);
+            transform: translateY(-3px) scale(1.02); filter: brightness(1.15);
         }
 
+        /* --- MISC --- */
+        .counter-btn { width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); font-size: 24px; display: flex; align-items: center; justify-content: center; transition: all 0.3s; color: white; }
+        .counter-btn:hover { background: rgba(0, 122, 255, 0.15); border-color: var(--primary-light); color: var(--primary-light); transform: scale(1.1); }
+        select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='rgba(255,255,255,0.3)'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E"); background-position: right 1.5rem center; background-repeat: no-repeat; background-size: 1.2em; }
+        .tracker-active { border-color: #16a34a !important; box-shadow: 0 0 40px -5px var(--tracker-glow); }
+        #val-tracker-input:focus { border-color: #16a34a; box-shadow: 0 0 20px rgba(22, 163, 74, 0.1); }
         .mode-hidden { display: none !important; }
-        #ticket-modal { backdrop-filter: blur(20px); background: rgba(0,0,0,0.8); }
+        #ticket-modal { backdrop-filter: blur(30px); background: rgba(0,0,0,0.85); }
     </style>
 </head>
 <body class="pt-24 pb-6 px-4 md:px-8">
 
-    <div class="bg-glow"></div>
+    <div class="bg-grid"></div>
+    <div class="ambient-orb orb-1"></div>
+    <div class="ambient-orb orb-2"></div>
 
-    <nav class="fixed top-0 left-0 w-full z-50 bg-black/40 backdrop-blur-md border-b border-white/5 px-6 py-4 flex justify-between items-center">
-        <div class="clash text-xl font-bold tracking-widest text-white">4G<span class="text-[#007AFF]">BOOST</span></div>
-        <a href="https://discord.gg/F8bPnjXeGZ" target="_blank" class="text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-white transition flex items-center gap-2">
-            <span>Support via Discord</span> <span class="text-[#007AFF]">➔</span>
+    <nav class="fixed top-0 left-0 w-full z-50 bg-black/30 backdrop-blur-xl border-b border-white/5 px-6 py-4 flex justify-between items-center stagger-1">
+        <div class="clash text-xl font-bold tracking-widest text-white drop-shadow-[0_0_15px_rgba(0,122,255,0.5)]">4G<span class="text-[#007AFF]">BOOST</span></div>
+        <a href="https://discord.gg/F8bPnjXeGZ" target="_blank" class="text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-white transition flex items-center gap-2 group">
+            <span>Support via Discord</span> <span class="text-[#007AFF] group-hover:translate-x-1 transition-transform">➔</span>
         </a>
     </nav>
 
     <main class="flex-1 flex flex-col items-center justify-center w-full mt-8">
         
-        <div class="text-center mb-10">
-            <h1 class="clash text-4xl md:text-6xl font-bold text-white tracking-tight mb-4">Elite Ascension.</h1>
-            <p class="text-sm text-slate-500 tracking-widest uppercase">Configure your trajectory</p>
+        <div class="text-center mb-10 stagger-2">
+            <h1 class="clash text-4xl md:text-6xl font-bold text-white tracking-tight mb-4 drop-shadow-2xl">Elite Ascension.</h1>
+            <p class="text-sm text-[#007AFF] font-medium tracking-[0.2em] uppercase drop-shadow-[0_0_10px_rgba(0,122,255,0.3)]">Configure your trajectory</p>
         </div>
 
-        <div class="command-console p-6 md:p-12 relative">
+        <div class="command-console p-6 md:p-12 relative stagger-3" id="main-console">
             
             <div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-10 border-b border-white/5 pb-8">
-                <div class="flex bg-black/50 p-1.5 rounded-full border border-white/5 w-full md:w-auto">
+                <div class="flex bg-black/40 p-1.5 rounded-full border border-white/5 w-full md:w-auto shadow-inner">
                     <label class="tab-radio cursor-pointer flex-1 md:flex-none">
                         <input type="radio" name="game" value="Valorant" class="absolute opacity-0" checked onchange="handleGameChange()">
                         <div class="tab-content px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest text-center">Valorant</div>
@@ -140,7 +166,7 @@
                     </label>
                 </div>
 
-                <div class="flex bg-black/50 p-1.5 rounded-full border border-white/5 w-full md:w-auto overflow-x-auto no-scrollbar">
+                <div class="flex bg-black/40 p-1.5 rounded-full border border-white/5 w-full md:w-auto overflow-x-auto no-scrollbar shadow-inner">
                     <label class="tab-radio-blue cursor-pointer whitespace-nowrap">
                         <input type="radio" name="mode" value="Rank Boost" class="absolute opacity-0" checked onchange="updateUI()">
                         <div class="tab-content px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest">Rank Push</div>
@@ -166,106 +192,106 @@
                             <div id="current-container" class="rank-img-container val-size mb-6">
                                 <img id="current-img" class="rank-img" src="" alt="Current Rank" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'><circle cx=\'50\' cy=\'50\' r=\'40\' fill=\'none\' stroke=\'%23007AFF\' stroke-width=\'2\' stroke-dasharray=\'4,4\'/></svg>'">
                             </div>
-                            <select id="current-select" class="w-full max-w-[240px] bg-black/50 border border-white/10 rounded-full px-6 py-4 text-sm font-bold outline-none focus:border-white/30 text-center appearance-none cursor-pointer" onchange="updateUI()"></select>
+                            <select id="current-select" class="w-full max-w-[240px] bg-black/50 border border-white/10 rounded-full px-6 py-4 text-sm font-bold outline-none focus:border-white/30 text-center appearance-none cursor-pointer hover:bg-black/70 transition" onchange="updateUI()"></select>
                         </div>
 
                         <div id="center-divider" class="hidden md:flex flex-col items-center justify-center opacity-30">
                             <div class="w-px h-16 bg-gradient-to-b from-transparent to-white mb-4"></div>
-                            <span class="text-xl">➔</span>
+                            <span class="text-xl drop-shadow-[0_0_10px_white]">➔</span>
                             <div class="w-px h-16 bg-gradient-to-t from-transparent to-white mt-4"></div>
                         </div>
 
                         <div id="ui-target-rank" class="flex flex-col items-center">
-                            <label class="text-[10px] text-[#007AFF] font-bold uppercase tracking-widest mb-6">Target Objective</label>
+                            <label class="text-[10px] text-[#007AFF] font-bold uppercase tracking-widest mb-6 drop-shadow-[0_0_8px_rgba(0,122,255,0.5)]">Target Objective</label>
                             <div id="desired-container" class="rank-img-container val-size mb-6">
                                 <img id="desired-img" class="rank-img filter saturate-150" src="" alt="Desired Rank" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'><circle cx=\'50\' cy=\'50\' r=\'40\' fill=\'none\' stroke=\'%23007AFF\' stroke-width=\'2\' stroke-dasharray=\'4,4\'/></svg>'">
                             </div>
-                            <select id="desired-select" class="w-full max-w-[240px] bg-[#007AFF]/5 border border-[#007AFF]/30 rounded-full px-6 py-4 text-sm font-bold text-[#007AFF] outline-none text-center appearance-none cursor-pointer" onchange="updateUI()"></select>
+                            <select id="desired-select" class="w-full max-w-[240px] bg-[#007AFF]/10 border border-[#007AFF]/40 rounded-full px-6 py-4 text-sm font-bold text-[#3395FF] outline-none text-center appearance-none cursor-pointer hover:bg-[#007AFF]/20 transition" onchange="updateUI()"></select>
                         </div>
 
                         <div id="ui-target-counter" class="mode-hidden flex-col items-center justify-center h-full">
-                            <label id="counter-label" class="text-[10px] text-[#007AFF] font-bold uppercase tracking-widest mb-6">Target Quantity</label>
+                            <label id="counter-label" class="text-[10px] text-[#007AFF] font-bold uppercase tracking-widest mb-6 drop-shadow-[0_0_8px_rgba(0,122,255,0.5)]">Target Quantity</label>
                             <div class="flex items-center gap-8 py-8">
                                 <button onclick="adjustCounter(-1)" class="counter-btn">−</button>
-                                <div class="text-8xl font-black clash text-white drop-shadow-[0_0_30px_rgba(0,122,255,0.3)] w-24 text-center" id="counter-value">3</div>
+                                <div class="text-8xl font-black clash text-white drop-shadow-[0_0_40px_rgba(0,122,255,0.4)] w-24 text-center" id="counter-value">3</div>
                                 <button onclick="adjustCounter(1)" class="counter-btn">+</button>
                             </div>
                         </div>
                     </div>
 
-                    <div id="val-tracker-module" class="bg-black/30 p-6 md:p-8 rounded-3xl border border-white/5 transition-all duration-300">
-                        <div class="flex items-center justify-between mb-5">
-                            <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-3">
-                                <span class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.8)]"></span> Vanguard Integration
+                    <div id="val-tracker-module" class="sweep-card bg-black/40 p-6 md:p-8 rounded-3xl border border-white/5 transition-all duration-500 shadow-inner hover:border-white/10">
+                        <div class="flex items-center justify-between mb-5 relative z-10">
+                            <h3 class="text-[11px] font-bold text-slate-300 uppercase tracking-widest flex items-center gap-3">
+                                <span class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.9)] animate-pulse"></span> Vanguard Integration
                             </h3>
                         </div>
-                        <div class="flex flex-col md:flex-row items-center gap-3">
-                            <input type="text" id="val-tracker-input" placeholder="Riot ID #TAG (e.g., TenZ#NA1)" class="w-full bg-[#111] border border-white/10 rounded-full px-6 py-3.5 text-sm font-medium text-white outline-none focus:border-green-500 transition">
-                            <button onclick="searchTracker()" id="val-tracker-btn" class="w-full md:w-auto bg-white/5 hover:bg-green-500/10 text-slate-300 hover:text-green-400 px-8 py-3.5 rounded-full font-bold text-xs tracking-widest uppercase transition shrink-0 border border-white/10 hover:border-green-500/30">Link Profile</button>
+                        <div class="flex flex-col md:flex-row items-center gap-3 relative z-10">
+                            <input type="text" id="val-tracker-input" placeholder="Riot ID #TAG (e.g., TenZ#NA1)" class="w-full bg-[#0a0a0a] border border-white/10 rounded-full px-6 py-3.5 text-sm font-medium text-white outline-none focus:border-green-500 transition-all duration-300 shadow-inner">
+                            <button onclick="searchTracker()" id="val-tracker-btn" class="w-full md:w-auto bg-white/5 hover:bg-green-500/15 text-slate-300 hover:text-green-400 px-8 py-3.5 rounded-full font-bold text-xs tracking-widest uppercase transition-all duration-300 shrink-0 border border-white/10 hover:border-green-500/40">Link Profile</button>
                         </div>
-                        <div id="tracker-status" class="text-[10px] mt-3 ml-4 text-slate-500 font-medium">Provide your Riot ID to securely embed your match history.</div>
+                        <div id="tracker-status" class="text-[10px] mt-3 ml-4 text-slate-500 font-medium relative z-10">Provide your Riot ID to securely embed your match history.</div>
                     </div>
 
                     <div class="pt-2">
                         <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-[#007AFF]"></span> Modification Protocols
+                            <span class="w-2 h-2 rounded-full bg-[#007AFF] shadow-[0_0_10px_rgba(0,122,255,0.8)]"></span> Modification Protocols
                         </h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             
-                            <label class="cursor-pointer relative radio-card group">
+                            <label class="cursor-pointer relative radio-card group sweep-card">
                                 <input type="checkbox" id="addon-offline" class="absolute opacity-0" onchange="updateUI()" checked>
-                                <div class="border border-white/10 bg-black/40 rounded-2xl p-4 transition-all h-full">
+                                <div class="border border-white/10 bg-black/40 rounded-2xl p-4 transition-all h-full relative z-10">
                                     <div class="flex justify-between items-center mb-1">
-                                        <div class="font-bold text-white text-sm">Offline Mod</div>
-                                        <span class="text-[9px] text-green-400 font-bold bg-green-400/10 px-2 py-1 rounded">FREE</span>
+                                        <div class="font-bold text-white text-sm drop-shadow-md">Offline Mod</div>
+                                        <span class="text-[9px] text-green-400 font-bold bg-green-400/10 border border-green-400/20 px-2 py-1 rounded">FREE</span>
                                     </div>
-                                    <p class="text-[10px] text-slate-500 leading-relaxed pr-2">Booster plays in offline mode so no friends can see or message you.</p>
+                                    <p class="text-[10px] text-slate-400 leading-relaxed pr-2">Booster plays in offline mode so no friends can see or message you.</p>
                                 </div>
                             </label>
 
-                            <label class="cursor-pointer relative radio-card group">
+                            <label class="cursor-pointer relative radio-card group sweep-card">
                                 <input type="checkbox" id="addon-stream" class="absolute opacity-0" onchange="updateUI()">
-                                <div class="border border-white/10 bg-black/40 rounded-2xl p-4 transition-all h-full">
+                                <div class="border border-white/10 bg-black/40 rounded-2xl p-4 transition-all h-full relative z-10">
                                     <div class="flex justify-between items-center mb-1">
-                                        <div class="font-bold text-white text-sm">Stream</div>
-                                        <span class="text-[9px] text-[#007AFF] font-bold bg-[#007AFF]/10 px-2 py-1 rounded">+30%</span>
+                                        <div class="font-bold text-white text-sm drop-shadow-md">Stream</div>
+                                        <span class="text-[9px] text-[#3395FF] font-bold bg-[#007AFF]/15 border border-[#007AFF]/30 px-2 py-1 rounded">+30%</span>
                                     </div>
-                                    <p class="text-[10px] text-slate-500 leading-relaxed pr-2">Live stream your games to watch how the booster plays.</p>
+                                    <p class="text-[10px] text-slate-400 leading-relaxed pr-2">Live stream your games to watch how the booster plays.</p>
                                 </div>
                             </label>
 
-                            <label class="cursor-pointer relative radio-card group">
+                            <label class="cursor-pointer relative radio-card group sweep-card">
                                 <input type="checkbox" id="addon-agents" class="absolute opacity-0" onchange="updateUI()">
-                                <div class="border border-white/10 bg-black/40 rounded-2xl p-4 transition-all h-full">
+                                <div class="border border-white/10 bg-black/40 rounded-2xl p-4 transition-all h-full relative z-10">
                                     <div class="flex justify-between items-center mb-1">
-                                        <div class="font-bold text-white text-sm">Specific Agents</div>
-                                        <span class="text-[9px] text-[#007AFF] font-bold bg-[#007AFF]/10 px-2 py-1 rounded">+20%</span>
+                                        <div class="font-bold text-white text-sm drop-shadow-md">Specific Agents</div>
+                                        <span class="text-[9px] text-[#3395FF] font-bold bg-[#007AFF]/15 border border-[#007AFF]/30 px-2 py-1 rounded">+20%</span>
                                     </div>
-                                    <p class="text-[10px] text-slate-500 leading-relaxed pr-2">Booster will play only the Agents that you choose.</p>
+                                    <p class="text-[10px] text-slate-400 leading-relaxed pr-2">Booster will play only the Agents that you choose.</p>
                                 </div>
                             </label>
 
-                            <label class="cursor-pointer relative radio-card group">
+                            <label class="cursor-pointer relative radio-card group sweep-card">
                                 <input type="checkbox" id="addon-priority" class="absolute opacity-0" onchange="updateUI()">
-                                <div class="border border-white/10 bg-black/40 rounded-2xl p-4 transition-all h-full">
+                                <div class="border border-white/10 bg-black/40 rounded-2xl p-4 transition-all h-full relative z-10">
                                     <div class="flex justify-between items-center mb-1">
-                                        <div class="font-bold text-white text-sm">Priority</div>
-                                        <span class="text-[9px] text-[#007AFF] font-bold bg-[#007AFF]/10 px-2 py-1 rounded">+20%</span>
+                                        <div class="font-bold text-white text-sm drop-shadow-md">Priority</div>
+                                        <span class="text-[9px] text-[#3395FF] font-bold bg-[#007AFF]/15 border border-[#007AFF]/30 px-2 py-1 rounded">+20%</span>
                                     </div>
-                                    <p class="text-[10px] text-slate-500 leading-relaxed pr-2">We will place your order at the absolute top of the queue.</p>
+                                    <p class="text-[10px] text-slate-400 leading-relaxed pr-2">We will place your order at the absolute top of the queue.</p>
                                 </div>
                             </label>
 
-                            <label class="cursor-pointer relative radio-card group md:col-span-2">
+                            <label class="cursor-pointer relative radio-card group sweep-card md:col-span-2">
                                 <input type="checkbox" id="addon-duo" class="absolute opacity-0" onchange="updateUI()">
-                                <div class="border border-white/10 bg-black/40 rounded-2xl p-4 transition-all h-full">
+                                <div class="border border-white/10 bg-black/40 rounded-2xl p-4 transition-all h-full relative z-10">
                                     <div class="flex justify-between items-center mb-1">
-                                        <div class="font-bold text-white text-sm">Duo Queue</div>
-                                        <span class="text-[9px] text-[#007AFF] font-bold bg-[#007AFF]/10 px-2 py-1 rounded">+100%</span>
+                                        <div class="font-bold text-white text-sm drop-shadow-md">Duo Queue</div>
+                                        <span class="text-[9px] text-[#3395FF] font-bold bg-[#007AFF]/15 border border-[#007AFF]/30 px-2 py-1 rounded">+100%</span>
                                     </div>
-                                    <p class="text-[10px] text-slate-500 leading-relaxed">
+                                    <p class="text-[10px] text-slate-400 leading-relaxed">
                                         Duo with one of our boosters to help you win while keeping credentials safe. 
-                                        <span class="block mt-1"><strong class="text-white/70">NOTE:</strong> Since rank systems are based on performance, this option is 100% more expensive.</span>
+                                        <span class="block mt-1"><strong class="text-white/60">NOTE:</strong> Since rank systems are based on performance, this option is 100% more expensive.</span>
                                     </p>
                                 </div>
                             </label>
@@ -275,41 +301,40 @@
                 </div>
 
                 <div class="lg:col-span-4 relative">
-                    <div class="sticky-summary p-6 md:p-8">
+                    <div class="sticky top-28 bg-black/30 backdrop-blur-2xl rounded-[32px] p-6 md:p-8 border border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
                         
                         <div class="space-y-3 mb-8">
-                            <div class="flex justify-between items-center bg-black/40 p-4 rounded-2xl border border-white/5">
+                            <div class="flex justify-between items-center bg-black/40 p-4 rounded-2xl border border-white/5 transition hover:bg-black/60">
                                 <span class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Environment</span>
-                                <span class="font-bold text-white text-sm" id="summ-game">Valorant</span>
+                                <span class="font-bold text-white text-sm drop-shadow-md" id="summ-game">Valorant</span>
                             </div>
-                            <div class="flex justify-between items-center bg-black/40 p-4 rounded-2xl border border-white/5">
+                            <div class="flex justify-between items-center bg-black/40 p-4 rounded-2xl border border-white/5 transition hover:bg-black/60">
                                 <span class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Protocol</span>
-                                <span class="font-bold text-white text-sm" id="summ-mode">Rank Push</span>
+                                <span class="font-bold text-white text-sm drop-shadow-md" id="summ-mode">Rank Push</span>
                             </div>
-                            <div class="flex justify-between items-center bg-black/40 p-4 rounded-2xl border border-white/5">
+                            <div class="flex justify-between items-center bg-black/40 p-4 rounded-2xl border border-white/5 transition hover:bg-black/60">
                                 <span class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Vector</span>
-                                <div class="text-right flex items-center gap-2 text-sm" id="summ-progress-container"></div>
+                                <div class="text-right flex items-center gap-2 text-sm drop-shadow-md" id="summ-progress-container"></div>
                             </div>
                         </div>
 
-                        <div class="bg-[#007AFF]/10 rounded-2xl p-6 mb-6 border border-[#007AFF]/20 text-center">
-                            <span class="text-[#007AFF] font-bold text-[10px] uppercase tracking-widest block mb-2">Final Authorization</span>
-                            <p class="text-[11px] text-white/90 font-medium leading-relaxed px-2">You need to create a ticket to learn prices and talk about details for your boost order.</p>
+                        <div class="bg-[#007AFF]/10 rounded-2xl p-6 mb-6 border border-[#007AFF]/30 text-center shadow-inner">
+                            <span class="text-[#3395FF] font-bold text-[10px] uppercase tracking-widest block mb-2 drop-shadow-[0_0_8px_rgba(0,122,255,0.8)]">Final Authorization</span>
+                            <p class="text-[11px] text-white/80 font-medium leading-relaxed px-2">A ticket is required to finalize pricing and operational details.</p>
                         </div>
 
-                        <button onclick="generateTicketAndEmail()" id="checkout-btn" class="w-full btn-primary-blue py-5 rounded-full font-bold text-sm tracking-widest uppercase mb-6">
-                            Generate Ticket
+                        <button onclick="generateTicketAndEmail()" id="checkout-btn" class="w-full btn-primary-blue py-5 rounded-full font-bold text-sm tracking-widest uppercase mb-6 flex justify-center items-center gap-3 relative overflow-hidden z-10">
+                            <span class="relative z-10">Generate Ticket</span>
                         </button>
 
                         <div class="text-center">
                             <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mb-3">Accepted Gateways</p>
-                            <div class="flex flex-wrap justify-center items-center gap-x-4 gap-y-2 text-[10px] font-bold text-white/60">
-                                <span>PAYPAL</span>
-                                <span>STRIPE</span>
-                                <span>BTC</span>
-                                <span>VENMO</span>
-                                <span>CASHAPP</span>
-                                <span>CREDIT CARD</span>
+                            <div class="flex flex-wrap justify-center items-center gap-x-4 gap-y-2 text-[10px] font-bold text-white/50">
+                                <span class="hover:text-white transition">PAYPAL</span>
+                                <span class="hover:text-white transition">STRIPE</span>
+                                <span class="hover:text-white transition">BTC</span>
+                                <span class="hover:text-white transition">VENMO</span>
+                                <span class="hover:text-white transition">CASHAPP</span>
                             </div>
                         </div>
 
@@ -320,36 +345,45 @@
         </div>
     </main>
 
-    <footer class="w-full text-center py-6 mt-auto z-10 relative">
+    <footer class="w-full text-center py-8 mt-auto z-10 relative stagger-4">
         <p class="text-[10px] text-slate-500 font-bold tracking-widest uppercase">
-            Made by <span class="text-white">4owkey</span> with love <span class="text-[#007AFF]">💙</span>
+            Made by <span class="text-white hover:text-[#007AFF] transition cursor-pointer">4owkey</span> with love <span class="text-[#007AFF] animate-pulse">💙</span>
         </p>
     </footer>
 
     <div id="ticket-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
-        <div class="bg-[#0A0A0A] border border-[#007AFF]/40 p-8 md:p-10 rounded-[40px] max-w-sm w-full shadow-[0_0_100px_rgba(0,122,255,0.15)] relative text-center">
-            <button onclick="document.getElementById('ticket-modal').classList.add('hidden')" class="absolute top-6 right-6 text-slate-500 hover:text-white bg-white/5 w-8 h-8 rounded-full flex items-center justify-center transition">✕</button>
-            <div class="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center text-green-500 text-3xl mx-auto mb-6">✓</div>
-            <h2 class="clash text-2xl font-bold mb-2">Manifest Generated</h2>
-            <p class="text-slate-400 text-xs mb-8 px-4 leading-relaxed">Copy the secure hash below and submit it in Discord.</p>
+        <div class="bg-[#0A0A0E] border border-[#007AFF]/40 p-8 md:p-10 rounded-[40px] max-w-sm w-full shadow-[0_0_100px_rgba(0,122,255,0.2)] relative text-center sweep-card">
+            <button onclick="document.getElementById('ticket-modal').classList.add('hidden')" class="absolute top-6 right-6 text-slate-500 hover:text-white bg-white/5 hover:bg-white/10 w-8 h-8 rounded-full flex items-center justify-center transition z-20">✕</button>
+            <div class="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center text-green-500 text-3xl mx-auto mb-6 shadow-[0_0_30px_rgba(34,197,94,0.3)] relative z-20">✓</div>
+            <h2 class="clash text-2xl font-bold mb-2 relative z-20">Manifest Generated</h2>
+            <p class="text-slate-400 text-xs mb-8 px-4 leading-relaxed relative z-20">Copy the secure hash below and submit it to our operators in Discord.</p>
             
-            <div class="bg-black border border-white/5 rounded-2xl p-6 mb-8 text-left">
+            <div class="bg-black/80 border border-white/5 rounded-2xl p-6 mb-8 text-left relative z-20 shadow-inner">
                 <div class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mb-1 text-center">Authentication String</div>
-                <div class="font-mono text-[#007AFF] font-bold text-2xl tracking-widest text-center" id="modal-ticket-id">#TKT-XXXX</div>
+                <div class="font-mono text-[#007AFF] font-bold text-2xl tracking-widest text-center drop-shadow-[0_0_10px_rgba(0,122,255,0.5)]" id="modal-ticket-id">#TKT-XXXX</div>
                 <hr class="border-white/5 my-4">
                 <div class="text-[10px] font-medium font-mono whitespace-pre-line text-white/70 leading-relaxed" id="modal-order-details"></div>
             </div>
 
-            <button onclick="copyToClipboard()" id="copy-btn" class="w-full bg-white text-black py-4 rounded-full font-bold text-sm tracking-wide mb-3 hover:bg-slate-200 transition">Copy Details</button>
-            <a href="https://discord.gg/F8bPnjXeGZ" target="_blank" class="w-full bg-[#111] border border-white/10 text-white py-4 rounded-full font-bold text-sm tracking-wide flex justify-center items-center hover:bg-[#222] transition">Open Discord Hub</a>
+            <button onclick="copyToClipboard()" id="copy-btn" class="w-full bg-white text-black py-4 rounded-full font-bold text-sm tracking-wide mb-3 hover:bg-slate-200 transition relative z-20 shadow-[0_0_20px_rgba(255,255,255,0.2)]">Copy Details</button>
+            <a href="https://discord.gg/F8bPnjXeGZ" target="_blank" class="w-full bg-[#111] border border-white/10 text-white py-4 rounded-full font-bold text-sm tracking-wide flex justify-center items-center hover:bg-[#222] transition relative z-20">Open Discord Hub</a>
         </div>
     </div>
 
     <script>
-        emailjs.init("YOUR_PUBLIC_KEY_HERE"); 
-        const EMAILJS_SERVICE_ID = "YOUR_SERVICE_ID_HERE";
-        const EMAILJS_TEMPLATE_ID = "YOUR_TEMPLATE_ID_HERE";
+        // --- FORMSPREE WEBHOOK INTEGRATION ---
+        const FORMSPREE_ENDPOINT = "YOUR_FORMSPREE_URL_HERE";
 
+        // --- 2026 MOUSE SPOTLIGHT EFFECT ---
+        document.getElementById('main-console').addEventListener('mousemove', function(e) {
+            const rect = this.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            this.style.setProperty('--mouse-x', `${x}px`);
+            this.style.setProperty('--mouse-y', `${y}px`);
+        });
+
+        // VALORANT & LEAGUE DATA
         const VAL_API = "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/";
         const valRanks = [
             { name: "Iron 1", url: VAL_API+"3/largeicon.png" }, { name: "Iron 2", url: VAL_API+"4/largeicon.png" }, { name: "Iron 3", url: VAL_API+"5/largeicon.png" },
@@ -377,7 +411,7 @@
         let maxCounter = 10;
         let orderString = "";
         let currentTicketId = "";
-        let trackerValidatedName = "";
+        let finalTrackerUrl = "";
 
         window.onload = () => { populateDropdowns(); updateUI(); };
 
@@ -495,7 +529,7 @@
             const [nick, tag] = name.split('#');
             finalTrackerUrl = `https://tracker.gg/valorant/profile/riot/${encodeURIComponent(nick)}%23${encodeURIComponent(tag)}/overview`;
 
-            status.innerHTML = `✅ Profile linked securely. URL has been embedded into your order manifest.`;
+            status.innerHTML = `✅ Profile linked securely. URL embedded into order manifest.`;
             status.classList.remove('text-slate-500', 'text-red-400');
             status.classList.add('text-green-400');
             consoleModule.classList.add('tracker-active');
@@ -506,7 +540,7 @@
         function generateTicketAndEmail() {
             const btn = document.getElementById('checkout-btn');
             const originalHtml = btn.innerHTML;
-            btn.innerHTML = "Processing..."; btn.disabled = true;
+            btn.innerHTML = "Logging Order..."; btn.disabled = true;
 
             const randID = Math.floor(1000 + Math.random() * 9000);
             const game = document.querySelector('input[name="game"]:checked').value;
@@ -515,22 +549,28 @@
             
             let finalOrderDetails = orderString;
             if (game === "Valorant" && finalTrackerUrl) {
-                finalOrderDetails += `\nVANGUARD_LINK: ${finalTrackerUrl}`;
+                finalOrderDetails += `\n\nVANGUARD_LINK: ${finalTrackerUrl}`;
             }
 
-            const templateParams = { ticket_id: currentTicketId, manifest_details: finalOrderDetails };
+            // Secure Webhook / Database fetch
+            if(FORMSPREE_ENDPOINT && FORMSPREE_ENDPOINT !== "YOUR_FORMSPREE_URL_HERE") {
+                fetch(FORMSPREE_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify({ Ticket_ID: currentTicketId, Game: game, Order_Details: finalOrderDetails })
+                }).catch(err => console.log("Database bypass", err));
+            }
 
-            emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
-                .finally(function() {
-                    btn.innerHTML = originalHtml; btn.disabled = false;
-                    document.getElementById('modal-ticket-id').innerText = currentTicketId;
-                    document.getElementById('modal-order-details').innerText = finalOrderDetails;
-                    document.getElementById('ticket-modal').classList.remove('hidden');
-                    document.getElementById('ticket-modal').classList.add('flex');
-                    document.getElementById('copy-btn').innerText = "Copy Details";
-                    document.getElementById('copy-btn').classList.remove('bg-green-500', 'text-white');
-                    document.getElementById('copy-btn').classList.add('bg-white', 'text-black');
-                });
+            setTimeout(() => {
+                btn.innerHTML = originalHtml; btn.disabled = false;
+                document.getElementById('modal-ticket-id').innerText = currentTicketId;
+                document.getElementById('modal-order-details').innerText = finalOrderDetails;
+                document.getElementById('ticket-modal').classList.remove('hidden');
+                document.getElementById('ticket-modal').classList.add('flex');
+                document.getElementById('copy-btn').innerText = "Copy Details";
+                document.getElementById('copy-btn').classList.remove('bg-green-500', 'text-white');
+                document.getElementById('copy-btn').classList.add('bg-white', 'text-black');
+            }, 600);
         }
 
         function copyToClipboard() {
@@ -539,7 +579,7 @@
             
             let detailedDetails = orderString;
             if (game === "Valorant" && finalTrackerUrl) {
-                detailedDetails += `\nVANGUARD_LINK: ${finalTrackerUrl}`;
+                detailedDetails += `\n\nVANGUARD_LINK: ${finalTrackerUrl}`;
             }
             
             navigator.clipboard.writeText(fullCopy + detailedDetails).then(() => {
