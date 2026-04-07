@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Real Casino UI</title>
+  <title>Premium Casino UI</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,7 +15,6 @@
       <li class="active">🏠 Casino Home</li>
       <li>🕹️ Originals</li>
       <li>🎰 Slots</li>
-      <li>🔴 Live Casino</li>
       <li>⚔️ Case Battles</li>
     </ul>
   </aside>
@@ -26,87 +25,80 @@
       <div class="mobile-logo">CASINO<span>.</span></div>
       <div class="wallet-group">
         <span class="balance">$0.00</span>
-        <button class="btn-deposit">Deposit</button>
+        <button class="btn-primary">Deposit</button>
       </div>
     </header>
 
     <div class="content">
       <!-- Hero Promo -->
       <section class="hero-banner">
-        <div class="hero-tag">Welcome Offer</div>
-        <h1>200% Deposit Bonus</h1>
-        <p>Sign up today and get your first deposit matched instantly. Plus 50 Free Spins.</p>
+        <h1>High-Fidelity Gaming.</h1>
+        <p>Experience the next generation of provably fair originals and competitive case battles.</p>
       </section>
 
       <!-- House Originals -->
       <div class="section-header">
         <h2>House Originals</h2>
-        <a href="#" class="view-all">View All</a>
       </div>
       <div class="game-row">
         <div class="game-card mines">
           <div class="game-info">
             <span class="game-title">Mines</span>
-            <span class="game-provider">Original</span>
+            <span class="game-provider">Provably Fair</span>
           </div>
         </div>
         <div class="game-card plinko">
           <div class="game-info">
             <span class="game-title">Plinko</span>
-            <span class="game-provider">Original</span>
-          </div>
-        </div>
-        <div class="game-card crash">
-          <div class="live-badge">LIVE</div>
-          <div class="game-info">
-            <span class="game-title">Crash</span>
-            <span class="game-provider">Original</span>
+            <span class="game-provider">Provably Fair</span>
           </div>
         </div>
       </div>
 
-      <!-- Popular Slots -->
-      <div class="section-header" style="margin-top: 40px;">
-        <h2>Popular Slots</h2>
-        <a href="#" class="view-all">View All</a>
+      <!-- Case Battles (Showing Legendary Glow) -->
+      <div class="section-header" style="margin-top: 48px;">
+        <h2>Trending Cases</h2>
+        <a href="#" class="view-all">View Arena</a>
       </div>
       <div class="game-row">
-        <div class="game-card olympus">
+        <div class="game-card legendary" style="background: linear-gradient(180deg, #2a0808 0%, #000 100%);">
           <div class="game-info">
-            <span class="game-title">Gates of Olympus</span>
-            <span class="game-provider">Pragmatic Play</span>
+            <span class="game-title" style="color: var(--accent-red);">Bloodline Box</span>
+            <span class="game-provider">Legendary Drop Rate</span>
           </div>
         </div>
-        <div class="game-card sweet">
+        <div class="game-card" style="background: linear-gradient(180deg, #1a1a2e 0%, #000 100%);">
           <div class="game-info">
-            <span class="game-title">Sweet Bonanza</span>
-            <span class="game-provider">Pragmatic Play</span>
-          </div>
-        </div>
-        <div class="game-card hacksaw">
-          <div class="game-info">
-            <span class="game-title">Wanted Dead or a Wild</span>
-            <span class="game-provider">Hacksaw Gaming</span>
-          </div>
-        </div>
-        <div class="game-card" style="background: linear-gradient(45deg, #0f2027, #203a43, #2c5364);">
-          <div class="game-info">
-            <span class="game-title">Big Bass Splash</span>
-            <span class="game-provider">Pragmatic Play</span>
+            <span class="game-title">Neon Nights</span>
+            <span class="game-provider">Epic Drop Rate</span>
           </div>
         </div>
       </div>
-
-      <!-- Live Bets Feed -->
-      <section class="live-bets">
-        <div class="live-bets-header">🔴 Live High Roller Bets</div>
-        <div id="bets-body">
-          <!-- JS injects rows here -->
-        </div>
-      </section>
-
     </div>
   </main>
+
+  <!-- Mobile Bottom Nav -->
+  <nav class="mobile-nav">
+    <div class="nav-item active">🏠<span>Home</span></div>
+    <div class="nav-item">🕹️<span>Games</span></div>
+    <div class="nav-item">⚔️<span>Battles</span></div>
+    <div class="nav-item">👤<span>Profile</span></div>
+  </nav>
+
+  <!-- Deposit Modal (Hidden by default) -->
+  <div class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Add Funds</h3>
+        <button class="close-btn">×</button>
+      </div>
+      <div class="deposit-input-group">
+        <span>$</span>
+        <input type="number" id="deposit-amount" placeholder="0.00" autocomplete="off">
+      </div>
+      <button id="confirm-deposit" class="btn-primary" style="width: 100%; padding: 16px;">Pay via Apple Pay</button>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>
