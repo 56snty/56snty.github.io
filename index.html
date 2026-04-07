@@ -638,17 +638,18 @@ body::before{
 </style>
 </head>
 <script>
-  function fixUnicode(node) {
-    if (node.nodeType === 3 && node.nodeValue.includes('\\u')) { 
-      // Translate text nodes with \u codes into actual characters
-      node.nodeValue = node.nodeValue.replace(/\\u([0-9a-fA-F]{4})/gi, (m, g) => String.fromCharCode(parseInt(g, 16)));
-    } else if (node.nodeType === 1 && node.nodeName !== 'SCRIPT') { 
-      // Scan through all elements
-      node.childNodes.forEach(fixUnicode);
+  document.addEventListener("DOMContentLoaded", () => {
+    function fixUnicode(node) {
+      if (node.nodeType === 3 && node.nodeValue.includes('\\u')) { 
+        node.nodeValue = node.nodeValue.replace(/\\u([0-9a-fA-F]{4})/gi, (m, g) => String.fromCharCode(parseInt(g, 16)));
+      } else if (node.nodeType === 1 && node.nodeName !== 'SCRIPT') { 
+        node.childNodes.forEach(fixUnicode);
+      }
     }
-  }
-  fixUnicode(document.body);
+    fixUnicode(document.body);
+  });
 </script>
+
 
 <body>
 
