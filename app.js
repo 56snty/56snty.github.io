@@ -1,44 +1,72 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // Elements
-  const depositBtn = document.querySelector('.btn-deposit');
+  // Wallet Logic
   const balanceDisplay = document.querySelector('.balance');
-  
-  // Mock User State
-  let userBalance = 12450.75;
+  const depositBtn = document.querySelector('.btn-deposit');
+  let userBalance = 2450.50;
 
-  // Format currency beautifully (e.g., $12,450.75)
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2
-    }).format(amount);
+  const formatCrypto = (amount) => {
+    return '$' + amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
 
-  // Initialize Balance
-  balanceDisplay.textContent = formatCurrency(userBalance);
+  balanceDisplay.textContent = formatCrypto(userBalance);
 
-  // Micro-interaction: Deposit Button Click
   depositBtn.addEventListener('click', () => {
-    // In a real app, this would trigger device vibration: navigator.vibrate(50);
-    // and open a bottom sheet modal for the payment flow.
-    console.log('Deposit modal triggered. Haptic feedback fired.');
-    
-    // Simulate balance update for testing UI
-    depositBtn.textContent = 'Processing...';
+    depositBtn.textContent = 'Opening...';
     setTimeout(() => {
       userBalance += 100;
-      balanceDisplay.textContent = formatCurrency(userBalance);
+      balanceDisplay.textContent = formatCrypto(userBalance);
       depositBtn.textContent = 'Deposit';
-    }, 800);
+    }, 600);
   });
 
-  // Game Card Interactions
-  const gameCards = document.querySelectorAll('.game-card');
-  gameCards.forEach(card => {
-    card.addEventListener('click', (e) => {
-      const gameName = e.currentTarget.querySelector('h3').textContent;
-      console.log(`Routing to game: ${gameName}`);
-    });
-  });
+  // Live Bets Generator Logic
+  const betsContainer = document.getElementById('bets-body');
+  const games = ['Plinko', 'Mines', 'Gates of Olympus', 'Crash', 'Sweet Bonanza', 'Wanted Dead or a Wild'];
+  const users = ['Hidden', 'Alex99', 'CryptoKing', 'Hidden', 'DegenX', 'HighRoller'];
+
+  const generateRandomBet = () => {
+    const game = games[Math.floor(Math.random() * games.length)];
+    const user = users[Math.floor(Math.random() * users.length)];
+    const betAmount = (Math.random() * 50).toFixed(2);
+    
+    // 30% chance to win big, 70% chance to lose/break even
+    const isWin = Math.random() > 0.7; 
+    let multiplier = isWin ? (Math.random() * 10 + 1.1).toFixed(2) : 0.00;
+    let payout = (betAmount * multiplier).toFixed(2);
+
+    const row = document.createElement('div');
+    row.className = 'bet-row';
+    
+    // Animation for new row
+    row.style.opacity = '0';
+    row.style.transform = 'translateY(-10px)';
+    row.style.transition = 'all 0.4s ease';
+
+    row.innerHTML = `
+      <div class="bet-game">🎮 ${game}</div>
+      <div class="bet-user">👤 ${user}</div>
+      <div class="bet-amount">$${betAmount}</div>
+      <div class="bet-payout ${isWin ? 'win' : ''}">$${payout}</div>
+    `;
+
+    // Prepend and animate
+    betsContainer.prepend(row);
+    
+    // Trigger reflow for animation
+    setTimeout(() => {
+      row.style.opacity = '1';
+      row.style.transform = 'translateY(0)';
+    }, 10);
+
+    // Keep only last 5 bets to prevent DOM bloat
+    if (betsContainer.children.length > 5) {
+      betsContainer.removeChild(betsContainer.lastChild);
+    }
+  };
+
+  // Generate initial rows
+  for(let i=0; i<4; i++) generateRandomBet();
+
+  // Add a new bet every 2 to 4 seconds
+  setInterval(generateRandomBet, Math.random() * 2000 + 2000);
 });
