@@ -7,7 +7,7 @@
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
   <style>
     /* RESET & BASE */
@@ -37,70 +37,84 @@
     .card {
       position: absolute; top: 50%; left: 50%;
       transform: translate(-50%, -45%);
-      opacity: 0; width: 90%; max-width: 380px; padding: 35px 30px;
+      opacity: 0; width: 90%; max-width: 380px; padding: 40px 30px;
       border-radius: 24px; 
-      background: linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
+      background: linear-gradient(145deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 100%);
       border: 1px solid rgba(255, 255, 255, 0.08);
       box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255,255,255,0.1);
-      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
       text-align: center; transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex; flex-direction: column; align-items: center;
     }
     .card.show { opacity: 1; transform: translate(-50%, -50%); }
 
+    /* PROFILE AVATAR */
+    .avatar-container { position: relative; margin-bottom: 15px; }
+    #discord-avatar {
+      width: 80px; height: 80px; border-radius: 50%; object-fit: cover;
+      border: 2px solid rgba(255,255,255,0.1); box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+      transition: all 0.3s ease;
+    }
+    #status-dot {
+      position: absolute; bottom: 4px; right: 4px; width: 14px; height: 14px;
+      border-radius: 50%; background: #747f8d; border: 2px solid #1a1a1a;
+      transition: background 0.3s ease;
+    }
+
     /* TYPOGRAPHY */
-    h1 { font-family: 'Playfair Display', serif; font-size: 32px; letter-spacing: 1px; margin-bottom: 5px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
-    .type-container { height: 20px; margin: 0 0 20px; font-weight: 300; font-size: 15px; color: #bbb; }
+    h1 { font-family: 'Playfair Display', serif; font-size: 30px; letter-spacing: 1px; margin-bottom: 2px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+    .type-container { height: 18px; margin-bottom: 15px; font-weight: 300; font-size: 14px; color: #bbb; }
     .type { opacity: 0.9; }
     .cursor { animation: blink 1s infinite; opacity: 0.8; }
     @keyframes blink { 50% { opacity: 0; } }
 
-    .badge {
-      font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px;
-      background: rgba(255, 255, 255, 0.1); padding: 6px 14px;
-      border-radius: 8px; margin-bottom: 20px; display: inline-block;
-      border: 1px solid rgba(255,255,255,0.05); color: #ddd;
+    /* DISCORD BIO / CUSTOM STATUS */
+    .bio-box {
+      font-size: 13px; font-weight: 400; color: #ddd; background: rgba(0, 0, 0, 0.3);
+      padding: 10px 15px; border-radius: 12px; margin-bottom: 20px; width: 100%;
+      border: 1px solid rgba(255,255,255,0.05); font-style: italic;
     }
 
-    .subtitle { font-weight: 400; font-size: 15px; line-height: 1.4; margin-bottom: 25px; }
-    .subtitle span { opacity: 0.5; font-size: 13px; }
-
-    /* BUTTONS & BOXES */
+    /* BUTTONS */
+    .btn-group { width: 100%; display: flex; flex-direction: column; gap: 10px; }
     .btn {
-      display: block; padding: 14px; margin-top: 10px;
-      border-radius: 12px; background: rgba(255, 255, 255, 0.05);
-      text-decoration: none; color: white; font-weight: 500; font-size: 14px;
-      transition: all 0.3s ease; border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      padding: 12px; border-radius: 12px; text-decoration: none; color: white; 
+      font-weight: 500; font-size: 14px; transition: all 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
-    .btn:hover { background: rgba(255, 255, 255, 0.15); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-
-    .box {
-      margin-top: 10px; padding: 14px;
-      border-radius: 12px; background: rgba(0, 0, 0, 0.4);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      font-size: 13px; font-weight: 400; color: #ccc;
-    }
+    
+    /* Discord Button */
+    .btn-discord { background: rgba(88, 101, 242, 0.15); border-color: rgba(88, 101, 242, 0.3); }
+    .btn-discord:hover { background: rgba(88, 101, 242, 0.3); transform: translateY(-2px); }
+    
+    /* Riot / Tracker Button */
+    .btn-riot { background: rgba(255, 70, 85, 0.15); border-color: rgba(255, 70, 85, 0.3); }
+    .btn-riot:hover { background: rgba(255, 70, 85, 0.3); transform: translateY(-2px); }
+    .rank-icon { width: 22px; height: 22px; object-fit: contain; }
 
     /* LIVE SPOTIFY WIDGET */
     #spotify-widget {
-      display: none;
-      margin-top: 10px; padding: 12px;
+      display: none; width: 100%; margin-top: 10px; padding: 12px;
       border-radius: 12px; background: rgba(30, 215, 96, 0.1);
       border: 1px solid rgba(30, 215, 96, 0.2);
-      align-items: center; text-align: left; gap: 12px;
-      transition: all 0.3s ease;
+      align-items: center; text-align: left; gap: 12px; transition: all 0.3s ease;
     }
-    #spotify-art { width: 48px; height: 48px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+    #spotify-art { width: 44px; height: 44px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
     .spotify-info { flex: 1; overflow: hidden; }
     .spotify-song { font-size: 13px; font-weight: 600; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .spotify-artist { font-size: 11px; font-weight: 400; color: rgba(255,255,255,0.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .spotify-icon { width: 16px; opacity: 0.8; }
 
-    /* CONTROLS */
-    .controls {
-      margin-top: 25px; font-size: 11px; cursor: pointer; opacity: 0.4;
-      text-transform: uppercase; letter-spacing: 2px; transition: opacity 0.3s ease;
+    /* CARD FOOTER (Controls & Views) */
+    .card-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      width: 100%; margin-top: 25px; font-size: 11px; opacity: 0.5;
+      text-transform: uppercase; letter-spacing: 1.5px;
     }
+    .controls { cursor: pointer; transition: opacity 0.3s ease; }
     .controls:hover { opacity: 1; }
+    .views { display: flex; align-items: center; gap: 5px; }
   </style>
 </head>
 
@@ -111,27 +125,37 @@
     <span class="pulse-text">click to enter</span>
   </div>
 
-  <video id="bg" loop muted playsinline>
+  <video id="bg" autoplay loop muted playsinline>
     <source src="bg.mp4" type="video/mp4">
   </video>
   
   <canvas id="rain"></canvas>
 
   <div class="card" id="card">
+    
+    <div class="avatar-container">
+      <img id="discord-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Profile">
+      <div id="status-dot"></div>
+    </div>
+
     <h1>lowkey</h1>
     <div class="type-container">
       <span class="type" id="type"></span><span class="cursor">|</span>
     </div>
     
-    <div class="badge">exclusive</div>
-    
-    <div class="subtitle">
-      4owkey#prx <br><span>Radiant</span>
+    <div class="bio-box" id="discord-bio">Fetching profile data...</div>
+
+    <div class="btn-group">
+      <a href="https://tracker.gg/valorant/profile/riot/4owkey%23prx/overview" target="_blank" class="btn btn-riot">
+        <img class="rank-icon" src="https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/24/largeicon.png" alt="Radiant">
+        <span>4owkey#prx Tracker</span>
+      </a>
+
+      <a href="https://discord.com/users/285468327135019019" target="_blank" class="btn btn-discord">
+        <svg width="20" height="20" viewBox="0 0 127.14 96.36" fill="white"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.31,60,73.31,53s5-12.74,11.43-12.74S96.1,46,96,53,91.08,65.69,84.69,65.69Z"/></svg>
+        <span id="discord-username">Discord Profile</span>
+      </a>
     </div>
-
-    <a href="https://discord.com/users/285468327135019019" target="_blank" class="btn">Discord Profile</a>
-
-    <div class="box" id="discord">Fetching status...</div>
 
     <div id="spotify-widget">
       <img id="spotify-art" src="" alt="Album Art">
@@ -144,9 +168,10 @@
       </svg>
     </div>
 
-    <div class="box">Riot: Radiant (4owkey#prx)</div>
-
-    <div class="controls" id="musicToggle" onclick="toggleMusic()">Pause Audio</div>
+    <div class="card-footer">
+      <div class="controls" id="musicToggle" onclick="toggleMusic()">Pause Audio</div>
+      <div class="views">👁 <span id="view-count">...</span></div>
+    </div>
   </div>
 
   <audio id="music" loop>
@@ -154,6 +179,18 @@
   </audio>
 
   <script>
+    // --- VIEW COUNTER API ---
+    // Uses a free API to increment views for 'lowkey-emal-dev' every time the site loads
+    fetch("https://api.counterapi.dev/v1/lowkey-emal-dev/visits/up")
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("view-count").innerText = data.count;
+      })
+      .catch(err => {
+        console.log("Counter error:", err);
+        document.getElementById("view-count").innerText = "-";
+      });
+
     // --- INTRO & MEDIA HANDLING ---
     const intro = document.getElementById('intro');
     const card = document.getElementById('card');
@@ -166,17 +203,16 @@
       setTimeout(() => { intro.style.visibility = 'hidden'; }, 800);
       card.classList.add("show");
       
-      // Force the browser to load the audio immediately to bypass mobile restrictions
+      bgVideo.load();
       music.load();
-      music.volume = 0.5; // Starts at 50% volume
+      music.volume = 0.4; 
       
-      // Play media
       bgVideo.play().catch(e => console.error("Video error:", e));
       music.play().catch(e => console.error("Audio error:", e));
     }
 
     // --- TYPEWRITER EFFECT ---
-    const words = ["stay lowkey", "Radiant", "calm energy"];
+    const words = ["stay lowkey", "calm energy", "immortal mind"];
     let i = 0, j = 0, isDeleting = false;
 
     function typeEffect() {
@@ -210,7 +246,7 @@
       isPlaying = !isPlaying;
     }
 
-    // --- LANYARD API (DISCORD & LIVE SPOTIFY) ---
+    // --- LANYARD API (AVATAR, BIO, STATUS, SPOTIFY) ---
     function fetchLanyard() {
       fetch("https://api.lanyard.rest/v1/users/285468327135019019")
         .then(res => res.json())
@@ -218,12 +254,26 @@
           if (data.success) {
             const d = data.data;
             
-            // 1. Update Discord Status Text
-            const statusText = d.discord_status === "offline" ? "Offline" : 
-                               d.discord_status.charAt(0).toUpperCase() + d.discord_status.slice(1);
-            document.getElementById("discord").innerText = `Discord: ${statusText}`;
+            // 1. Update Profile Picture
+            if (d.discord_user.avatar) {
+              const avatarExt = d.discord_user.avatar.startsWith('a_') ? 'gif' : 'webp';
+              document.getElementById("discord-avatar").src = `https://cdn.discordapp.com/avatars/${d.discord_user.id}/${d.discord_user.avatar}.${avatarExt}?size=128`;
+            }
 
-            // 2. Handle Live Spotify Widget
+            // 2. Update Status Dot Color
+            const colors = { online: '#43b581', idle: '#faa61a', dnd: '#f04747', offline: '#747f8d' };
+            document.getElementById("status-dot").style.background = colors[d.discord_status] || colors.offline;
+
+            // 3. Update Custom Status (Bio)
+            const customStatus = d.activities.find(a => a.type === 4);
+            if (customStatus && customStatus.state) {
+               const emoji = customStatus.emoji ? (customStatus.emoji.id ? '' : customStatus.emoji.name + ' ') : '';
+               document.getElementById("discord-bio").innerText = `"${emoji}${customStatus.state}"`;
+            } else {
+               document.getElementById("discord-bio").innerText = `"staying lowkey."`; 
+            }
+
+            // 4. Handle Live Spotify Widget
             const spotifyWidget = document.getElementById("spotify-widget");
             if (d.listening_to_spotify && d.spotify) {
               document.getElementById("spotify-art").src = d.spotify.album_art_url;
