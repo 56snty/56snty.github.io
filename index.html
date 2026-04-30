@@ -21,7 +21,6 @@
       width: 100vw; 
       height: 100vh; 
       height: 100dvh; 
-      /* These three lines completely kill scrolling and bouncing on mobile */
       overflow: hidden; 
       overscroll-behavior: none; 
       touch-action: none; 
@@ -66,6 +65,8 @@
     .card-wrapper.show { opacity: 1; transform: translate(-50%, -50%); }
     
     .card {
+      position: relative; /* Added for glare overflow */
+      overflow: hidden; /* Clips the glare inside the border */
       width: 90vw; max-width: 300px; padding: 30px 20px;
       border-radius: 20px; 
       background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.005) 100%);
@@ -76,8 +77,18 @@
       transition: transform 0.1s ease-out; 
     }
 
-    /* CREATOR LOCAL TIME */
-    .local-time {
+    /* DYNAMIC GLASS GLARE */
+    .glare {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 1; opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    /* Keep content above glare */
+    .card > * { z-index: 2; position: relative; }
+
+    /* CREATOR LOCAL TIME & WEATHER */
+    .local-info {
       font-size: 9px; font-weight: 400; color: rgba(255,255,255,0.4);
       text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px;
       padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); width: 80%;
@@ -110,14 +121,15 @@
       padding: 0 10px; letter-spacing: 0.5px;
     }
 
-    /* SLEEK PILL BUTTONS */
+    /* MAGNETIC PILL BUTTONS */
     .btn-group { width: 100%; display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
     .btn {
       display: flex; align-items: center; justify-content: center; gap: 8px;
       padding: 10px; border-radius: 50px; text-decoration: none; color: white; 
       font-weight: 400; font-size: 12px; letter-spacing: 0.5px;
-      transition: all 0.3s ease; border: 1px solid rgba(255, 255, 255, 0.05);
-      background: rgba(255, 255, 255, 0.02);
+      background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05);
+      /* Custom smooth transition for the magnetic snap-back */
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.3s, border-color 0.3s;
     }
     .btn:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.2); }
     .btn-riot:hover { background: rgba(255, 70, 85, 0.1); border-color: rgba(255, 70, 85, 0.3); }
@@ -172,8 +184,9 @@
 
   <div class="card-wrapper" id="cardWrap">
     <div class="card" id="tiltCard">
+      <div class="glare" id="glare"></div>
       
-      <div class="local-time" id="clock">Loading Time...</div>
+      <div class="local-info" id="local-info">Loading Time...</div>
 
       <div class="avatar-container">
         <img id="discord-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Profile">
@@ -223,26 +236,66 @@
   </audio>
 
   <script>
-    // --- LIVE CLOCK ---
-    function updateClock() {
+    // --- LIVE CLOCK & WEATHER (Eindhoven) ---
+    let cachedWeather = '';
+    
+    async function fetchWeather() {
+      try {
+        // Free open-meteo API for Eindhoven coordinates
+        const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=51.4416&longitude=5.4697&current_weather=true");
+        const data = await res.json();
+        cachedWeather = ` // ${Math.round(data.current_weather.temperature)}°C`;
+      } catch (err) { console.log("Weather failed to load"); }
+    }
+    fetchWeather(); // Fetch once on load
+
+    function updateLocalInfo() {
       const now = new Date();
       const timeStr = now.toLocaleTimeString('en-US', { timeZone: 'Europe/Amsterdam', hour: '2-digit', minute: '2-digit' });
-      document.getElementById('clock').innerText = `Eindhoven // ${timeStr}`;
+      document.getElementById('local-info').innerText = `Eindhoven // ${timeStr}${cachedWeather}`;
     }
-    setInterval(updateClock, 1000);
-    updateClock();
+    setInterval(updateLocalInfo, 1000);
+    updateLocalInfo();
 
-    // --- 3D MOUSE TILT EFFECT ---
+    // --- 3D TILT & DYNAMIC GLARE EFFECT ---
     const tiltCard = document.getElementById('tiltCard');
+    const glare = document.getElementById('glare');
+    
     document.addEventListener('mousemove', (e) => {
       if (window.innerWidth > 768) { 
+        // 3D Tilt calculation
         const xAxis = (window.innerWidth / 2 - e.pageX) / 35; 
         const yAxis = (window.innerHeight / 2 - e.pageY) / 35;
         tiltCard.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+
+        // Glare calculation (follows mouse)
+        const xPos = (e.clientX / window.innerWidth) * 100;
+        const yPos = (e.clientY / window.innerHeight) * 100;
+        glare.style.background = `radial-gradient(circle at ${xPos}% ${yPos}%, rgba(255,255,255,0.08) 0%, transparent 60%)`;
+        glare.style.opacity = 1;
       }
     });
+    
     document.addEventListener('mouseleave', () => {
       tiltCard.style.transform = `rotateY(0deg) rotateX(0deg)`;
+      glare.style.opacity = 0;
+    });
+
+    // --- MAGNETIC BUTTONS ---
+    const magneticBtns = document.querySelectorAll('.btn');
+    magneticBtns.forEach(btn => {
+      btn.addEventListener('mousemove', function(e) {
+        if (window.innerWidth > 768) {
+          const rect = this.getBoundingClientRect();
+          const x = e.clientX - rect.left - rect.width / 2;
+          const y = e.clientY - rect.top - rect.height / 2;
+          // Pulls the button towards the mouse slightly
+          this.style.transform = `translate(${x * 0.25}px, ${y * 0.25}px)`;
+        }
+      });
+      btn.addEventListener('mouseleave', function() {
+        this.style.transform = `translate(0px, 0px)`;
+      });
     });
 
     // --- AUDIO VISUALIZER (Bass Reactive Avatar) ---
@@ -265,7 +318,6 @@
         analyzer.getByteFrequencyData(dataArray);
         
         let bass = (dataArray[1] + dataArray[2] + dataArray[3]) / 3;
-        
         let scale = 1 + (bass / 1500); 
         let glow = bass / 6;
         
