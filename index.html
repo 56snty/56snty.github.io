@@ -8,8 +8,193 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
-  
-  <link rel="stylesheet" href="style.css">
+
+  <style>
+    /* RESET & BASE */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    html, body { 
+      font-family: 'Inter', sans-serif; 
+      color: white; 
+      background-color: #030303; 
+      perspective: 1000px; 
+      width: 100vw; 
+      height: 100vh; 
+      height: 100dvh; 
+      overflow: hidden; 
+      overscroll-behavior: none; 
+      touch-action: none; 
+      transition: background-color 0.8s ease, color 0.8s ease;
+    }
+
+    /* LIGHT MODE GLOBAL OVERRIDES */
+    body.light-mode { background-color: #e5e5e5; color: #1a1a1a; }
+
+    /* CINEMATIC INTRO */
+    #intro {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: #000; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; z-index: 100; cursor: pointer;
+      transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 1.2s, background-color 0.8s;
+    }
+    body.light-mode #intro { background: #f5f5f5; color: #1a1a1a; }
+    #intro h1 { font-family: 'Playfair Display', serif; font-size: 28px; letter-spacing: 4px; font-weight: 500; }
+    .pulse-text { opacity: 0.5; font-size: 10px; margin-top: 15px; letter-spacing: 3px; text-transform: uppercase; animation: pulse 2.5s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.8; } }
+
+    /* BACKGROUND VIDEO */
+    video {
+      position: fixed; top: 50%; left: 50%;
+      min-width: 100%; min-height: 100%; width: auto; height: auto;
+      transform: translateX(-50%) translateY(-50%);
+      object-fit: cover; z-index: -2; filter: brightness(0.65) contrast(1.1);
+      transition: opacity 0.5s ease, filter 0.8s ease;
+    }
+    body.light-mode video { filter: brightness(0.85) contrast(1.05); }
+    canvas { position: fixed; top: 0; left: 0; z-index: -1; pointer-events: none; opacity: 0.6; }
+
+    /* WATERMARK CREDIT */
+    .watermark {
+      position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%);
+      font-size: 8px; font-weight: 400; color: rgba(255, 255, 255, 0.25);
+      text-transform: uppercase; letter-spacing: 3px; z-index: 5;
+      pointer-events: none; white-space: nowrap; transition: color 0.8s;
+    }
+    body.light-mode .watermark { color: rgba(0, 0, 0, 0.3); }
+
+    /* ART PIECE CARD */
+    .card-wrapper {
+      position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%, -45%); opacity: 0;
+      transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 10; transform-style: preserve-3d;
+    }
+    .card-wrapper.show { opacity: 1; transform: translate(-50%, -50%); }
+    
+    .card {
+      position: relative; overflow: hidden; 
+      width: 90vw; max-width: 300px; padding: 30px 20px;
+      border-radius: 20px; 
+      background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.005) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255,255,255,0.05);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      text-align: center; display: flex; flex-direction: column; align-items: center;
+      transition: transform 0.1s ease-out, background 0.8s, border 0.8s, box-shadow 0.8s; 
+    }
+
+    /* LIGHT MODE CARD */
+    body.light-mode .card {
+      background: linear-gradient(135deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.2) 100%);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255,255,255,0.8);
+    }
+
+    /* DYNAMIC GLASS GLARE */
+    .glare {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 1; opacity: 0; transition: opacity 0.4s ease;
+    }
+    body.light-mode .glare { display: none; /* Glare looks better on dark glass */ }
+    .card > * { z-index: 2; position: relative; }
+
+    /* LOCAL TIME & WEATHER */
+    .local-info {
+      font-size: 9px; font-weight: 400; color: rgba(255,255,255,0.4);
+      text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px;
+      padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); width: 80%;
+      transition: color 0.8s, border-color 0.8s;
+    }
+    body.light-mode .local-info { color: rgba(0,0,0,0.5); border-color: rgba(0,0,0,0.1); }
+
+    /* PROFILE AVATAR */
+    .avatar-container { position: relative; margin-bottom: 12px; }
+    #discord-avatar {
+      width: 64px; height: 64px; border-radius: 50%; object-fit: cover;
+      border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+      transition: transform 0.05s ease-out, box-shadow 0.05s ease-out, border 0.8s;
+    }
+    body.light-mode #discord-avatar { border: 1px solid rgba(0,0,0,0.1); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+    #status-dot {
+      position: absolute; bottom: 2px; right: 2px; width: 12px; height: 12px;
+      border-radius: 50%; background: #747f8d; border: 2px solid #0a0a0a; transition: border 0.8s;
+    }
+    body.light-mode #status-dot { border: 2px solid #ffffff; }
+
+    /* TYPOGRAPHY */
+    .card h1 { 
+      font-family: 'Playfair Display', serif; font-size: 24px; letter-spacing: 1.5px; 
+      margin-bottom: 2px; font-weight: 600; text-shadow: 0 2px 10px rgba(0,0,0,0.8); transition: text-shadow 0.8s;
+    }
+    body.light-mode .card h1 { text-shadow: none; color: #111; }
+    
+    .type-container { 
+      height: 16px; margin-bottom: 12px; font-weight: 300; font-size: 12px; 
+      color: rgba(255,255,255,0.6); letter-spacing: 1px; text-transform: lowercase; transition: color 0.8s;
+    }
+    body.light-mode .type-container { color: rgba(0,0,0,0.6); }
+    .cursor { animation: blink 1s infinite; opacity: 0.5; }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* MINIMALIST BIO */
+    .bio-text {
+      font-size: 11px; font-weight: 300; color: rgba(255,255,255,0.8);
+      font-style: italic; line-height: 1.5; margin-bottom: 20px;
+      padding: 0 10px; letter-spacing: 0.5px; transition: color 0.8s;
+    }
+    body.light-mode .bio-text { color: rgba(0,0,0,0.7); }
+
+    /* MAGNETIC PILL BUTTONS */
+    .btn-group { width: 100%; display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
+    .btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 10px; border-radius: 50px; text-decoration: none; color: white; 
+      font-weight: 400; font-size: 12px; letter-spacing: 0.5px;
+      background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.5s, border 0.5s, color 0.5s;
+    }
+    .btn:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.2); }
+    
+    body.light-mode .btn { background: rgba(0, 0, 0, 0.03); border: 1px solid rgba(0, 0, 0, 0.1); color: #111; }
+    body.light-mode .btn:hover { background: rgba(0, 0, 0, 0.08); border-color: rgba(0, 0, 0, 0.2); }
+    
+    .rank-icon { width: 16px; height: 16px; object-fit: contain; }
+    .discord-icon { width: 14px; height: 14px; fill: currentColor; transition: fill 0.8s; }
+
+    /* SPINNING SPOTIFY WIDGET */
+    #spotify-widget {
+      display: none; width: 100%; padding: 6px 12px 6px 6px;
+      border-radius: 50px; background: rgba(30, 215, 96, 0.05);
+      border: 1px solid rgba(30, 215, 96, 0.15);
+      align-items: center; text-align: left; gap: 10px; transition: all 0.5s ease;
+    }
+    #spotify-widget:hover { border-color: rgba(30, 215, 96, 0.4); background: rgba(30, 215, 96, 0.1); }
+    body.light-mode #spotify-widget { background: rgba(30, 215, 96, 0.1); border-color: rgba(30, 215, 96, 0.3); }
+    
+    #spotify-art { 
+      width: 32px; height: 32px; border-radius: 50%; box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      animation: spin 6s linear infinite; 
+    }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    .spotify-info { flex: 1; overflow: hidden; }
+    .spotify-song { font-size: 11px; font-weight: 500; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: color 0.8s; }
+    body.light-mode .spotify-song { color: #111; }
+    .spotify-artist { font-size: 9px; font-weight: 300; color: rgba(255,255,255,0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: color 0.8s; }
+    body.light-mode .spotify-artist { color: rgba(0,0,0,0.6); }
+    .spotify-icon { width: 14px; opacity: 0.8; }
+
+    /* FOOTER CONTROLS */
+    .card-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      width: 100%; margin-top: 20px; font-size: 9px; color: rgba(255,255,255,0.4);
+      text-transform: uppercase; letter-spacing: 2px; transition: color 0.8s;
+    }
+    body.light-mode .card-footer { color: rgba(0,0,0,0.5); }
+    .controls { cursor: pointer; transition: color 0.3s ease; }
+    .controls:hover { color: rgba(255,255,255,0.9); }
+    body.light-mode .controls:hover { color: #111; }
+    .views { display: flex; align-items: center; gap: 4px; }
+  </style>
 </head>
 
 <body>
@@ -20,8 +205,9 @@
   </div>
 
   <video id="bg" autoplay loop muted playsinline>
-    <source src="bg.mp4" type="video/mp4">
+    <source id="bg-source" src="bg.mp4" type="video/mp4">
   </video>
+  
   <canvas id="rain"></canvas>
 
   <div class="watermark">fully custom made by emal.dev</div>
@@ -51,9 +237,7 @@
         </a>
 
         <a href="https://discord.com/users/285468327135019019" target="_blank" class="btn btn-discord">
-          <svg class="discord-icon" viewBox="0 0 127.14 96.36">
-            <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.31,60,73.31,53s5-12.74,11.43-12.74S96.1,46,96,53,91.08,65.69,84.69,65.69Z"/>
-          </svg>
+          <svg class="discord-icon" viewBox="0 0 127.14 96.36"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.31,60,73.31,53s5-12.74,11.43-12.74S96.1,46,96,53,91.08,65.69,84.69,65.69Z"/></svg>
           <span id="discord-username">Discord Profile</span>
         </a>
       </div>
@@ -70,17 +254,240 @@
       </div>
 
       <div class="card-footer">
+        <div class="controls" id="themeToggle" onclick="toggleTheme()">[ LIGHT MODE ]</div>
         <div class="controls" id="musicToggle" onclick="toggleMusic()">[ Pause Audio ]</div>
-        <div class="views">👁 <span id="view-count">-</span></div>
       </div>
 
     </div>
   </div>
 
   <audio id="music" loop crossorigin="anonymous">
-    <source src="music.mp3" type="audio/mpeg">
+    <source id="music-source" src="music.mp3" type="audio/mpeg">
   </audio>
 
-  <script src="script.js"></script>
+  <script>
+    // --- LIVE CLOCK & WEATHER ---
+    let cachedWeather = '';
+    async function fetchWeather() {
+      try {
+        const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=51.4416&longitude=5.4697&current_weather=true");
+        const data = await res.json();
+        cachedWeather = ` // ${Math.round(data.current_weather.temperature)}°C`;
+      } catch (err) { console.log("Weather failed to load"); }
+    }
+    fetchWeather();
+
+    function updateLocalInfo() {
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('en-US', { timeZone: 'Europe/Amsterdam', hour: '2-digit', minute: '2-digit' });
+      document.getElementById('local-info').innerText = `Eindhoven // ${timeStr}${cachedWeather}`;
+    }
+    setInterval(updateLocalInfo, 1000); updateLocalInfo();
+
+    // --- 3D TILT & DYNAMIC GLARE EFFECT ---
+    const tiltCard = document.getElementById('tiltCard');
+    const glare = document.getElementById('glare');
+    
+    document.addEventListener('mousemove', (e) => {
+      if (window.innerWidth > 768) { 
+        const xAxis = (window.innerWidth / 2 - e.pageX) / 35; 
+        const yAxis = (window.innerHeight / 2 - e.pageY) / 35;
+        tiltCard.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+
+        const xPos = (e.clientX / window.innerWidth) * 100;
+        const yPos = (e.clientY / window.innerHeight) * 100;
+        glare.style.background = `radial-gradient(circle at ${xPos}% ${yPos}%, rgba(255,255,255,0.08) 0%, transparent 60%)`;
+        glare.style.opacity = 1;
+      }
+    });
+    
+    document.addEventListener('mouseleave', () => {
+      tiltCard.style.transform = `rotateY(0deg) rotateX(0deg)`;
+      glare.style.opacity = 0;
+    });
+
+    // --- MAGNETIC BUTTONS ---
+    const magneticBtns = document.querySelectorAll('.btn');
+    magneticBtns.forEach(btn => {
+      btn.addEventListener('mousemove', function(e) {
+        if (window.innerWidth > 768) {
+          const rect = this.getBoundingClientRect();
+          const x = e.clientX - rect.left - rect.width / 2;
+          const y = e.clientY - rect.top - rect.height / 2;
+          this.style.transform = `translate(${x * 0.25}px, ${y * 0.25}px)`;
+        }
+      });
+      btn.addEventListener('mouseleave', function() {
+        this.style.transform = `translate(0px, 0px)`;
+      });
+    });
+
+    // --- AUDIO VISUALIZER ---
+    let audioCtx, analyzer, dataArray;
+    function initVisualizer() {
+      if (audioCtx) return; 
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      analyzer = audioCtx.createAnalyser();
+      const source = audioCtx.createMediaElementSource(document.getElementById('music'));
+      source.connect(analyzer);
+      analyzer.connect(audioCtx.destination);
+      
+      analyzer.fftSize = 256;
+      dataArray = new Uint8Array(analyzer.frequencyBinCount);
+      const avatar = document.getElementById('discord-avatar');
+      
+      function renderFrame() {
+        requestAnimationFrame(renderFrame);
+        analyzer.getByteFrequencyData(dataArray);
+        
+        let bass = (dataArray[1] + dataArray[2] + dataArray[3]) / 3;
+        let scale = 1 + (bass / 1500); 
+        let glow = bass / 6;
+        
+        // Disable glow effect in light mode, just keep the pulse
+        let isLight = document.body.classList.contains('light-mode');
+        
+        if(bass > 50) {
+          avatar.style.transform = `scale(${scale})`;
+          avatar.style.boxShadow = isLight ? `0 8px 20px rgba(0,0,0,0.15)` : `0 8px 20px rgba(0,0,0,0.6), 0 0 ${glow}px rgba(255, 255, 255, ${glow/60})`;
+        } else {
+          avatar.style.transform = `scale(1)`;
+          avatar.style.boxShadow = isLight ? `0 8px 20px rgba(0,0,0,0.15)` : `0 8px 20px rgba(0,0,0,0.6)`;
+        }
+      }
+      renderFrame();
+    }
+
+    // --- MEDIA & THEME CONTROLS ---
+    const intro = document.getElementById('intro');
+    const cardWrap = document.getElementById('cardWrap');
+    const bgVideo = document.getElementById('bg');
+    const music = document.getElementById('music');
+    const musicBtn = document.getElementById('musicToggle');
+    const themeBtn = document.getElementById('themeToggle');
+    
+    let isPlaying = true;
+    let isLightMode = false;
+
+    function enterSite() {
+      intro.style.opacity = '0';
+      setTimeout(() => { intro.style.visibility = 'hidden'; }, 1200);
+      cardWrap.classList.add("show");
+      
+      bgVideo.load(); music.load(); music.volume = 0.4; 
+      bgVideo.play().catch(e => console.error(e));
+      music.play().then(() => initVisualizer()).catch(e => console.error(e));
+    }
+
+    function toggleMusic() {
+      if (isPlaying) {
+        music.pause(); musicBtn.innerText = "[ Play Audio ]";
+      } else {
+        music.play(); musicBtn.innerText = "[ Pause Audio ]";
+        if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      }
+      isPlaying = !isPlaying;
+    }
+
+    // --- THEME SWAP ENGINE ---
+    function toggleTheme() {
+      isLightMode = !isLightMode;
+      
+      // 1. Swap the CSS classes
+      document.body.classList.toggle('light-mode', isLightMode);
+      themeBtn.innerText = isLightMode ? "[ DARK MODE ]" : "[ LIGHT MODE ]";
+
+      // 2. Fade out video, swap sources, fade back in
+      bgVideo.style.opacity = 0;
+      setTimeout(() => {
+        document.getElementById('bg-source').src = isLightMode ? "bg-light.mp4" : "bg.mp4";
+        document.getElementById('music-source').src = isLightMode ? "music-light.mp3" : "music.mp3";
+        
+        bgVideo.load();
+        music.load();
+        
+        bgVideo.play().catch(e => console.log(e));
+        if (isPlaying) { music.play().catch(e => console.log(e)); }
+        
+        bgVideo.style.opacity = 1;
+      }, 500); // 500ms delay matches the CSS opacity transition
+    }
+
+    // --- TYPEWRITER ---
+    const words = ["stay lowkey", "calm energy", "radiant mind"];
+    let i = 0, j = 0, isDeleting = false;
+
+    function typeEffect() {
+      const currentWord = words[i];
+      document.getElementById("type").textContent = currentWord.substring(0, j);
+      if (!isDeleting && j === currentWord.length) {
+        isDeleting = true; setTimeout(typeEffect, 2000); return;
+      }
+      if (isDeleting && j === 0) {
+        isDeleting = false; i = (i + 1) % words.length;
+      }
+      j += isDeleting ? -1 : 1;
+      setTimeout(typeEffect, isDeleting ? 30 : 80);
+    }
+    typeEffect();
+
+    // --- LANYARD API ---
+    function fetchLanyard() {
+      fetch("https://api.lanyard.rest/v1/users/285468327135019019")
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            const d = data.data;
+            if (d.discord_user.avatar) {
+              const avatarExt = d.discord_user.avatar.startsWith('a_') ? 'gif' : 'webp';
+              document.getElementById("discord-avatar").src = `https://cdn.discordapp.com/avatars/${d.discord_user.id}/${d.discord_user.avatar}.${avatarExt}?size=128`;
+            }
+            const colors = { online: '#43b581', idle: '#faa61a', dnd: '#f04747', offline: '#747f8d' };
+            document.getElementById("status-dot").style.background = colors[d.discord_status] || colors.offline;
+            const customStatus = d.activities.find(a => a.type === 4);
+            if (customStatus && customStatus.state) {
+               const emoji = customStatus.emoji ? (customStatus.emoji.id ? '' : customStatus.emoji.name + ' ') : '';
+               document.getElementById("discord-bio").innerText = `"${emoji}${customStatus.state}"`;
+            } else {
+               document.getElementById("discord-bio").innerText = `"staying lowkey."`; 
+            }
+            const spotifyWidget = document.getElementById("spotify-widget");
+            if (d.listening_to_spotify && d.spotify) {
+              document.getElementById("spotify-art").src = d.spotify.album_art_url;
+              document.getElementById("spotify-song").innerText = d.spotify.song;
+              document.getElementById("spotify-artist").innerText = d.spotify.artist;
+              spotifyWidget.style.display = "flex";
+            } else {
+              spotifyWidget.style.display = "none";
+            }
+          }
+        })
+        .catch(err => console.log("Lanyard fetch error:", err));
+    }
+    fetchLanyard(); setInterval(fetchLanyard, 3000);
+
+    // --- SMART RAIN ---
+    const canvas = document.getElementById("rain"); const ctx = canvas.getContext("2d");
+    function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    window.addEventListener('resize', resizeCanvas); resizeCanvas();
+    let rainDrops = Array.from({length: 60}, () => ({
+      x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+      l: Math.random() * 10 + 5, s: Math.random() * 2 + 1.5 
+    }));
+    
+    function drawRain() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // Smart rain: switches to dark gray in light mode
+      ctx.strokeStyle = document.body.classList.contains('light-mode') ? "rgba(0, 0, 0, 0.15)" : "rgba(255, 255, 255, 0.05)"; 
+      ctx.lineWidth = 1; ctx.lineCap = 'round';
+      rainDrops.forEach(r => {
+        ctx.beginPath(); ctx.moveTo(r.x, r.y); ctx.lineTo(r.x, r.y + r.l); ctx.stroke();
+        r.y += r.s; if (r.y > canvas.height) { r.y = -20; r.x = Math.random() * canvas.width; }
+      });
+      requestAnimationFrame(drawRain);
+    }
+    drawRain();
+  </script>
+
 </body>
 </html>
