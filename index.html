@@ -82,7 +82,7 @@
 
     /* LIVE SPOTIFY WIDGET */
     #spotify-widget {
-      display: none; /* Hidden until API confirms you are listening */
+      display: none;
       margin-top: 10px; padding: 12px;
       border-radius: 12px; background: rgba(30, 215, 96, 0.1);
       border: 1px solid rgba(30, 215, 96, 0.2);
@@ -166,9 +166,13 @@
       setTimeout(() => { intro.style.visibility = 'hidden'; }, 800);
       card.classList.add("show");
       
-      // Forces media to play upon user interaction
-      bgVideo.play().catch(e => console.log("Video not found or blocked."));
-      music.play().catch(e => console.log("Audio not found or blocked."));
+      // Force the browser to load the audio immediately to bypass mobile restrictions
+      music.load();
+      music.volume = 0.5; // Starts at 50% volume
+      
+      // Play media
+      bgVideo.play().catch(e => console.error("Video error:", e));
+      music.play().catch(e => console.error("Audio error:", e));
     }
 
     // --- TYPEWRITER EFFECT ---
@@ -225,10 +229,58 @@
               document.getElementById("spotify-art").src = d.spotify.album_art_url;
               document.getElementById("spotify-song").innerText = d.spotify.song;
               document.getElementById("spotify-artist").innerText = d.spotify.artist;
-              spotifyWidget.style.display = "flex"; // Show the widget
+              spotifyWidget.style.display = "flex";
             } else {
-              spotifyWidget.style.display = "none"; // Hide if not listening
+              spotifyWidget.style.display = "none";
             }
           }
         })
-        .catch(err =>
+        .catch(err => console.log("Lanyard fetch error:", err));
+    }
+    
+    // Fetch immediately, then update every 3 seconds
+    fetchLanyard();
+    setInterval(fetchLanyard, 3000);
+
+    // --- RAIN EFFECT ---
+    const canvas = document.getElementById("rain");
+    const ctx = canvas.getContext("2d");
+    
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    let rainDrops = Array.from({length: 100}, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      l: Math.random() * 15 + 5,
+      s: Math.random() * 3 + 2 
+    }));
+
+    function drawRain() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.1)"; 
+      ctx.lineWidth = 1.5;
+      ctx.lineCap = 'round';
+      
+      rainDrops.forEach(r => {
+        ctx.beginPath();
+        ctx.moveTo(r.x, r.y);
+        ctx.lineTo(r.x, r.y + r.l);
+        ctx.stroke();
+        r.y += r.s;
+        if (r.y > canvas.height) {
+          r.y = -20;
+          r.x = Math.random() * canvas.width;
+        }
+      });
+      requestAnimationFrame(drawRain);
+    }
+    drawRain();
+  </script>
+
+</body>
+</html>
