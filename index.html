@@ -12,7 +12,7 @@
   <style>
     /* RESET & BASE */
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; color: white; overflow: hidden; background-color: #030303; }
+    body { font-family: 'Inter', sans-serif; color: white; overflow: hidden; background-color: #030303; perspective: 1000px; }
 
     /* CINEMATIC INTRO */
     #intro {
@@ -30,16 +30,16 @@
       position: fixed; top: 50%; left: 50%;
       min-width: 100%; min-height: 100%; width: auto; height: auto;
       transform: translateX(-50%) translateY(-50%);
-      object-fit: cover; z-index: -2; filter: brightness(0.65) contrast(1.1); /* Brighter for better visibility */
+      object-fit: cover; z-index: -2; filter: brightness(0.65) contrast(1.1);
     }
     canvas { position: fixed; top: 0; left: 0; z-index: -1; pointer-events: none; opacity: 0.6; }
 
-    /* ART PIECE CARD */
+    /* ART PIECE CARD (3D Wrapper) */
     .card-wrapper {
       position: absolute; top: 50%; left: 50%;
       transform: translate(-50%, -45%); opacity: 0;
-      transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-      z-index: 10;
+      transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 10; transform-style: preserve-3d;
     }
     .card-wrapper.show { opacity: 1; transform: translate(-50%, -50%); }
     
@@ -48,22 +48,27 @@
       border-radius: 20px; 
       background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.005) 100%);
       border: 1px solid rgba(255, 255, 255, 0.06);
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.05);
-      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); /* Less blur to show the car */
-      text-align: center;
-      display: flex; flex-direction: column; align-items: center;
-      animation: float 6s ease-in-out infinite; /* Hover effect */
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255,255,255,0.05);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      text-align: center; display: flex; flex-direction: column; align-items: center;
+      transition: transform 0.1s ease-out; /* Smooths out the JS 3D tilt */
     }
-    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
 
-    /* PROFILE AVATAR */
+    /* CREATOR LOCAL TIME */
+    .local-time {
+      font-size: 9px; font-weight: 400; color: rgba(255,255,255,0.4);
+      text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px;
+      padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); width: 80%;
+    }
+
+    /* PROFILE AVATAR (Audio Reactive) */
     .avatar-container { position: relative; margin-bottom: 12px; }
     #discord-avatar {
       width: 64px; height: 64px; border-radius: 50%; object-fit: cover;
-      border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 8px 20px rgba(0,0,0,0.6);
-      transition: transform 0.4s ease;
+      border: 1px solid rgba(255,255,255,0.1); 
+      box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+      transition: transform 0.05s ease-out, box-shadow 0.05s ease-out; /* Fast transition for audio beats */
     }
-    #discord-avatar:hover { transform: scale(1.05); }
     #status-dot {
       position: absolute; bottom: 2px; right: 2px; width: 12px; height: 12px;
       border-radius: 50%; background: #747f8d; border: 2px solid #0a0a0a;
@@ -76,7 +81,7 @@
     .cursor { animation: blink 1s infinite; opacity: 0.5; }
     @keyframes blink { 50% { opacity: 0; } }
 
-    /* DYNAMIC BIO - No more bulky box */
+    /* MINIMALIST BIO */
     .bio-text {
       font-size: 11px; font-weight: 300; color: rgba(255,255,255,0.8);
       font-style: italic; line-height: 1.5; margin-bottom: 20px;
@@ -93,13 +98,12 @@
       background: rgba(255, 255, 255, 0.02);
     }
     .btn:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.2); }
-    
     .btn-riot:hover { background: rgba(255, 70, 85, 0.1); border-color: rgba(255, 70, 85, 0.3); }
     .btn-discord:hover { background: rgba(88, 101, 242, 0.1); border-color: rgba(88, 101, 242, 0.3); }
     .rank-icon { width: 16px; height: 16px; object-fit: contain; }
     .discord-icon { width: 14px; height: 14px; fill: currentColor; }
 
-    /* LIVE SPOTIFY PILL WIDGET */
+    /* SPINNING SPOTIFY WIDGET */
     #spotify-widget {
       display: none; width: 100%; padding: 6px 12px 6px 6px;
       border-radius: 50px; background: rgba(30, 215, 96, 0.05);
@@ -109,16 +113,15 @@
     #spotify-widget:hover { border-color: rgba(30, 215, 96, 0.4); background: rgba(30, 215, 96, 0.1); }
     #spotify-art { 
       width: 32px; height: 32px; border-radius: 50%; box-shadow: 0 2px 8px rgba(0,0,0,0.5);
-      animation: spin 6s linear infinite; /* Vinyl spin effect */
+      animation: spin 6s linear infinite; 
     }
     @keyframes spin { 100% { transform: rotate(360deg); } }
-    
     .spotify-info { flex: 1; overflow: hidden; }
     .spotify-song { font-size: 11px; font-weight: 500; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .spotify-artist { font-size: 9px; font-weight: 300; color: rgba(255,255,255,0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .spotify-icon { width: 14px; opacity: 0.8; }
 
-    /* FOOTER: CONTROLS & VIEWS */
+    /* FOOTER */
     .card-footer {
       display: flex; justify-content: space-between; align-items: center;
       width: 100%; margin-top: 20px; font-size: 9px; color: rgba(255,255,255,0.4);
@@ -144,8 +147,10 @@
   <canvas id="rain"></canvas>
 
   <div class="card-wrapper" id="cardWrap">
-    <div class="card">
+    <div class="card" id="tiltCard">
       
+      <div class="local-time" id="clock">Loading Time...</div>
+
       <div class="avatar-container">
         <img id="discord-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Profile">
         <div id="status-dot"></div>
@@ -189,16 +194,70 @@
     </div>
   </div>
 
-  <audio id="music" loop>
+  <audio id="music" loop crossorigin="anonymous">
     <source src="music.mp3" type="audio/mpeg">
   </audio>
 
   <script>
-    // --- VIEW COUNTER API ---
-    fetch("https://api.counterapi.dev/v1/lowkey-emal-dev/visits/up")
-      .then(res => res.json())
-      .then(data => { document.getElementById("view-count").innerText = data.count; })
-      .catch(() => { document.getElementById("view-count").innerText = "-"; });
+    // --- LIVE CLOCK ---
+    function updateClock() {
+      const now = new Date();
+      // Set to your preferred timezone (e.g., 'Europe/Amsterdam', 'America/New_York')
+      const timeStr = now.toLocaleTimeString('en-US', { timeZone: 'Europe/Amsterdam', hour: '2-digit', minute: '2-digit' });
+      document.getElementById('clock').innerText = `Eindhoven // ${timeStr}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // --- 3D MOUSE TILT EFFECT ---
+    const tiltCard = document.getElementById('tiltCard');
+    document.addEventListener('mousemove', (e) => {
+      if (window.innerWidth > 768) { // Only do tilt on desktop
+        const xAxis = (window.innerWidth / 2 - e.pageX) / 35; // Sensitivity
+        const yAxis = (window.innerHeight / 2 - e.pageY) / 35;
+        tiltCard.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+      }
+    });
+    document.addEventListener('mouseleave', () => {
+      tiltCard.style.transform = `rotateY(0deg) rotateX(0deg)`;
+    });
+
+    // --- AUDIO VISUALIZER (Bass Reactive Avatar) ---
+    let audioCtx, analyzer, dataArray;
+    function initVisualizer() {
+      if (audioCtx) return; 
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      analyzer = audioCtx.createAnalyser();
+      const source = audioCtx.createMediaElementSource(document.getElementById('music'));
+      source.connect(analyzer);
+      analyzer.connect(audioCtx.destination);
+      
+      analyzer.fftSize = 256;
+      dataArray = new Uint8Array(analyzer.frequencyBinCount);
+      
+      const avatar = document.getElementById('discord-avatar');
+      
+      function renderFrame() {
+        requestAnimationFrame(renderFrame);
+        analyzer.getByteFrequencyData(dataArray);
+        
+        // Calculate bass (average of lower frequencies)
+        let bass = (dataArray[1] + dataArray[2] + dataArray[3]) / 3;
+        
+        // Make avatar pulse based on bass volume
+        let scale = 1 + (bass / 1500); // Max scale roughly 1.15x
+        let glow = bass / 6;
+        
+        if(bass > 50) {
+          avatar.style.transform = `scale(${scale})`;
+          avatar.style.boxShadow = `0 8px 20px rgba(0,0,0,0.6), 0 0 ${glow}px rgba(255, 255, 255, ${glow/60})`;
+        } else {
+          avatar.style.transform = `scale(1)`;
+          avatar.style.boxShadow = `0 8px 20px rgba(0,0,0,0.6)`;
+        }
+      }
+      renderFrame();
+    }
 
     // --- INTRO & MEDIA ---
     const intro = document.getElementById('intro');
@@ -217,8 +276,16 @@
       music.volume = 0.4; 
       
       bgVideo.play().catch(e => console.error("Video error:", e));
-      music.play().catch(e => console.error("Audio error:", e));
+      music.play().then(() => {
+        initVisualizer(); // Start the visualizer when music successfully plays
+      }).catch(e => console.error("Audio error:", e));
     }
+
+    // --- COUNTER API ---
+    fetch("https://api.counterapi.dev/v1/lowkey-emal-dev/visits/up")
+      .then(res => res.json())
+      .then(data => { document.getElementById("view-count").innerText = data.count; })
+      .catch(() => { document.getElementById("view-count").innerText = "-"; });
 
     // --- TYPEWRITER ---
     const words = ["stay lowkey", "calm energy", "radiant mind"];
@@ -227,15 +294,11 @@
     function typeEffect() {
       const currentWord = words[i];
       document.getElementById("type").textContent = currentWord.substring(0, j);
-
       if (!isDeleting && j === currentWord.length) {
-        isDeleting = true;
-        setTimeout(typeEffect, 2000);
-        return;
+        isDeleting = true; setTimeout(typeEffect, 2000); return;
       }
       if (isDeleting && j === 0) {
-        isDeleting = false;
-        i = (i + 1) % words.length;
+        isDeleting = false; i = (i + 1) % words.length;
       }
       j += isDeleting ? -1 : 1;
       setTimeout(typeEffect, isDeleting ? 30 : 80);
@@ -246,11 +309,11 @@
     let isPlaying = true;
     function toggleMusic() {
       if (isPlaying) {
-        music.pause();
-        musicBtn.innerText = "[ Play Audio ]";
+        music.pause(); musicBtn.innerText = "[ Play Audio ]";
       } else {
-        music.play();
-        musicBtn.innerText = "[ Pause Audio ]";
+        music.play(); musicBtn.innerText = "[ Pause Audio ]";
+        // Ensure Web Audio API context resumes if browser suspended it
+        if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
       }
       isPlaying = !isPlaying;
     }
@@ -262,18 +325,12 @@
         .then(data => {
           if (data.success) {
             const d = data.data;
-            
-            // Avatar
             if (d.discord_user.avatar) {
               const avatarExt = d.discord_user.avatar.startsWith('a_') ? 'gif' : 'webp';
               document.getElementById("discord-avatar").src = `https://cdn.discordapp.com/avatars/${d.discord_user.id}/${d.discord_user.avatar}.${avatarExt}?size=128`;
             }
-
-            // Status Dot
             const colors = { online: '#43b581', idle: '#faa61a', dnd: '#f04747', offline: '#747f8d' };
             document.getElementById("status-dot").style.background = colors[d.discord_status] || colors.offline;
-
-            // Bio
             const customStatus = d.activities.find(a => a.type === 4);
             if (customStatus && customStatus.state) {
                const emoji = customStatus.emoji ? (customStatus.emoji.id ? '' : customStatus.emoji.name + ' ') : '';
@@ -281,8 +338,6 @@
             } else {
                document.getElementById("discord-bio").innerText = `"staying lowkey."`; 
             }
-
-            // Spotify
             const spotifyWidget = document.getElementById("spotify-widget");
             if (d.listening_to_spotify && d.spotify) {
               document.getElementById("spotify-art").src = d.spotify.album_art_url;
@@ -296,44 +351,22 @@
         })
         .catch(err => console.log("Lanyard fetch error:", err));
     }
-    
-    fetchLanyard();
-    setInterval(fetchLanyard, 3000);
+    fetchLanyard(); setInterval(fetchLanyard, 3000);
 
     // --- SUBTLE RAIN ---
-    const canvas = document.getElementById("rain");
-    const ctx = canvas.getContext("2d");
-    
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-
+    const canvas = document.getElementById("rain"); const ctx = canvas.getContext("2d");
+    function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    window.addEventListener('resize', resizeCanvas); resizeCanvas();
     let rainDrops = Array.from({length: 60}, () => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      l: Math.random() * 10 + 5,
-      s: Math.random() * 2 + 1.5 
+      x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+      l: Math.random() * 10 + 5, s: Math.random() * 2 + 1.5 
     }));
-
     function drawRain() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.05)"; // Ultra subtle
-      ctx.lineWidth = 1;
-      ctx.lineCap = 'round';
-      
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.05)"; ctx.lineWidth = 1; ctx.lineCap = 'round';
       rainDrops.forEach(r => {
-        ctx.beginPath();
-        ctx.moveTo(r.x, r.y);
-        ctx.lineTo(r.x, r.y + r.l);
-        ctx.stroke();
-        r.y += r.s;
-        if (r.y > canvas.height) {
-          r.y = -20;
-          r.x = Math.random() * canvas.width;
-        }
+        ctx.beginPath(); ctx.moveTo(r.x, r.y); ctx.lineTo(r.x, r.y + r.l); ctx.stroke();
+        r.y += r.s; if (r.y > canvas.height) { r.y = -20; r.x = Math.random() * canvas.width; }
       });
       requestAnimationFrame(drawRain);
     }
