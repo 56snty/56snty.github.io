@@ -27,7 +27,6 @@
       transition: background-color 0.8s ease, color 0.8s ease;
     }
 
-    /* LIGHT MODE GLOBAL OVERRIDES */
     body.light-mode { background-color: #e5e5e5; color: #1a1a1a; }
 
     /* CINEMATIC INTRO */
@@ -73,7 +72,7 @@
     
     .card {
       position: relative; overflow: hidden; 
-      width: 90vw; max-width: 300px; padding: 30px 20px;
+      width: 90vw; max-width: 320px; padding: 35px 25px; /* Slightly wider to fit footer nicely */
       border-radius: 20px; 
       background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.005) 100%);
       border: 1px solid rgba(255, 255, 255, 0.06);
@@ -82,8 +81,6 @@
       text-align: center; display: flex; flex-direction: column; align-items: center;
       transition: transform 0.1s ease-out, background 0.8s, border 0.8s, box-shadow 0.8s; 
     }
-
-    /* LIGHT MODE CARD */
     body.light-mode .card {
       background: linear-gradient(135deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.2) 100%);
       border: 1px solid rgba(0, 0, 0, 0.1);
@@ -95,7 +92,7 @@
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       pointer-events: none; z-index: 1; opacity: 0; transition: opacity 0.4s ease;
     }
-    body.light-mode .glare { display: none; /* Glare looks better on dark glass */ }
+    body.light-mode .glare { display: none; }
     .card > * { z-index: 2; position: relative; }
 
     /* LOCAL TIME & WEATHER */
@@ -136,7 +133,6 @@
     .cursor { animation: blink 1s infinite; opacity: 0.5; }
     @keyframes blink { 50% { opacity: 0; } }
 
-    /* MINIMALIST BIO */
     .bio-text {
       font-size: 11px; font-weight: 300; color: rgba(255,255,255,0.8);
       font-style: italic; line-height: 1.5; margin-bottom: 20px;
@@ -144,7 +140,7 @@
     }
     body.light-mode .bio-text { color: rgba(0,0,0,0.7); }
 
-    /* MAGNETIC PILL BUTTONS */
+    /* BUTTONS */
     .btn-group { width: 100%; display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
     .btn {
       display: flex; align-items: center; justify-content: center; gap: 8px;
@@ -154,14 +150,12 @@
       transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.5s, border 0.5s, color 0.5s;
     }
     .btn:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.2); }
-    
     body.light-mode .btn { background: rgba(0, 0, 0, 0.03); border: 1px solid rgba(0, 0, 0, 0.1); color: #111; }
     body.light-mode .btn:hover { background: rgba(0, 0, 0, 0.08); border-color: rgba(0, 0, 0, 0.2); }
-    
     .rank-icon { width: 16px; height: 16px; object-fit: contain; }
     .discord-icon { width: 14px; height: 14px; fill: currentColor; transition: fill 0.8s; }
 
-    /* SPINNING SPOTIFY WIDGET */
+    /* SPOTIFY */
     #spotify-widget {
       display: none; width: 100%; padding: 6px 12px 6px 6px;
       border-radius: 50px; background: rgba(30, 215, 96, 0.05);
@@ -170,11 +164,7 @@
     }
     #spotify-widget:hover { border-color: rgba(30, 215, 96, 0.4); background: rgba(30, 215, 96, 0.1); }
     body.light-mode #spotify-widget { background: rgba(30, 215, 96, 0.1); border-color: rgba(30, 215, 96, 0.3); }
-    
-    #spotify-art { 
-      width: 32px; height: 32px; border-radius: 50%; box-shadow: 0 2px 8px rgba(0,0,0,0.5);
-      animation: spin 6s linear infinite; 
-    }
+    #spotify-art { width: 32px; height: 32px; border-radius: 50%; box-shadow: 0 2px 8px rgba(0,0,0,0.5); animation: spin 6s linear infinite; }
     @keyframes spin { 100% { transform: rotate(360deg); } }
     .spotify-info { flex: 1; overflow: hidden; }
     .spotify-song { font-size: 11px; font-weight: 500; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: color 0.8s; }
@@ -183,10 +173,10 @@
     body.light-mode .spotify-artist { color: rgba(0,0,0,0.6); }
     .spotify-icon { width: 14px; opacity: 0.8; }
 
-    /* FOOTER CONTROLS */
+    /* FOOTER & VIEWS (RESTORED) */
     .card-footer {
       display: flex; justify-content: space-between; align-items: center;
-      width: 100%; margin-top: 20px; font-size: 9px; color: rgba(255,255,255,0.4);
+      width: 100%; margin-top: 25px; font-size: 9px; color: rgba(255,255,255,0.4);
       text-transform: uppercase; letter-spacing: 2px; transition: color 0.8s;
     }
     body.light-mode .card-footer { color: rgba(0,0,0,0.5); }
@@ -194,6 +184,18 @@
     .controls:hover { color: rgba(255,255,255,0.9); }
     body.light-mode .controls:hover { color: #111; }
     .views { display: flex; align-items: center; gap: 4px; }
+
+    /* MUSIC PROGRESS LINE */
+    .progress-container {
+      position: absolute; bottom: 0; left: 0; width: 100%; height: 2px;
+      background: rgba(255,255,255,0.05); transition: background 0.8s;
+    }
+    .progress-bar {
+      height: 100%; width: 0%; background: rgba(255,255,255,0.6);
+      transition: width 0.1s linear, background 0.8s;
+    }
+    body.light-mode .progress-container { background: rgba(0,0,0,0.05); }
+    body.light-mode .progress-bar { background: rgba(0,0,0,0.4); }
   </style>
 </head>
 
@@ -209,7 +211,6 @@
   </video>
   
   <canvas id="rain"></canvas>
-
   <div class="watermark">fully custom made by emal.dev</div>
 
   <div class="card-wrapper" id="cardWrap">
@@ -235,7 +236,6 @@
           <img class="rank-icon" src="https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/27/largeicon.png" alt="Radiant">
           <span>4owkey#prx Tracker</span>
         </a>
-
         <a href="https://discord.com/users/285468327135019019" target="_blank" class="btn btn-discord">
           <svg class="discord-icon" viewBox="0 0 127.14 96.36"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.31,60,73.31,53s5-12.74,11.43-12.74S96.1,46,96,53,91.08,65.69,84.69,65.69Z"/></svg>
           <span id="discord-username">Discord Profile</span>
@@ -256,7 +256,10 @@
       <div class="card-footer">
         <div class="controls" id="themeToggle" onclick="toggleTheme()">[ LIGHT MODE ]</div>
         <div class="controls" id="musicToggle" onclick="toggleMusic()">[ Pause Audio ]</div>
+        <div class="views">👁 <span id="view-count">-</span></div>
       </div>
+      
+      <div class="progress-container"><div class="progress-bar" id="audioProgress"></div></div>
 
     </div>
   </div>
@@ -266,6 +269,16 @@
   </audio>
 
   <script>
+    // --- DYNAMIC TAB TITLE ---
+    let originalTitle = document.title;
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        document.title = "stay lowkey...";
+      } else {
+        document.title = originalTitle;
+      }
+    });
+
     // --- LIVE CLOCK & WEATHER ---
     let cachedWeather = '';
     async function fetchWeather() {
@@ -273,10 +286,9 @@
         const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=51.4416&longitude=5.4697&current_weather=true");
         const data = await res.json();
         cachedWeather = ` // ${Math.round(data.current_weather.temperature)}°C`;
-      } catch (err) { console.log("Weather failed to load"); }
+      } catch (err) {}
     }
     fetchWeather();
-
     function updateLocalInfo() {
       const now = new Date();
       const timeStr = now.toLocaleTimeString('en-US', { timeZone: 'Europe/Amsterdam', hour: '2-digit', minute: '2-digit' });
@@ -284,23 +296,20 @@
     }
     setInterval(updateLocalInfo, 1000); updateLocalInfo();
 
-    // --- 3D TILT & DYNAMIC GLARE EFFECT ---
+    // --- 3D TILT & GLARE ---
     const tiltCard = document.getElementById('tiltCard');
     const glare = document.getElementById('glare');
-    
     document.addEventListener('mousemove', (e) => {
       if (window.innerWidth > 768) { 
         const xAxis = (window.innerWidth / 2 - e.pageX) / 35; 
         const yAxis = (window.innerHeight / 2 - e.pageY) / 35;
         tiltCard.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
-
         const xPos = (e.clientX / window.innerWidth) * 100;
         const yPos = (e.clientY / window.innerHeight) * 100;
         glare.style.background = `radial-gradient(circle at ${xPos}% ${yPos}%, rgba(255,255,255,0.08) 0%, transparent 60%)`;
         glare.style.opacity = 1;
       }
     });
-    
     document.addEventListener('mouseleave', () => {
       tiltCard.style.transform = `rotateY(0deg) rotateX(0deg)`;
       glare.style.opacity = 0;
@@ -317,21 +326,29 @@
           this.style.transform = `translate(${x * 0.25}px, ${y * 0.25}px)`;
         }
       });
-      btn.addEventListener('mouseleave', function() {
-        this.style.transform = `translate(0px, 0px)`;
-      });
+      btn.addEventListener('mouseleave', function() { this.style.transform = `translate(0px, 0px)`; });
     });
 
-    // --- AUDIO VISUALIZER ---
+    // --- AUDIO VISUALIZER & PROGRESS BAR ---
     let audioCtx, analyzer, dataArray;
+    const music = document.getElementById('music');
+    const progressBar = document.getElementById('audioProgress');
+
+    // Update Progress Bar
+    music.addEventListener('timeupdate', () => {
+      if (music.duration) {
+        const progress = (music.currentTime / music.duration) * 100;
+        progressBar.style.width = `${progress}%`;
+      }
+    });
+
     function initVisualizer() {
       if (audioCtx) return; 
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       analyzer = audioCtx.createAnalyser();
-      const source = audioCtx.createMediaElementSource(document.getElementById('music'));
+      const source = audioCtx.createMediaElementSource(music);
       source.connect(analyzer);
       analyzer.connect(audioCtx.destination);
-      
       analyzer.fftSize = 256;
       dataArray = new Uint8Array(analyzer.frequencyBinCount);
       const avatar = document.getElementById('discord-avatar');
@@ -339,14 +356,10 @@
       function renderFrame() {
         requestAnimationFrame(renderFrame);
         analyzer.getByteFrequencyData(dataArray);
-        
         let bass = (dataArray[1] + dataArray[2] + dataArray[3]) / 3;
         let scale = 1 + (bass / 1500); 
         let glow = bass / 6;
-        
-        // Disable glow effect in light mode, just keep the pulse
         let isLight = document.body.classList.contains('light-mode');
-        
         if(bass > 50) {
           avatar.style.transform = `scale(${scale})`;
           avatar.style.boxShadow = isLight ? `0 8px 20px rgba(0,0,0,0.15)` : `0 8px 20px rgba(0,0,0,0.6), 0 0 ${glow}px rgba(255, 255, 255, ${glow/60})`;
@@ -362,7 +375,6 @@
     const intro = document.getElementById('intro');
     const cardWrap = document.getElementById('cardWrap');
     const bgVideo = document.getElementById('bg');
-    const music = document.getElementById('music');
     const musicBtn = document.getElementById('musicToggle');
     const themeBtn = document.getElementById('themeToggle');
     
@@ -389,34 +401,30 @@
       isPlaying = !isPlaying;
     }
 
-    // --- THEME SWAP ENGINE ---
     function toggleTheme() {
       isLightMode = !isLightMode;
-      
-      // 1. Swap the CSS classes
       document.body.classList.toggle('light-mode', isLightMode);
       themeBtn.innerText = isLightMode ? "[ DARK MODE ]" : "[ LIGHT MODE ]";
-
-      // 2. Fade out video, swap sources, fade back in
       bgVideo.style.opacity = 0;
       setTimeout(() => {
         document.getElementById('bg-source').src = isLightMode ? "bg-light.mp4" : "bg.mp4";
         document.getElementById('music-source').src = isLightMode ? "music-light.mp3" : "music.mp3";
-        
-        bgVideo.load();
-        music.load();
-        
+        bgVideo.load(); music.load();
         bgVideo.play().catch(e => console.log(e));
         if (isPlaying) { music.play().catch(e => console.log(e)); }
-        
         bgVideo.style.opacity = 1;
-      }, 500); // 500ms delay matches the CSS opacity transition
+      }, 500); 
     }
+
+    // --- VIEWS COUNTER API (RESTORED) ---
+    fetch("https://api.counterapi.dev/v1/lowkey-emal-dev/visits/up")
+      .then(res => res.json())
+      .then(data => { document.getElementById("view-count").innerText = data.count; })
+      .catch(() => { document.getElementById("view-count").innerText = "-"; });
 
     // --- TYPEWRITER ---
     const words = ["stay lowkey", "calm energy", "radiant mind"];
     let i = 0, j = 0, isDeleting = false;
-
     function typeEffect() {
       const currentWord = words[i];
       document.getElementById("type").textContent = currentWord.substring(0, j);
@@ -477,7 +485,6 @@
     
     function drawRain() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      // Smart rain: switches to dark gray in light mode
       ctx.strokeStyle = document.body.classList.contains('light-mode') ? "rgba(0, 0, 0, 0.15)" : "rgba(255, 255, 255, 0.05)"; 
       ctx.lineWidth = 1; ctx.lineCap = 'round';
       rainDrops.forEach(r => {
