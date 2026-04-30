@@ -7,74 +7,98 @@
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
   <style>
+    /* RESET & BASE */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Inter', sans-serif; color: white; overflow: hidden; background-color: #050505; }
 
+    /* INTRO OVERLAY */
     #intro {
       position: fixed; width: 100%; height: 100%;
-      background: black; display: flex; flex-direction: column;
-      align-items: center; justify-content: center; z-index: 10; cursor: pointer;
+      background: #000; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; z-index: 50; cursor: pointer;
       transition: opacity 0.8s ease, visibility 0.8s;
     }
-    .pulse-text { opacity: 0.6; font-size: 14px; margin-top: 10px; animation: pulse 2s infinite; }
-    @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.9; } }
+    .pulse-text { opacity: 0.6; font-size: 13px; margin-top: 12px; letter-spacing: 2px; text-transform: uppercase; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
 
+    /* BACKGROUNDS */
     video {
       position: fixed; top: 50%; left: 50%;
       min-width: 100%; min-height: 100%; width: auto; height: auto;
       transform: translateX(-50%) translateY(-50%);
-      object-fit: cover; z-index: -2; filter: brightness(0.4);
+      object-fit: cover; z-index: -2; filter: brightness(0.35);
     }
     canvas { position: fixed; top: 0; left: 0; z-index: -1; pointer-events: none; }
 
+    /* PREMIUM CARD */
     .card {
       position: absolute; top: 50%; left: 50%;
       transform: translate(-50%, -45%);
-      opacity: 0; width: 90%; max-width: 360px; padding: 30px;
-      border-radius: 24px; background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+      opacity: 0; width: 90%; max-width: 380px; padding: 35px 30px;
+      border-radius: 24px; 
+      background: linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255,255,255,0.1);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
       text-align: center; transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .card.show { opacity: 1; transform: translate(-50%, -50%); }
 
-    h1 { font-family: 'Playfair Display', serif; font-size: 28px; letter-spacing: 1px; }
-    .type-container { height: 20px; margin: 8px 0 16px; font-weight: 300; }
-    .type { opacity: 0.8; }
+    /* TYPOGRAPHY */
+    h1 { font-family: 'Playfair Display', serif; font-size: 32px; letter-spacing: 1px; margin-bottom: 5px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+    .type-container { height: 20px; margin: 0 0 20px; font-weight: 300; font-size: 15px; color: #bbb; }
+    .type { opacity: 0.9; }
     .cursor { animation: blink 1s infinite; opacity: 0.8; }
     @keyframes blink { 50% { opacity: 0; } }
 
     .badge {
-      font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px;
-      background: rgba(255, 255, 255, 0.15); padding: 5px 12px;
-      border-radius: 999px; margin-bottom: 15px; display: inline-block;
+      font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px;
+      background: rgba(255, 255, 255, 0.1); padding: 6px 14px;
+      border-radius: 8px; margin-bottom: 20px; display: inline-block;
+      border: 1px solid rgba(255,255,255,0.05); color: #ddd;
     }
 
+    .subtitle { font-weight: 400; font-size: 15px; line-height: 1.4; margin-bottom: 25px; }
+    .subtitle span { opacity: 0.5; font-size: 13px; }
+
+    /* BUTTONS & BOXES */
     .btn {
-      display: block; padding: 12px; margin-top: 15px;
-      border-radius: 12px; background: rgba(255, 255, 255, 0.1);
-      text-decoration: none; color: white; font-weight: 500;
-      transition: background 0.3s ease, transform 0.2s ease;
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      display: block; padding: 14px; margin-top: 10px;
+      border-radius: 12px; background: rgba(255, 255, 255, 0.05);
+      text-decoration: none; color: white; font-weight: 500; font-size: 14px;
+      transition: all 0.3s ease; border: 1px solid rgba(255, 255, 255, 0.1);
     }
-    .btn:hover { background: rgba(255, 255, 255, 0.2); transform: translateY(-2px); }
+    .btn:hover { background: rgba(255, 255, 255, 0.15); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
 
     .box {
-      margin-top: 12px; padding: 12px;
-      border-radius: 12px; background: rgba(0, 0, 0, 0.3);
+      margin-top: 10px; padding: 14px;
+      border-radius: 12px; background: rgba(0, 0, 0, 0.4);
       border: 1px solid rgba(255, 255, 255, 0.05);
-      font-size: 13px; font-weight: 300; color: #ddd;
+      font-size: 13px; font-weight: 400; color: #ccc;
     }
 
-    iframe { margin-top: 12px; border-radius: 12px; width: 100%; border: none; }
-    
+    /* LIVE SPOTIFY WIDGET */
+    #spotify-widget {
+      display: none; /* Hidden until API confirms you are listening */
+      margin-top: 10px; padding: 12px;
+      border-radius: 12px; background: rgba(30, 215, 96, 0.1);
+      border: 1px solid rgba(30, 215, 96, 0.2);
+      align-items: center; text-align: left; gap: 12px;
+      transition: all 0.3s ease;
+    }
+    #spotify-art { width: 48px; height: 48px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+    .spotify-info { flex: 1; overflow: hidden; }
+    .spotify-song { font-size: 13px; font-weight: 600; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .spotify-artist { font-size: 11px; font-weight: 400; color: rgba(255,255,255,0.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .spotify-icon { width: 16px; opacity: 0.8; }
+
+    /* CONTROLS */
     .controls {
-      margin-top: 20px; font-size: 12px; cursor: pointer; opacity: 0.5;
-      text-transform: uppercase; letter-spacing: 1px; transition: opacity 0.3s ease;
+      margin-top: 25px; font-size: 11px; cursor: pointer; opacity: 0.4;
+      text-transform: uppercase; letter-spacing: 2px; transition: opacity 0.3s ease;
     }
     .controls:hover { opacity: 1; }
   </style>
@@ -87,8 +111,8 @@
     <span class="pulse-text">click to enter</span>
   </div>
 
-  <video id="bg" autoplay loop muted playsinline>
-    <source src="https://cdn.pixabay.com/video/2020/07/22/45384-443180295_tiny.mp4" type="video/mp4">
+  <video id="bg" loop muted playsinline>
+    <source src="bg.mp4" type="video/mp4">
   </video>
   
   <canvas id="rain"></canvas>
@@ -101,28 +125,36 @@
     
     <div class="badge">exclusive</div>
     
-    <div style="font-weight: 300; font-size: 14px;">
-      4owkey#prx <br><span style="opacity:0.6; font-size: 12px;">Radiant</span>
+    <div class="subtitle">
+      4owkey#prx <br><span>Radiant</span>
     </div>
 
     <a href="https://discord.com/users/285468327135019019" target="_blank" class="btn">Discord Profile</a>
 
-    <div class="box" id="discord">Fetching Discord...</div>
+    <div class="box" id="discord">Fetching status...</div>
 
-    <iframe src="https://open.spotify.com/embed/track/4cOdK2wGLETKBW3PvgPWqT?utm_source=generator&theme=0" 
-            height="80" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy">
-    </iframe>
+    <div id="spotify-widget">
+      <img id="spotify-art" src="" alt="Album Art">
+      <div class="spotify-info">
+        <div class="spotify-song" id="spotify-song">Loading...</div>
+        <div class="spotify-artist" id="spotify-artist">Loading...</div>
+      </div>
+      <svg class="spotify-icon" viewBox="0 0 24 24" fill="#1DB954">
+        <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.24 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15.001 10.62 18.66 12.9c.42.24.54.84.3 1.14zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.6.18-1.2.72-1.38 4.26-1.26 11.28-1.02 15.721 1.62.539.3.719 1.02.419 1.56-.299.42-1.02.599-1.559.3z"/>
+      </svg>
+    </div>
 
     <div class="box">Riot: Radiant (4owkey#prx)</div>
 
-    <div class="controls" id="musicToggle" onclick="toggleMusic()">Pause Music</div>
+    <div class="controls" id="musicToggle" onclick="toggleMusic()">Pause Audio</div>
   </div>
 
   <audio id="music" loop>
-    <source src="https://cdn.pixabay.com/audio/2022/10/25/audio_946f06f6c7.mp3" type="audio/mpeg">
+    <source src="music.mp3" type="audio/mpeg">
   </audio>
 
   <script>
+    // --- INTRO & MEDIA HANDLING ---
     const intro = document.getElementById('intro');
     const card = document.getElementById('card');
     const bgVideo = document.getElementById('bg');
@@ -134,11 +166,13 @@
       setTimeout(() => { intro.style.visibility = 'hidden'; }, 800);
       card.classList.add("show");
       
-      bgVideo.play().catch(e => console.log("Video restricted:", e));
-      music.play().catch(e => console.log("Audio restricted:", e));
+      // Forces media to play upon user interaction
+      bgVideo.play().catch(e => console.log("Video not found or blocked."));
+      music.play().catch(e => console.log("Audio not found or blocked."));
     }
 
-    const words = ["Radiant", "stay lowkey", "calm energy"];
+    // --- TYPEWRITER EFFECT ---
+    const words = ["stay lowkey", "Radiant", "calm energy"];
     let i = 0, j = 0, isDeleting = false;
 
     function typeEffect() {
@@ -154,81 +188,47 @@
         isDeleting = false;
         i = (i + 1) % words.length;
       }
-
       j += isDeleting ? -1 : 1;
       setTimeout(typeEffect, isDeleting ? 40 : 100);
     }
     typeEffect();
 
+    // --- MUSIC TOGGLE ---
     let isPlaying = true;
     function toggleMusic() {
       if (isPlaying) {
         music.pause();
-        musicBtn.innerText = "Play Music";
+        musicBtn.innerText = "Play Audio";
       } else {
         music.play();
-        musicBtn.innerText = "Pause Music";
+        musicBtn.innerText = "Pause Audio";
       }
       isPlaying = !isPlaying;
     }
 
-    // Discord Lanyard Fetch
-    fetch("https://api.lanyard.rest/v1/users/285468327135019019")
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          const d = data.data;
-          const status = d.discord_status.charAt(0).toUpperCase() + d.discord_status.slice(1);
-          document.getElementById("discord").innerText = 
-            `Discord: ${status}` + (d.listening_to_spotify ? " • Spotify" : "");
-        } else {
-          // If not in Lanyard server, it triggers this
-          document.getElementById("discord").innerText = "Join discord.gg/lanyard to link!";
-        }
-      })
-      .catch(error => {
-        document.getElementById("discord").innerText = "Discord status unavailable";
-      });
+    // --- LANYARD API (DISCORD & LIVE SPOTIFY) ---
+    function fetchLanyard() {
+      fetch("https://api.lanyard.rest/v1/users/285468327135019019")
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            const d = data.data;
+            
+            // 1. Update Discord Status Text
+            const statusText = d.discord_status === "offline" ? "Offline" : 
+                               d.discord_status.charAt(0).toUpperCase() + d.discord_status.slice(1);
+            document.getElementById("discord").innerText = `Discord: ${statusText}`;
 
-    const canvas = document.getElementById("rain");
-    const ctx = canvas.getContext("2d");
-    
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-
-    let rainDrops = Array.from({length: 120}, () => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      l: Math.random() * 15 + 5,
-      s: Math.random() * 3 + 2 
-    }));
-
-    function drawRain() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
-      ctx.lineWidth = 1;
-      ctx.lineCap = 'round';
-      
-      rainDrops.forEach(r => {
-        ctx.beginPath();
-        ctx.moveTo(r.x, r.y);
-        ctx.lineTo(r.x, r.y + r.l);
-        ctx.stroke();
-        
-        r.y += r.s;
-        if (r.y > canvas.height) {
-          r.y = -20;
-          r.x = Math.random() * canvas.width;
-        }
-      });
-      requestAnimationFrame(drawRain);
-    }
-    drawRain();
-  </script>
-
-</body>
-</html>
+            // 2. Handle Live Spotify Widget
+            const spotifyWidget = document.getElementById("spotify-widget");
+            if (d.listening_to_spotify && d.spotify) {
+              document.getElementById("spotify-art").src = d.spotify.album_art_url;
+              document.getElementById("spotify-song").innerText = d.spotify.song;
+              document.getElementById("spotify-artist").innerText = d.spotify.artist;
+              spotifyWidget.style.display = "flex"; // Show the widget
+            } else {
+              spotifyWidget.style.display = "none"; // Hide if not listening
+            }
+          }
+        })
+        .catch(err =>
