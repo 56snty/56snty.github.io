@@ -12,7 +12,18 @@
   <style>
     /* RESET & BASE */
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; color: white; overflow: hidden; background-color: #030303; perspective: 1000px; }
+    
+    body { 
+      font-family: 'Inter', sans-serif; 
+      color: white; 
+      overflow: hidden; 
+      background-color: #030303; 
+      perspective: 1000px; 
+      /* MOBILE FIX: Forces the body to match the true screen size */
+      width: 100vw; 
+      height: 100vh; 
+      height: 100dvh; 
+    }
 
     /* CINEMATIC INTRO */
     #intro {
@@ -36,9 +47,10 @@
 
     /* ART PIECE CARD (3D Wrapper) */
     .card-wrapper {
-      position: absolute; top: 50%; left: 50%;
+      position: fixed; /* MOBILE FIX: Changed from absolute to fixed */
+      top: 50%; left: 50%;
       transform: translate(-50%, -45%); opacity: 0;
-      transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
       z-index: 10; transform-style: preserve-3d;
     }
     .card-wrapper.show { opacity: 1; transform: translate(-50%, -50%); }
@@ -51,7 +63,7 @@
       box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255,255,255,0.05);
       backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
       text-align: center; display: flex; flex-direction: column; align-items: center;
-      transition: transform 0.1s ease-out; /* Smooths out the JS 3D tilt */
+      transition: transform 0.1s ease-out; 
     }
 
     /* CREATOR LOCAL TIME */
@@ -67,7 +79,7 @@
       width: 64px; height: 64px; border-radius: 50%; object-fit: cover;
       border: 1px solid rgba(255,255,255,0.1); 
       box-shadow: 0 8px 20px rgba(0,0,0,0.6);
-      transition: transform 0.05s ease-out, box-shadow 0.05s ease-out; /* Fast transition for audio beats */
+      transition: transform 0.05s ease-out, box-shadow 0.05s ease-out;
     }
     #status-dot {
       position: absolute; bottom: 2px; right: 2px; width: 12px; height: 12px;
@@ -202,7 +214,6 @@
     // --- LIVE CLOCK ---
     function updateClock() {
       const now = new Date();
-      // Set to your preferred timezone (e.g., 'Europe/Amsterdam', 'America/New_York')
       const timeStr = now.toLocaleTimeString('en-US', { timeZone: 'Europe/Amsterdam', hour: '2-digit', minute: '2-digit' });
       document.getElementById('clock').innerText = `Eindhoven // ${timeStr}`;
     }
@@ -212,8 +223,8 @@
     // --- 3D MOUSE TILT EFFECT ---
     const tiltCard = document.getElementById('tiltCard');
     document.addEventListener('mousemove', (e) => {
-      if (window.innerWidth > 768) { // Only do tilt on desktop
-        const xAxis = (window.innerWidth / 2 - e.pageX) / 35; // Sensitivity
+      if (window.innerWidth > 768) { 
+        const xAxis = (window.innerWidth / 2 - e.pageX) / 35; 
         const yAxis = (window.innerHeight / 2 - e.pageY) / 35;
         tiltCard.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
       }
@@ -241,11 +252,9 @@
         requestAnimationFrame(renderFrame);
         analyzer.getByteFrequencyData(dataArray);
         
-        // Calculate bass (average of lower frequencies)
         let bass = (dataArray[1] + dataArray[2] + dataArray[3]) / 3;
         
-        // Make avatar pulse based on bass volume
-        let scale = 1 + (bass / 1500); // Max scale roughly 1.15x
+        let scale = 1 + (bass / 1500); 
         let glow = bass / 6;
         
         if(bass > 50) {
@@ -277,7 +286,7 @@
       
       bgVideo.play().catch(e => console.error("Video error:", e));
       music.play().then(() => {
-        initVisualizer(); // Start the visualizer when music successfully plays
+        initVisualizer(); 
       }).catch(e => console.error("Audio error:", e));
     }
 
@@ -312,7 +321,6 @@
         music.pause(); musicBtn.innerText = "[ Play Audio ]";
       } else {
         music.play(); musicBtn.innerText = "[ Pause Audio ]";
-        // Ensure Web Audio API context resumes if browser suspended it
         if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
       }
       isPlaying = !isPlaying;
