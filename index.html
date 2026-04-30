@@ -7,122 +7,134 @@
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 
   <style>
     /* RESET & BASE */
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; color: white; overflow: hidden; background-color: #050505; }
+    body { font-family: 'Inter', sans-serif; color: white; overflow: hidden; background-color: #030303; }
 
-    /* INTRO OVERLAY */
+    /* CINEMATIC INTRO */
     #intro {
       position: fixed; width: 100%; height: 100%;
       background: #000; display: flex; flex-direction: column;
-      align-items: center; justify-content: center; z-index: 50; cursor: pointer;
-      transition: opacity 0.8s ease, visibility 0.8s;
+      align-items: center; justify-content: center; z-index: 100; cursor: pointer;
+      transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 1.2s;
     }
-    .pulse-text { opacity: 0.6; font-size: 13px; margin-top: 12px; letter-spacing: 2px; text-transform: uppercase; animation: pulse 2s infinite; }
-    @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+    #intro h1 { font-family: 'Playfair Display', serif; font-size: 28px; letter-spacing: 4px; font-weight: 500; }
+    .pulse-text { opacity: 0.5; font-size: 10px; margin-top: 15px; letter-spacing: 3px; text-transform: uppercase; animation: pulse 2.5s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.8; } }
 
-    /* BACKGROUNDS */
+    /* BACKGROUND VIDEO */
     video {
       position: fixed; top: 50%; left: 50%;
       min-width: 100%; min-height: 100%; width: auto; height: auto;
       transform: translateX(-50%) translateY(-50%);
-      object-fit: cover; z-index: -2; filter: brightness(0.35);
+      object-fit: cover; z-index: -2; filter: brightness(0.65) contrast(1.1); /* Brighter for better visibility */
     }
-    canvas { position: fixed; top: 0; left: 0; z-index: -1; pointer-events: none; }
+    canvas { position: fixed; top: 0; left: 0; z-index: -1; pointer-events: none; opacity: 0.6; }
 
-    /* PREMIUM CARD */
-    .card {
+    /* ART PIECE CARD */
+    .card-wrapper {
       position: absolute; top: 50%; left: 50%;
-      transform: translate(-50%, -45%);
-      opacity: 0; width: 90%; max-width: 380px; padding: 40px 30px;
-      border-radius: 24px; 
-      background: linear-gradient(145deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 100%);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255,255,255,0.1);
-      backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-      text-align: center; transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
-      display: flex; flex-direction: column; align-items: center;
+      transform: translate(-50%, -45%); opacity: 0;
+      transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 10;
     }
-    .card.show { opacity: 1; transform: translate(-50%, -50%); }
+    .card-wrapper.show { opacity: 1; transform: translate(-50%, -50%); }
+    
+    .card {
+      width: 90vw; max-width: 300px; padding: 30px 20px;
+      border-radius: 20px; 
+      background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.005) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); /* Less blur to show the car */
+      text-align: center;
+      display: flex; flex-direction: column; align-items: center;
+      animation: float 6s ease-in-out infinite; /* Hover effect */
+    }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
 
     /* PROFILE AVATAR */
-    .avatar-container { position: relative; margin-bottom: 15px; }
+    .avatar-container { position: relative; margin-bottom: 12px; }
     #discord-avatar {
-      width: 80px; height: 80px; border-radius: 50%; object-fit: cover;
-      border: 2px solid rgba(255,255,255,0.1); box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-      transition: all 0.3s ease;
+      width: 64px; height: 64px; border-radius: 50%; object-fit: cover;
+      border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+      transition: transform 0.4s ease;
     }
+    #discord-avatar:hover { transform: scale(1.05); }
     #status-dot {
-      position: absolute; bottom: 4px; right: 4px; width: 14px; height: 14px;
-      border-radius: 50%; background: #747f8d; border: 2px solid #1a1a1a;
-      transition: background 0.3s ease;
+      position: absolute; bottom: 2px; right: 2px; width: 12px; height: 12px;
+      border-radius: 50%; background: #747f8d; border: 2px solid #0a0a0a;
     }
 
     /* TYPOGRAPHY */
-    h1 { font-family: 'Playfair Display', serif; font-size: 30px; letter-spacing: 1px; margin-bottom: 2px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
-    .type-container { height: 18px; margin-bottom: 15px; font-weight: 300; font-size: 14px; color: #bbb; }
+    .card h1 { font-family: 'Playfair Display', serif; font-size: 24px; letter-spacing: 1.5px; margin-bottom: 2px; font-weight: 600; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
+    .type-container { height: 16px; margin-bottom: 12px; font-weight: 300; font-size: 12px; color: rgba(255,255,255,0.6); letter-spacing: 1px; text-transform: lowercase; }
     .type { opacity: 0.9; }
-    .cursor { animation: blink 1s infinite; opacity: 0.8; }
+    .cursor { animation: blink 1s infinite; opacity: 0.5; }
     @keyframes blink { 50% { opacity: 0; } }
 
-    /* DISCORD BIO / CUSTOM STATUS */
-    .bio-box {
-      font-size: 13px; font-weight: 400; color: #ddd; background: rgba(0, 0, 0, 0.3);
-      padding: 10px 15px; border-radius: 12px; margin-bottom: 20px; width: 100%;
-      border: 1px solid rgba(255,255,255,0.05); font-style: italic;
+    /* DYNAMIC BIO - No more bulky box */
+    .bio-text {
+      font-size: 11px; font-weight: 300; color: rgba(255,255,255,0.8);
+      font-style: italic; line-height: 1.5; margin-bottom: 20px;
+      padding: 0 10px; letter-spacing: 0.5px;
     }
 
-    /* BUTTONS */
-    .btn-group { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+    /* SLEEK PILL BUTTONS */
+    .btn-group { width: 100%; display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
     .btn {
-      display: flex; align-items: center; justify-content: center; gap: 10px;
-      padding: 12px; border-radius: 12px; text-decoration: none; color: white; 
-      font-weight: 500; font-size: 14px; transition: all 0.3s ease;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 10px; border-radius: 50px; text-decoration: none; color: white; 
+      font-weight: 400; font-size: 12px; letter-spacing: 0.5px;
+      transition: all 0.3s ease; border: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.02);
     }
+    .btn:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.2); }
     
-    /* Discord Button */
-    .btn-discord { background: rgba(88, 101, 242, 0.15); border-color: rgba(88, 101, 242, 0.3); }
-    .btn-discord:hover { background: rgba(88, 101, 242, 0.3); transform: translateY(-2px); }
-    
-    /* Riot / Tracker Button */
-    .btn-riot { background: rgba(255, 70, 85, 0.15); border-color: rgba(255, 70, 85, 0.3); }
-    .btn-riot:hover { background: rgba(255, 70, 85, 0.3); transform: translateY(-2px); }
-    .rank-icon { width: 22px; height: 22px; object-fit: contain; }
+    .btn-riot:hover { background: rgba(255, 70, 85, 0.1); border-color: rgba(255, 70, 85, 0.3); }
+    .btn-discord:hover { background: rgba(88, 101, 242, 0.1); border-color: rgba(88, 101, 242, 0.3); }
+    .rank-icon { width: 16px; height: 16px; object-fit: contain; }
+    .discord-icon { width: 14px; height: 14px; fill: currentColor; }
 
-    /* LIVE SPOTIFY WIDGET */
+    /* LIVE SPOTIFY PILL WIDGET */
     #spotify-widget {
-      display: none; width: 100%; margin-top: 10px; padding: 12px;
-      border-radius: 12px; background: rgba(30, 215, 96, 0.1);
-      border: 1px solid rgba(30, 215, 96, 0.2);
-      align-items: center; text-align: left; gap: 12px; transition: all 0.3s ease;
+      display: none; width: 100%; padding: 6px 12px 6px 6px;
+      border-radius: 50px; background: rgba(30, 215, 96, 0.05);
+      border: 1px solid rgba(30, 215, 96, 0.15);
+      align-items: center; text-align: left; gap: 10px; transition: all 0.3s ease;
     }
-    #spotify-art { width: 44px; height: 44px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+    #spotify-widget:hover { border-color: rgba(30, 215, 96, 0.4); background: rgba(30, 215, 96, 0.1); }
+    #spotify-art { 
+      width: 32px; height: 32px; border-radius: 50%; box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      animation: spin 6s linear infinite; /* Vinyl spin effect */
+    }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    
     .spotify-info { flex: 1; overflow: hidden; }
-    .spotify-song { font-size: 13px; font-weight: 600; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .spotify-artist { font-size: 11px; font-weight: 400; color: rgba(255,255,255,0.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .spotify-icon { width: 16px; opacity: 0.8; }
+    .spotify-song { font-size: 11px; font-weight: 500; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .spotify-artist { font-size: 9px; font-weight: 300; color: rgba(255,255,255,0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .spotify-icon { width: 14px; opacity: 0.8; }
 
-    /* CARD FOOTER (Controls & Views) */
+    /* FOOTER: CONTROLS & VIEWS */
     .card-footer {
       display: flex; justify-content: space-between; align-items: center;
-      width: 100%; margin-top: 25px; font-size: 11px; opacity: 0.5;
-      text-transform: uppercase; letter-spacing: 1.5px;
+      width: 100%; margin-top: 20px; font-size: 9px; color: rgba(255,255,255,0.4);
+      text-transform: uppercase; letter-spacing: 2px;
     }
-    .controls { cursor: pointer; transition: opacity 0.3s ease; }
-    .controls:hover { opacity: 1; }
-    .views { display: flex; align-items: center; gap: 5px; }
+    .controls { cursor: pointer; transition: color 0.3s ease; }
+    .controls:hover { color: rgba(255,255,255,0.9); }
+    .views { display: flex; align-items: center; gap: 4px; }
   </style>
 </head>
 
 <body>
 
   <div id="intro" onclick="enterSite()">
-    <h1>lowkey</h1>
-    <span class="pulse-text">click to enter</span>
+    <h1>LOWKEY</h1>
+    <span class="pulse-text">enter</span>
   </div>
 
   <video id="bg" autoplay loop muted playsinline>
@@ -131,46 +143,49 @@
   
   <canvas id="rain"></canvas>
 
-  <div class="card" id="card">
-    
-    <div class="avatar-container">
-      <img id="discord-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Profile">
-      <div id="status-dot"></div>
-    </div>
-
-    <h1>lowkey</h1>
-    <div class="type-container">
-      <span class="type" id="type"></span><span class="cursor">|</span>
-    </div>
-    
-    <div class="bio-box" id="discord-bio">Fetching profile data...</div>
-
-    <div class="btn-group">
-      <a href="https://tracker.gg/valorant/profile/riot/4owkey%23prx/overview" target="_blank" class="btn btn-riot">
-        <img class="rank-icon" src="https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/24/largeicon.png" alt="Radiant">
-        <span>4owkey#prx Tracker</span>
-      </a>
-
-      <a href="https://discord.com/users/285468327135019019" target="_blank" class="btn btn-discord">
-        <svg width="20" height="20" viewBox="0 0 127.14 96.36" fill="white"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.31,60,73.31,53s5-12.74,11.43-12.74S96.1,46,96,53,91.08,65.69,84.69,65.69Z"/></svg>
-        <span id="discord-username">Discord Profile</span>
-      </a>
-    </div>
-
-    <div id="spotify-widget">
-      <img id="spotify-art" src="" alt="Album Art">
-      <div class="spotify-info">
-        <div class="spotify-song" id="spotify-song">Loading...</div>
-        <div class="spotify-artist" id="spotify-artist">Loading...</div>
+  <div class="card-wrapper" id="cardWrap">
+    <div class="card">
+      
+      <div class="avatar-container">
+        <img id="discord-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Profile">
+        <div id="status-dot"></div>
       </div>
-      <svg class="spotify-icon" viewBox="0 0 24 24" fill="#1DB954">
-        <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.24 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15.001 10.62 18.66 12.9c.42.24.54.84.3 1.14zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.6.18-1.2.72-1.38 4.26-1.26 11.28-1.02 15.721 1.62.539.3.719 1.02.419 1.56-.299.42-1.02.599-1.559.3z"/>
-      </svg>
-    </div>
 
-    <div class="card-footer">
-      <div class="controls" id="musicToggle" onclick="toggleMusic()">Pause Audio</div>
-      <div class="views">👁 <span id="view-count">...</span></div>
+      <h1>lowkey</h1>
+      <div class="type-container">
+        <span class="type" id="type"></span><span class="cursor">|</span>
+      </div>
+      
+      <div class="bio-text" id="discord-bio">...</div>
+
+      <div class="btn-group">
+        <a href="https://tracker.gg/valorant/profile/riot/4owkey%23prx/overview" target="_blank" class="btn btn-riot">
+          <img class="rank-icon" src="https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/27/largeicon.png" alt="Radiant">
+          <span>4owkey#prx Tracker</span>
+        </a>
+
+        <a href="https://discord.com/users/285468327135019019" target="_blank" class="btn btn-discord">
+          <svg class="discord-icon" viewBox="0 0 127.14 96.36"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.31,60,73.31,53s5-12.74,11.43-12.74S96.1,46,96,53,91.08,65.69,84.69,65.69Z"/></svg>
+          <span id="discord-username">Discord Profile</span>
+        </a>
+      </div>
+
+      <div id="spotify-widget">
+        <img id="spotify-art" src="" alt="Album Art">
+        <div class="spotify-info">
+          <div class="spotify-song" id="spotify-song">Loading...</div>
+          <div class="spotify-artist" id="spotify-artist">Loading...</div>
+        </div>
+        <svg class="spotify-icon" viewBox="0 0 24 24" fill="#1DB954">
+          <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.24 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15.001 10.62 18.66 12.9c.42.24.54.84.3 1.14zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.6.18-1.2.72-1.38 4.26-1.26 11.28-1.02 15.721 1.62.539.3.719 1.02.419 1.56-.299.42-1.02.599-1.559.3z"/>
+        </svg>
+      </div>
+
+      <div class="card-footer">
+        <div class="controls" id="musicToggle" onclick="toggleMusic()">[ Pause Audio ]</div>
+        <div class="views">👁 <span id="view-count">-</span></div>
+      </div>
+
     </div>
   </div>
 
@@ -180,28 +195,22 @@
 
   <script>
     // --- VIEW COUNTER API ---
-    // Uses a free API to increment views for 'lowkey-emal-dev' every time the site loads
     fetch("https://api.counterapi.dev/v1/lowkey-emal-dev/visits/up")
       .then(res => res.json())
-      .then(data => {
-        document.getElementById("view-count").innerText = data.count;
-      })
-      .catch(err => {
-        console.log("Counter error:", err);
-        document.getElementById("view-count").innerText = "-";
-      });
+      .then(data => { document.getElementById("view-count").innerText = data.count; })
+      .catch(() => { document.getElementById("view-count").innerText = "-"; });
 
-    // --- INTRO & MEDIA HANDLING ---
+    // --- INTRO & MEDIA ---
     const intro = document.getElementById('intro');
-    const card = document.getElementById('card');
+    const cardWrap = document.getElementById('cardWrap');
     const bgVideo = document.getElementById('bg');
     const music = document.getElementById('music');
     const musicBtn = document.getElementById('musicToggle');
 
     function enterSite() {
       intro.style.opacity = '0';
-      setTimeout(() => { intro.style.visibility = 'hidden'; }, 800);
-      card.classList.add("show");
+      setTimeout(() => { intro.style.visibility = 'hidden'; }, 1200);
+      cardWrap.classList.add("show");
       
       bgVideo.load();
       music.load();
@@ -211,8 +220,8 @@
       music.play().catch(e => console.error("Audio error:", e));
     }
 
-    // --- TYPEWRITER EFFECT ---
-    const words = ["stay lowkey", "calm energy", "immortal mind"];
+    // --- TYPEWRITER ---
+    const words = ["stay lowkey", "calm energy", "radiant mind"];
     let i = 0, j = 0, isDeleting = false;
 
     function typeEffect() {
@@ -221,7 +230,7 @@
 
       if (!isDeleting && j === currentWord.length) {
         isDeleting = true;
-        setTimeout(typeEffect, 1500);
+        setTimeout(typeEffect, 2000);
         return;
       }
       if (isDeleting && j === 0) {
@@ -229,7 +238,7 @@
         i = (i + 1) % words.length;
       }
       j += isDeleting ? -1 : 1;
-      setTimeout(typeEffect, isDeleting ? 40 : 100);
+      setTimeout(typeEffect, isDeleting ? 30 : 80);
     }
     typeEffect();
 
@@ -238,15 +247,15 @@
     function toggleMusic() {
       if (isPlaying) {
         music.pause();
-        musicBtn.innerText = "Play Audio";
+        musicBtn.innerText = "[ Play Audio ]";
       } else {
         music.play();
-        musicBtn.innerText = "Pause Audio";
+        musicBtn.innerText = "[ Pause Audio ]";
       }
       isPlaying = !isPlaying;
     }
 
-    // --- LANYARD API (AVATAR, BIO, STATUS, SPOTIFY) ---
+    // --- LANYARD API ---
     function fetchLanyard() {
       fetch("https://api.lanyard.rest/v1/users/285468327135019019")
         .then(res => res.json())
@@ -254,17 +263,17 @@
           if (data.success) {
             const d = data.data;
             
-            // 1. Update Profile Picture
+            // Avatar
             if (d.discord_user.avatar) {
               const avatarExt = d.discord_user.avatar.startsWith('a_') ? 'gif' : 'webp';
               document.getElementById("discord-avatar").src = `https://cdn.discordapp.com/avatars/${d.discord_user.id}/${d.discord_user.avatar}.${avatarExt}?size=128`;
             }
 
-            // 2. Update Status Dot Color
+            // Status Dot
             const colors = { online: '#43b581', idle: '#faa61a', dnd: '#f04747', offline: '#747f8d' };
             document.getElementById("status-dot").style.background = colors[d.discord_status] || colors.offline;
 
-            // 3. Update Custom Status (Bio)
+            // Bio
             const customStatus = d.activities.find(a => a.type === 4);
             if (customStatus && customStatus.state) {
                const emoji = customStatus.emoji ? (customStatus.emoji.id ? '' : customStatus.emoji.name + ' ') : '';
@@ -273,7 +282,7 @@
                document.getElementById("discord-bio").innerText = `"staying lowkey."`; 
             }
 
-            // 4. Handle Live Spotify Widget
+            // Spotify
             const spotifyWidget = document.getElementById("spotify-widget");
             if (d.listening_to_spotify && d.spotify) {
               document.getElementById("spotify-art").src = d.spotify.album_art_url;
@@ -288,11 +297,10 @@
         .catch(err => console.log("Lanyard fetch error:", err));
     }
     
-    // Fetch immediately, then update every 3 seconds
     fetchLanyard();
     setInterval(fetchLanyard, 3000);
 
-    // --- RAIN EFFECT ---
+    // --- SUBTLE RAIN ---
     const canvas = document.getElementById("rain");
     const ctx = canvas.getContext("2d");
     
@@ -303,17 +311,17 @@
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    let rainDrops = Array.from({length: 100}, () => ({
+    let rainDrops = Array.from({length: 60}, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      l: Math.random() * 15 + 5,
-      s: Math.random() * 3 + 2 
+      l: Math.random() * 10 + 5,
+      s: Math.random() * 2 + 1.5 
     }));
 
     function drawRain() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.1)"; 
-      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.05)"; // Ultra subtle
+      ctx.lineWidth = 1;
       ctx.lineCap = 'round';
       
       rainDrops.forEach(r => {
