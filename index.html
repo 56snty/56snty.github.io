@@ -11,7 +11,7 @@
 
   <style>
     /* RESET & BASE */
-    * { margin: 0; padding: 0; box-sizing: border-box; cursor: none; /* Hide default cursor */ }
+    * { margin: 0; padding: 0; box-sizing: border-box; cursor: none; }
     
     html, body { 
       font-family: 'Inter', sans-serif; color: white; 
@@ -22,7 +22,7 @@
 
     body.light-mode { background-color: #e5e5e5; color: #1a1a1a; }
 
-    /* CUSTOM AWWWARDS CURSOR */
+    /* CUSTOM MAGNETIC CURSOR */
     @media (pointer: coarse) { * { cursor: auto !important; } .custom-cursor { display: none !important; } }
     .custom-cursor {
       position: fixed; top: 0; left: 0; width: 12px; height: 12px;
@@ -40,7 +40,7 @@
     }
     body.light-mode .film-grain { opacity: 0.06; }
 
-    /* 0 TO 100 PRELOADER */
+    /* PRELOADER */
     #preloader {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: #030303; display: flex; align-items: center; justify-content: center;
@@ -48,7 +48,7 @@
     }
     #progress-text { font-family: 'Playfair Display', serif; font-style: italic; font-size: 13px; letter-spacing: 2px; color: rgba(255,255,255,0.6); }
 
-    /* CINEMATIC HOLD-TO-ENTER INTRO */
+    /* HOLD-TO-ENTER INTRO */
     #intro {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: #000; display: flex; flex-direction: column;
@@ -59,37 +59,42 @@
     .hold-container { position: relative; display: flex; align-items: center; justify-content: center; width: 150px; height: 150px; }
     #intro h1 { font-family: 'Playfair Display', serif; font-size: 24px; letter-spacing: 4px; font-weight: 500; z-index: 2; user-select: none; }
     .pulse-text { position: absolute; bottom: -20px; opacity: 0.5; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; animation: pulse 2.5s infinite; }
-    
-    /* The Hold Ring */
-    .hold-ring {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      border-radius: 50%; border: 1px solid rgba(255,255,255,0.1);
-      z-index: 1; transform: scale(0.8); transition: transform 0.3s;
-    }
+    .hold-ring { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); z-index: 1; transform: scale(0.8); transition: transform 0.3s; }
     body.light-mode .hold-ring { border-color: rgba(0,0,0,0.1); }
-    .hold-ring-fill {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      border-radius: 50%; border: 2px solid #fff;
-      clip-path: circle(0% at 50% 50%); z-index: 2;
-    }
+    .hold-ring-fill { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; border: 2px solid #fff; clip-path: circle(0% at 50% 50%); z-index: 2; }
     body.light-mode .hold-ring-fill { border-color: #000; }
-
     @keyframes pulse { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.8; } }
 
-    /* BACKGROUND VIDEOS */
+    /* BACKGROUND VIDEOS (Bass Reactive Layer added in JS) */
+    .bg-video-wrapper {
+      position: fixed; top: 50%; left: 50%; width: 100%; height: 100%;
+      transform: translate(-50%, -50%); z-index: 1;
+      transition: transform 0.1s ease-out; /* For Bass Bounce */
+    }
     .bg-video {
-      position: fixed; top: 50%; left: 50%;
+      position: absolute; top: 50%; left: 50%;
       min-width: 100%; min-height: 100%; width: auto; height: auto;
-      transform: translateX(-50%) translateY(-50%); object-fit: cover; z-index: 1; 
+      transform: translate(-50%, -50%); object-fit: cover; 
       transition: opacity 1s ease-in-out;
     }
     #bg-dark { filter: brightness(0.65) contrast(1.1); opacity: 1; }
     #bg-light { filter: brightness(0.85) contrast(1.05); opacity: 0; }
     body.light-mode #bg-dark { opacity: 0; }
     body.light-mode #bg-light { opacity: 1; }
-    canvas { position: fixed; top: 0; left: 0; z-index: 2; pointer-events: none; opacity: 0.6; }
+    
+    /* WEATHER CANVAS */
+    canvas { position: fixed; top: 0; left: 0; z-index: 2; pointer-events: none; opacity: 0.8; transition: transform 0.1s ease-out; }
 
-    /* ART PIECE CARD */
+    /* WATERMARK CREDIT */
+    .watermark {
+      position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%);
+      font-size: 8px; font-weight: 400; color: rgba(255, 255, 255, 0.25);
+      text-transform: uppercase; letter-spacing: 3px; z-index: 5;
+      pointer-events: none; white-space: nowrap; transition: color 0.8s;
+    }
+    body.light-mode .watermark { color: rgba(0, 0, 0, 0.3); }
+
+    /* MAIN CARD */
     .card-wrapper {
       position: fixed; top: 50%; left: 50%;
       transform: translate(-50%, -45%); opacity: 0;
@@ -97,6 +102,8 @@
       z-index: 10; perspective: 1500px; 
     }
     .card-wrapper.show { opacity: 1; transform: translate(-50%, -50%); }
+    .card-wrapper.shattered { opacity: 0; transform: translate(-50%, -30%) scale(0.9) rotate3d(1, 1, 0, 45deg); filter: blur(20px); pointer-events: none; }
+    
     .card {
       position: relative; overflow: hidden; width: 90vw; max-width: 320px; padding: 35px 25px;
       border-radius: 20px; background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.005) 100%);
@@ -132,14 +139,27 @@
     .bio-text { font-size: 11px; font-weight: 300; color: rgba(255,255,255,0.8); font-style: italic; line-height: 1.5; margin-bottom: 20px; padding: 0 10px; letter-spacing: 0.5px; transition: color 0.8s; }
     body.light-mode .bio-text { color: rgba(0,0,0,0.7); }
 
-    /* BUTTONS */
-    .btn-group { width: 100%; display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; position: relative; z-index: 50; }
-    .btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border-radius: 50px; text-decoration: none; color: white; font-weight: 400; font-size: 12px; letter-spacing: 0.5px; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.5s, border 0.5s, color 0.5s; }
-    .btn:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.2); }
-    body.light-mode .btn { background: rgba(0, 0, 0, 0.03); border: 1px solid rgba(0, 0, 0, 0.1); color: #111; }
-    body.light-mode .btn:hover { background: rgba(0, 0, 0, 0.08); border-color: rgba(0, 0, 0, 0.2); }
-    .rank-icon { width: 16px; height: 16px; object-fit: contain; }
-    .discord-icon { width: 14px; height: 14px; fill: currentColor; transition: fill 0.8s; }
+    /* EXPANDING DYNAMIC ISLAND BUTTONS */
+    .btn-group { display: flex; flex-direction: row; justify-content: center; gap: 12px; margin-bottom: 15px; position: relative; z-index: 50; width: 100%; }
+    
+    .btn {
+      width: 44px; height: 44px; border-radius: 12px; overflow: hidden;
+      display: flex; align-items: center; justify-content: flex-start;
+      text-decoration: none; color: white; background: rgba(255, 255, 255, 0.03); 
+      border: 1px solid rgba(255, 255, 255, 0.08); padding: 0;
+      transition: width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.4s, transform 0.3s;
+    }
+    .btn:hover { width: 165px; background: rgba(255, 255, 255, 0.08); transform: translateY(-2px); }
+    
+    body.light-mode .btn { background: rgba(0, 0, 0, 0.04); border: 1px solid rgba(0, 0, 0, 0.1); color: #111; }
+    body.light-mode .btn:hover { background: rgba(0, 0, 0, 0.08); }
+
+    .icon-wrapper { width: 44px; height: 44px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+    .rank-icon { width: 18px; height: 18px; object-fit: contain; }
+    .discord-icon { width: 18px; height: 18px; fill: currentColor; transition: fill 0.8s; }
+
+    .btn-text { white-space: nowrap; font-size: 11px; font-weight: 500; letter-spacing: 0.5px; opacity: 0; transform: translateX(-10px); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1); }
+    .btn:hover .btn-text { opacity: 1; transform: translateX(0); }
 
     /* SPOTIFY */
     #spotify-widget { display: none; width: 100%; padding: 6px 12px 6px 6px; border-radius: 50px; background: rgba(30, 215, 96, 0.05); border: 1px solid rgba(30, 215, 96, 0.15); align-items: center; text-align: left; gap: 10px; transition: all 0.5s ease; position: relative; z-index: 50; }
@@ -175,15 +195,26 @@
     body.light-mode .context-menu { background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(0, 0, 0, 0.08); box-shadow: 0 20px 40px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.8); }
     body.light-mode .context-menu li { color: rgba(0,0,0,0.7); }
     body.light-mode .context-menu li:hover { background: rgba(0,0,0,0.05); color: #000; }
+
+    /* HIDDEN TERMINAL EASTER EGG */
+    #terminal {
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      width: 80vw; max-width: 600px; height: 60vh;
+      background: rgba(0, 0, 0, 0.85); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px; padding: 20px; font-family: monospace; color: #0f0;
+      box-shadow: 0 40px 100px rgba(0,0,0,0.9); backdrop-filter: blur(20px);
+      z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.5s;
+    }
+    #terminal.active { opacity: 1; pointer-events: auto; }
+    #terminal-content { height: 100%; overflow-y: auto; font-size: 13px; line-height: 1.6; }
+    .term-input { background: none; border: none; color: #fff; font-family: monospace; font-size: 13px; outline: none; width: 80%; }
   </style>
 </head>
 
 <body>
 
   <div class="custom-cursor" id="customCursor"></div>
-
   <div class="film-grain"></div>
-
   <div id="preloader"><span id="progress-text">0%</span></div>
 
   <div id="intro">
@@ -195,9 +226,12 @@
     <span class="pulse-text">hold to enter</span>
   </div>
 
-  <video id="bg-dark" class="bg-video" src="bg.mp4" autoplay loop muted playsinline></video>
-  <video id="bg-light" class="bg-video" src="bg-light.mp4" autoplay loop muted playsinline></video>
-  <canvas id="rain"></canvas>
+  <div class="bg-video-wrapper" id="bgWrapper">
+    <video id="bg-dark" class="bg-video" src="bg.mp4" autoplay loop muted playsinline></video>
+    <video id="bg-light" class="bg-video" src="bg-light.mp4" autoplay loop muted playsinline></video>
+  </div>
+  
+  <canvas id="weatherCanvas"></canvas>
   <div class="watermark">fully custom made by emal.dev</div>
 
   <div id="customContextMenu" class="context-menu">
@@ -225,13 +259,17 @@
       <div class="bio-text" id="discord-bio">...</div>
 
       <div class="btn-group">
-        <a href="https://tracker.gg/valorant/profile/riot/4owkey%23prx/overview" target="_blank" class="btn btn-riot hover-target">
-          <img class="rank-icon" src="https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/27/largeicon.png" alt="Radiant">
-          <span>4owkey#prx Tracker</span>
+        <a href="https://tracker.gg/valorant/profile/riot/4owkey%23prx/overview" target="_blank" class="btn hover-target">
+          <div class="icon-wrapper">
+            <img class="rank-icon" src="https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/27/largeicon.png" alt="Radiant">
+          </div>
+          <span class="btn-text">Valorant Tracker</span>
         </a>
-        <a href="https://discord.com/users/285468327135019019" target="_blank" class="btn btn-discord hover-target">
-          <svg class="discord-icon" viewBox="0 0 127.14 96.36"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.31,60,73.31,53s5-12.74,11.43-12.74S96.1,46,96,53,91.08,65.69,84.69,65.69Z"/></svg>
-          <span id="discord-username">Discord Profile</span>
+        <a href="https://discord.com/users/285468327135019019" target="_blank" class="btn hover-target">
+          <div class="icon-wrapper">
+            <svg class="discord-icon" viewBox="0 0 127.14 96.36"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.31,60,73.31,53s5-12.74,11.43-12.74S96.1,46,96,53,91.08,65.69,84.69,65.69Z"/></svg>
+          </div>
+          <span class="btn-text">Discord Profile</span>
         </a>
       </div>
 
@@ -253,28 +291,29 @@
     </div>
   </div>
 
+  <div id="terminal">
+    <div id="terminal-content">
+      SYSTEM OVERRIDE ACTIVATED.<br>
+      WELCOME, LOWKEY.<br>
+      > <input type="text" class="term-input" id="termInput" autofocus>
+    </div>
+  </div>
+
   <audio id="music" src="music.mp3" loop crossorigin="anonymous"></audio>
 
   <script>
     // --- MAGNETIC CUSTOM CURSOR ---
     const cursor = document.getElementById("customCursor");
     let mouseX = 0, mouseY = 0, cursorX = 0, cursorY = 0;
-    
-    document.addEventListener("mousemove", (e) => {
-      mouseX = e.clientX; mouseY = e.clientY;
-    });
-    // Spring physics animation loop for cursor
+    document.addEventListener("mousemove", (e) => { mouseX = e.clientX; mouseY = e.clientY; });
     function animateCursor() {
-      let dx = mouseX - cursorX;
-      let dy = mouseY - cursorY;
-      cursorX += dx * 0.2; // The spring tension
-      cursorY += dy * 0.2;
+      cursorX += (mouseX - cursorX) * 0.2; 
+      cursorY += (mouseY - cursorY) * 0.2;
       cursor.style.transform = `translate(${cursorX}px, ${cursorY}px)`;
       requestAnimationFrame(animateCursor);
     }
     animateCursor();
 
-    // Hover expand effect
     const hoverTargets = document.querySelectorAll('.hover-target, .context-menu li');
     hoverTargets.forEach(target => {
       target.addEventListener('mouseenter', () => cursor.classList.add('hovering'));
@@ -306,63 +345,48 @@
     const holdContainer = document.getElementById('holdContainer');
     const holdFill = document.getElementById('holdFill');
     const holdRing = document.getElementById('holdRing');
-    let holdTimer;
-    let holdProgress = 0;
-    let isHolding = false;
-    let siteEntered = false;
+    let holdTimer, holdProgress = 0, siteEntered = false;
 
     function startHold(e) {
       if(siteEntered) return;
-      isHolding = true;
       holdRing.style.transform = 'scale(1)';
-      if (navigator.vibrate) navigator.vibrate(50); // Initial haptic tap
-      
+      if (navigator.vibrate) navigator.vibrate(50); 
       holdTimer = setInterval(() => {
         holdProgress += 2;
         holdFill.style.clipPath = `circle(${holdProgress}% at 50% 50%)`;
-        
-        // Vibrate faster as it fills (if on mobile)
         if (holdProgress % 20 === 0 && navigator.vibrate) navigator.vibrate(15);
-
         if (holdProgress >= 75) {
           clearInterval(holdTimer);
-          isHolding = false;
-          if (navigator.vibrate) navigator.vibrate([100, 50, 100]); // Unlock haptics
+          if (navigator.vibrate) navigator.vibrate([100, 50, 100]); 
           enterSite();
         }
       }, 15);
     }
-
     function stopHold() {
       if(siteEntered) return;
-      isHolding = false;
-      clearInterval(holdTimer);
-      holdProgress = 0;
+      clearInterval(holdTimer); holdProgress = 0;
       holdFill.style.clipPath = `circle(0% at 50% 50%)`;
       holdRing.style.transform = 'scale(0.8)';
     }
-
     holdContainer.addEventListener('mousedown', startHold);
     holdContainer.addEventListener('mouseup', stopHold);
     holdContainer.addEventListener('mouseleave', stopHold);
     holdContainer.addEventListener('touchstart', (e) => { e.preventDefault(); startHold(); });
     holdContainer.addEventListener('touchend', stopHold);
 
-
-    // --- SPATIAL AUDIO (LOW-PASS FILTER) ---
+    // --- SPATIAL AUDIO & BASS REACTIVE ENVIRONMENT ---
     let audioCtx, analyzer, dataArray, biquadFilter;
     const music = document.getElementById('music');
-    const progressBar = document.getElementById('audioProgress');
+    const bgWrapper = document.getElementById('bgWrapper');
+    const canvasEl = document.getElementById('weatherCanvas');
 
     function muffleAudio(muffle) {
       if (!biquadFilter || !audioCtx) return;
-      // 24000 is open (normal), 800 is muffled (underwater)
-      const targetFreq = muffle ? 800 : 24000;
-      biquadFilter.frequency.setTargetAtTime(targetFreq, audioCtx.currentTime, 0.5);
+      biquadFilter.frequency.setTargetAtTime(muffle ? 800 : 24000, audioCtx.currentTime, 0.5);
     }
 
     music.addEventListener('timeupdate', () => {
-      if (music.duration) progressBar.style.width = `${(music.currentTime / music.duration) * 100}%`;
+      if (music.duration) document.getElementById('audioProgress').style.width = `${(music.currentTime / music.duration) * 100}%`;
     });
 
     function initVisualizer() {
@@ -370,35 +394,36 @@
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       analyzer = audioCtx.createAnalyser();
       biquadFilter = audioCtx.createBiquadFilter();
-      
-      // Setup the Underwater Filter
-      biquadFilter.type = "lowpass";
-      biquadFilter.frequency.value = 24000; 
+      biquadFilter.type = "lowpass"; biquadFilter.frequency.value = 24000; 
 
       const source = audioCtx.createMediaElementSource(music);
+      source.connect(biquadFilter); biquadFilter.connect(analyzer); analyzer.connect(audioCtx.destination);
       
-      // Route: Source -> Filter -> Analyzer -> Speakers
-      source.connect(biquadFilter);
-      biquadFilter.connect(analyzer);
-      analyzer.connect(audioCtx.destination);
-      
-      analyzer.fftSize = 256;
-      dataArray = new Uint8Array(analyzer.frequencyBinCount);
+      analyzer.fftSize = 256; dataArray = new Uint8Array(analyzer.frequencyBinCount);
       const avatar = document.getElementById('discord-avatar');
       
       function renderFrame() {
         requestAnimationFrame(renderFrame);
         analyzer.getByteFrequencyData(dataArray);
         let bass = (dataArray[1] + dataArray[2] + dataArray[3]) / 3;
+        
+        // Avatar Pulse
         let scale = 1 + (bass / 1500); 
         let glow = bass / 6;
         let isLight = document.body.classList.contains('light-mode');
+        
         if(bass > 50) {
           avatar.style.transform = `scale(${scale})`;
           avatar.style.boxShadow = isLight ? `0 8px 20px rgba(0,0,0,0.15)` : `0 8px 20px rgba(0,0,0,0.6), 0 0 ${glow}px rgba(255, 255, 255, ${glow/60})`;
+          // ENVIRONMENTAL BASS BOUNCE (Shakes the video and canvas)
+          let envScale = 1 + (bass / 4000);
+          bgWrapper.style.transform = `translate(-50%, -50%) scale(${envScale})`;
+          canvasEl.style.transform = `scale(${envScale})`;
         } else {
           avatar.style.transform = `scale(1)`;
           avatar.style.boxShadow = isLight ? `0 8px 20px rgba(0,0,0,0.15)` : `0 8px 20px rgba(0,0,0,0.6)`;
+          bgWrapper.style.transform = `translate(-50%, -50%) scale(1)`;
+          canvasEl.style.transform = `scale(1)`;
         }
       }
       renderFrame();
@@ -411,144 +436,165 @@
     const bgLight = document.getElementById('bg-light');
     const musicBtn = document.getElementById('musicToggle');
     const themeBtn = document.getElementById('themeToggle');
-    
-    let isPlaying = true;
-    let isLightMode = false;
+    let isPlaying = true, isLightMode = false;
 
     function enterSite() {
-      siteEntered = true;
-      intro.style.opacity = '0';
+      siteEntered = true; intro.style.opacity = '0';
       setTimeout(() => { intro.style.visibility = 'hidden'; }, 1200);
       cardWrap.classList.add("show");
-      
-      bgDark.play().catch(e => console.error(e));
-      bgLight.play().catch(e => console.error(e));
-      
-      music.volume = 0.4; 
-      music.play().then(() => initVisualizer()).catch(e => console.error(e));
+      bgDark.play().catch(e => console.error(e)); bgLight.play().catch(e => console.error(e));
+      music.volume = 0.4; music.play().then(() => initVisualizer()).catch(e => console.error(e));
     }
 
     function toggleMusic() {
-      if (isPlaying) {
-        music.pause(); musicBtn.innerText = "[ Play ]"; ctxAudioBtn.innerText = "Play Audio"; 
-      } else {
-        music.play(); musicBtn.innerText = "[ Pause ]"; ctxAudioBtn.innerText = "Pause Audio"; 
-        if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-      }
+      if (isPlaying) { music.pause(); musicBtn.innerText = "[ Play ]"; document.getElementById("ctxAudio").innerText = "Play Audio"; } 
+      else { music.play(); musicBtn.innerText = "[ Pause ]"; document.getElementById("ctxAudio").innerText = "Pause Audio"; if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); }
       isPlaying = !isPlaying;
     }
 
     function toggleTheme() {
-      isLightMode = !isLightMode;
-      document.body.classList.toggle('light-mode', isLightMode);
+      isLightMode = !isLightMode; document.body.classList.toggle('light-mode', isLightMode);
       themeBtn.innerText = isLightMode ? "[ DARK ]" : "[ LIGHT ]";
-      ctxThemeBtn.innerText = isLightMode ? "Switch to Dark Mode" : "Switch to Light Mode";
+      document.getElementById("ctxTheme").innerText = isLightMode ? "Switch to Dark Mode" : "Switch to Light Mode";
       setTimeout(() => {
-        music.src = isLightMode ? "music-light.mp3" : "music.mp3";
-        music.load();
+        music.src = isLightMode ? "music-light.mp3" : "music.mp3"; music.load();
         if (isPlaying) { music.play().catch(e => console.log(e)); }
       }, 400); 
     }
 
-    // --- DYNAMIC TAB TITLE & AUDIO MUFFLE ---
+    // --- TAB TITLE & CUSTOM MENU ---
     let originalTitle = document.title;
     document.addEventListener("visibilitychange", () => {
-      if (document.hidden) { 
-        document.title = "stay lowkey..."; 
-        muffleAudio(true); // Underwater effect when tab is hidden
-      } else { 
-        document.title = originalTitle; 
-        muffleAudio(false); // Restore HD audio when back
-      }
+      if (document.hidden) { document.title = "stay lowkey..."; muffleAudio(true); } 
+      else { document.title = originalTitle; muffleAudio(false); }
     });
 
-    // --- CUSTOM CONTEXT MENU ---
     const ctxMenu = document.getElementById("customContextMenu");
-    const ctxThemeBtn = document.getElementById("ctxTheme");
-    const ctxAudioBtn = document.getElementById("ctxAudio");
-    const ctxCopyBtn = document.getElementById("ctxCopy");
-
     window.addEventListener("contextmenu", (e) => {
-      e.preventDefault(); 
-      muffleAudio(true); // Muffle audio while menu is open
-
-      let x = e.clientX; let y = e.clientY;
-      const menuWidth = 180; const menuHeight = 130;
-      if (x + menuWidth > window.innerWidth) x = window.innerWidth - menuWidth - 10;
-      if (y + menuHeight > window.innerHeight) y = window.innerHeight - menuHeight - 10;
-
-      ctxMenu.style.left = `${x}px`; ctxMenu.style.top = `${y}px`;
-      ctxMenu.classList.add("active");
+      e.preventDefault(); muffleAudio(true);
+      let x = e.clientX, y = e.clientY;
+      if (x + 180 > window.innerWidth) x = window.innerWidth - 190;
+      if (y + 130 > window.innerHeight) y = window.innerHeight - 140;
+      ctxMenu.style.left = `${x}px`; ctxMenu.style.top = `${y}px`; ctxMenu.classList.add("active");
     });
-
     window.addEventListener("click", () => {
-      if (ctxMenu.classList.contains("active")) {
-        ctxMenu.classList.remove("active");
-        muffleAudio(false); // Restore audio when menu closes
-      }
+      if (ctxMenu.classList.contains("active")) { ctxMenu.classList.remove("active"); muffleAudio(false); }
     });
-
     function copyDiscordId() {
       navigator.clipboard.writeText("285468327135019019").then(() => {
-        const originalText = ctxCopyBtn.innerText;
-        ctxCopyBtn.innerText = "Copied!";
-        setTimeout(() => { ctxCopyBtn.innerText = originalText; }, 1500);
+        const btn = document.getElementById("ctxCopy"); const orig = btn.innerText;
+        btn.innerText = "Copied!"; setTimeout(() => { btn.innerText = orig; }, 1500);
       });
     }
 
-    // --- 3D TILT & GLARE ---
+    // --- TERMINAL EASTER EGG ---
+    let secretSequence = ['l','o','w','k','e','y'];
+    let keyIndex = 0;
+    document.addEventListener('keydown', (e) => {
+      if(e.key.toLowerCase() === secretSequence[keyIndex]) {
+        keyIndex++;
+        if(keyIndex === secretSequence.length) {
+          cardWrap.classList.add('shattered');
+          document.getElementById('terminal').classList.add('active');
+          document.getElementById('termInput').focus();
+          muffleAudio(true);
+        }
+      } else { keyIndex = 0; }
+    });
+
+    document.getElementById('termInput').addEventListener('keydown', (e) => {
+      if(e.key === 'Enter') {
+        const val = e.target.value.toLowerCase();
+        if(val === '/exit') {
+          document.getElementById('terminal').classList.remove('active');
+          cardWrap.classList.remove('shattered'); muffleAudio(false); e.target.value = ''; keyIndex = 0;
+        } else {
+          e.target.value = '';
+          const content = document.getElementById('terminal-content');
+          content.innerHTML += `<br>> Command '${val}' not recognized. Try '/exit'`;
+        }
+      }
+    });
+
+    // --- 3D TILT ---
     const tiltCard = document.getElementById('tiltCard');
     const glare = document.getElementById('glare');
     document.addEventListener('mousemove', (e) => {
-      if (window.innerWidth > 768) { 
-        const xAxis = (window.innerWidth / 2 - e.pageX) / 35; 
-        const yAxis = (window.innerHeight / 2 - e.pageY) / 35;
-        tiltCard.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
-        const xPos = (e.clientX / window.innerWidth) * 100;
-        const yPos = (e.clientY / window.innerHeight) * 100;
-        glare.style.background = `radial-gradient(circle at ${xPos}% ${yPos}%, rgba(255,255,255,0.08) 0%, transparent 60%)`;
+      if (window.innerWidth > 768 && !cardWrap.classList.contains('shattered')) { 
+        tiltCard.style.transform = `rotateY(${(window.innerWidth / 2 - e.pageX) / 35}deg) rotateX(${(window.innerHeight / 2 - e.pageY) / 35}deg)`;
+        glare.style.background = `radial-gradient(circle at ${(e.clientX / window.innerWidth) * 100}% ${(e.clientY / window.innerHeight) * 100}%, rgba(255,255,255,0.08) 0%, transparent 60%)`;
         glare.style.opacity = 1;
       }
     });
     document.addEventListener('mouseleave', () => { tiltCard.style.transform = `rotateY(0deg) rotateX(0deg)`; glare.style.opacity = 0; });
 
-    const magneticBtns = document.querySelectorAll('.btn');
-    magneticBtns.forEach(btn => {
-      btn.addEventListener('mousemove', function(e) {
-        if (window.innerWidth > 768) {
-          const rect = this.getBoundingClientRect();
-          const x = e.clientX - rect.left - rect.width / 2;
-          const y = e.clientY - rect.top - rect.height / 2;
-          this.style.transform = `translate(${x * 0.25}px, ${y * 0.25}px)`;
-        }
-      });
-      btn.addEventListener('mouseleave', function() { this.style.transform = `translate(0px, 0px)`; });
-    });
-
-    // --- APIS (WEATHER, VIEWS, LANYARD) ---
+    // --- LIVE WEATHER SYNC ENGINE ---
+    let weatherType = 'dust'; // default
+    let cachedWeather = '';
     async function fetchWeather() {
       try {
         const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=51.4416&longitude=5.4697&current_weather=true");
         const data = await res.json();
-        document.getElementById('local-info').innerText = `Eindhoven // ${new Date().toLocaleTimeString('en-US', { timeZone: 'Europe/Amsterdam', hour: '2-digit', minute: '2-digit' })} // ${Math.round(data.current_weather.temperature)}°C`;
+        cachedWeather = ` // ${Math.round(data.current_weather.temperature)}°C`;
+        
+        // Dynamic Environment Logic based on WMO codes
+        let code = data.current_weather.weathercode;
+        if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) weatherType = 'rain';
+        else if ((code >= 71 && code <= 77) || (code >= 85 && code <= 86)) weatherType = 'snow';
+        else weatherType = 'dust';
+        
       } catch (err) {}
     }
-    fetchWeather(); setInterval(fetchWeather, 60000);
+    fetchWeather(); setInterval(fetchWeather, 300000);
 
+    function updateLocalInfo() {
+      document.getElementById('local-info').innerText = `Eindhoven // ${new Date().toLocaleTimeString('en-US', { timeZone: 'Europe/Amsterdam', hour: '2-digit', minute: '2-digit' })}${cachedWeather}`;
+    }
+    setInterval(updateLocalInfo, 1000); updateLocalInfo();
+
+    // Weather Canvas Drawer
+    const ctx = canvasEl.getContext("2d");
+    function resizeCanvas() { canvasEl.width = window.innerWidth; canvasEl.height = window.innerHeight; }
+    window.addEventListener('resize', resizeCanvas); resizeCanvas();
+    let particles = Array.from({length: 80}, () => ({ 
+      x: Math.random() * canvasEl.width, y: Math.random() * canvasEl.height, 
+      s: Math.random() * 2 + 1, drift: Math.random() * 1 - 0.5
+    }));
+    
+    function drawWeather() {
+      ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+      ctx.fillStyle = document.body.classList.contains('light-mode') ? "rgba(0, 0, 0, 0.4)" : "rgba(255, 255, 255, 0.4)";
+      ctx.strokeStyle = document.body.classList.contains('light-mode') ? "rgba(0, 0, 0, 0.15)" : "rgba(255, 255, 255, 0.05)"; 
+      
+      particles.forEach(p => {
+        if(weatherType === 'rain') {
+          ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x - p.drift*2, p.y + p.s * 5); ctx.stroke();
+          p.y += p.s * 4; p.x -= p.drift;
+        } else if(weatherType === 'snow') {
+          ctx.beginPath(); ctx.arc(p.x, p.y, p.s/1.5, 0, Math.PI*2); ctx.fill();
+          p.y += p.s; p.x += Math.sin(p.y/50) + p.drift;
+        } else { // Dust
+          ctx.beginPath(); ctx.arc(p.x, p.y, p.s/2, 0, Math.PI*2); ctx.fillStyle = "rgba(255,255,255,0.1)"; ctx.fill();
+          p.y -= p.s * 0.2; p.x += p.drift;
+        }
+        if (p.y > canvasEl.height || p.y < 0) { p.y = weatherType==='dust' ? canvasEl.height : -20; p.x = Math.random() * canvasEl.width; }
+      });
+      requestAnimationFrame(drawWeather);
+    }
+    drawWeather();
+
+    // --- LANYARD & API DATA ---
     fetch("https://api.counterapi.dev/v1/lowkey-emal-dev/visits/up")
       .then(res => res.json())
-      .then(data => { document.getElementById("view-count").innerText = data.count; })
-      .catch(() => { document.getElementById("view-count").innerText = "-"; });
+      .then(data => { document.getElementById("view-count").innerText = data.count; }).catch(()=>{});
 
     const words = ["stay lowkey", "calm energy", "radiant mind"];
     let i = 0, j = 0, isDeleting = false;
     function typeEffect() {
-      const currentWord = words[i];
-      document.getElementById("type").textContent = currentWord.substring(0, j);
+      const currentWord = words[i]; document.getElementById("type").textContent = currentWord.substring(0, j);
       if (!isDeleting && j === currentWord.length) { isDeleting = true; setTimeout(typeEffect, 2000); return; }
       if (isDeleting && j === 0) { isDeleting = false; i = (i + 1) % words.length; }
-      j += isDeleting ? -1 : 1;
-      setTimeout(typeEffect, isDeleting ? 30 : 80);
+      j += isDeleting ? -1 : 1; setTimeout(typeEffect, isDeleting ? 30 : 80);
     }
     typeEffect();
 
@@ -565,10 +611,7 @@
             const colors = { online: '#43b581', idle: '#faa61a', dnd: '#f04747', offline: '#747f8d' };
             document.getElementById("status-dot").style.background = colors[d.discord_status] || colors.offline;
             const customStatus = d.activities.find(a => a.type === 4);
-            if (customStatus && customStatus.state) {
-               const emoji = customStatus.emoji ? (customStatus.emoji.id ? '' : customStatus.emoji.name + ' ') : '';
-               document.getElementById("discord-bio").innerText = `"${emoji}${customStatus.state}"`;
-            } else { document.getElementById("discord-bio").innerText = `"staying lowkey."`; }
+            document.getElementById("discord-bio").innerText = customStatus && customStatus.state ? `"${customStatus.emoji ? (customStatus.emoji.id ? '' : customStatus.emoji.name + ' ') : ''}${customStatus.state}"` : `"staying lowkey."`; 
             
             const spotifyWidget = document.getElementById("spotify-widget");
             if (d.listening_to_spotify && d.spotify) {
@@ -578,26 +621,9 @@
               spotifyWidget.style.display = "flex";
             } else { spotifyWidget.style.display = "none"; }
           }
-        }).catch(err => console.log("Lanyard fetch error:", err));
+        }).catch(()=>{});
     }
     fetchLanyard(); setInterval(fetchLanyard, 3000);
-
-    // --- SMART RAIN ---
-    const canvas = document.getElementById("rain"); const ctx = canvas.getContext("2d");
-    function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-    window.addEventListener('resize', resizeCanvas); resizeCanvas();
-    let rainDrops = Array.from({length: 60}, () => ({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, l: Math.random() * 10 + 5, s: Math.random() * 2 + 1.5 }));
-    function drawRain() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.strokeStyle = document.body.classList.contains('light-mode') ? "rgba(0, 0, 0, 0.15)" : "rgba(255, 255, 255, 0.05)"; 
-      ctx.lineWidth = 1; ctx.lineCap = 'round';
-      rainDrops.forEach(r => {
-        ctx.beginPath(); ctx.moveTo(r.x, r.y); ctx.lineTo(r.x, r.y + r.l); ctx.stroke();
-        r.y += r.s; if (r.y > canvas.height) { r.y = -20; r.x = Math.random() * canvas.width; }
-      });
-      requestAnimationFrame(drawRain);
-    }
-    drawRain();
   </script>
 
 </body>
