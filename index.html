@@ -14,28 +14,43 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
     html, body { 
-      font-family: 'Inter', sans-serif; color: white; 
+      font-family: 'Inter', sans-serif; 
+      color: white; 
       background-color: #030303; 
-      width: 100vw; height: 100vh; height: 100dvh; 
-      overflow: hidden; overscroll-behavior: none; touch-action: none; 
+      width: 100vw; 
+      height: 100vh; 
+      height: 100dvh; 
+      overflow: hidden; 
+      overscroll-behavior: none; 
+      touch-action: none; 
       transition: background-color 0.8s ease, color 0.8s ease;
     }
 
     body.light-mode { background-color: #e5e5e5; color: #1a1a1a; }
 
-    /* DUAL BACKGROUND VIDEOS (Seamless Crossfade) */
+    /* 0 to 100 PRELOADER */
+    #preloader {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: #030303; display: flex; align-items: center; justify-content: center;
+      z-index: 10001; /* Highest layer, sits above the intro screen */
+      transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), visibility 1s;
+    }
+    #progress-text {
+      font-family: 'Playfair Display', serif; font-style: italic;
+      font-size: 13px; font-weight: 400; color: rgba(255, 255, 255, 0.6);
+      letter-spacing: 2px;
+    }
+
+    /* BACKGROUND VIDEO & RAIN */
     .bg-video {
       position: fixed; top: 50%; left: 50%;
       min-width: 100%; min-height: 100%; width: auto; height: auto;
       transform: translateX(-50%) translateY(-50%);
       object-fit: cover; z-index: 1; 
-      transition: opacity 1s ease-in-out; /* Smooth cinematic fade */
+      transition: opacity 1s ease-in-out;
     }
-    
     #bg-dark { filter: brightness(0.65) contrast(1.1); opacity: 1; }
-    #bg-light { filter: brightness(0.85) contrast(1.05); opacity: 0; } /* Hidden by default */
-
-    /* When Light Mode is active, swap opacities */
+    #bg-light { filter: brightness(0.85) contrast(1.05); opacity: 0; }
     body.light-mode #bg-dark { opacity: 0; }
     body.light-mode #bg-light { opacity: 1; }
     
@@ -200,10 +215,40 @@
     body.light-mode #intro { background: #f5f5f5; color: #1a1a1a; }
     #intro h1 { font-family: 'Playfair Display', serif; font-size: 28px; letter-spacing: 4px; font-weight: 500; }
     .pulse-text { opacity: 0.5; font-size: 10px; margin-top: 15px; letter-spacing: 3px; text-transform: uppercase; animation: pulse 2.5s infinite; }
+
+    /* BESPOKE RIGHT CLICK MENU */
+    .context-menu {
+      position: fixed; z-index: 10000; width: 180px;
+      background: rgba(15, 15, 15, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border-radius: 12px; padding: 6px;
+      opacity: 0; transform: scale(0.95); pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease, background 0.8s, border 0.8s;
+    }
+    .context-menu.active { opacity: 1; transform: scale(1); pointer-events: auto; }
+    .context-menu ul { list-style: none; }
+    .context-menu li {
+      padding: 10px 12px; font-size: 11px; color: rgba(255,255,255,0.8);
+      cursor: pointer; border-radius: 6px; transition: background 0.2s, color 0.2s;
+      letter-spacing: 0.5px;
+    }
+    .context-menu li:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    body.light-mode .context-menu {
+      background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(0, 0, 0, 0.08);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.8);
+    }
+    body.light-mode .context-menu li { color: rgba(0,0,0,0.7); }
+    body.light-mode .context-menu li:hover { background: rgba(0,0,0,0.05); color: #000; }
   </style>
 </head>
 
 <body>
+
+  <div id="preloader">
+    <span id="progress-text">0%</span>
+  </div>
 
   <div id="intro" onclick="enterSite()">
     <h1>LOWKEY</h1>
@@ -215,6 +260,14 @@
   
   <canvas id="rain"></canvas>
   <div class="watermark">fully custom made by emal.dev</div>
+
+  <div id="customContextMenu" class="context-menu">
+    <ul>
+      <li id="ctxCopy" onclick="copyDiscordId()">Copy Discord ID</li>
+      <li id="ctxTheme" onclick="toggleTheme()">Switch to Light Mode</li>
+      <li id="ctxAudio" onclick="toggleMusic()">Pause Audio</li>
+    </ul>
+  </div>
 
   <div class="card-wrapper" id="cardWrap">
     <div class="card" id="tiltCard">
@@ -263,19 +316,79 @@
       </div>
       
       <div class="progress-container"><div class="progress-bar" id="audioProgress"></div></div>
-
     </div>
   </div>
 
   <audio id="music" src="music.mp3" loop crossorigin="anonymous"></audio>
 
   <script>
+    // --- 0 TO 100 PRELOADER LOGIC ---
+    document.addEventListener('DOMContentLoaded', () => {
+      const preloader = document.getElementById('preloader');
+      const progressText = document.getElementById('progress-text');
+      let loadProgress = 0;
+
+      function updateLoader() {
+        // Increment randomly between 1 and 3 for a realistic "network" feel
+        loadProgress += Math.floor(Math.random() * 3) + 1; 
+        if (loadProgress > 100) loadProgress = 100;
+        
+        progressText.innerText = `${loadProgress}%`;
+
+        if (loadProgress < 100) {
+          let delay = Math.random() * 20 + 10; 
+          setTimeout(updateLoader, delay);
+        } else {
+          // Once it hits 100%, hold for a split second, then fade away
+          setTimeout(() => {
+            preloader.style.opacity = '0';
+            setTimeout(() => { preloader.style.visibility = 'hidden'; }, 1000);
+          }, 300);
+        }
+      }
+      updateLoader();
+    });
+
+    // --- CUSTOM CONTEXT MENU (RIGHT CLICK) ---
+    const ctxMenu = document.getElementById("customContextMenu");
+    const ctxThemeBtn = document.getElementById("ctxTheme");
+    const ctxAudioBtn = document.getElementById("ctxAudio");
+    const ctxCopyBtn = document.getElementById("ctxCopy");
+
+    window.addEventListener("contextmenu", (e) => {
+      e.preventDefault(); 
+      let x = e.clientX;
+      let y = e.clientY;
+      const menuWidth = 180;
+      const menuHeight = 130;
+      if (x + menuWidth > window.innerWidth) x = window.innerWidth - menuWidth - 10;
+      if (y + menuHeight > window.innerHeight) y = window.innerHeight - menuHeight - 10;
+
+      ctxMenu.style.left = `${x}px`;
+      ctxMenu.style.top = `${y}px`;
+      ctxMenu.classList.add("active");
+    });
+
+    window.addEventListener("click", () => {
+      ctxMenu.classList.remove("active");
+    });
+
+    function copyDiscordId() {
+      navigator.clipboard.writeText("285468327135019019").then(() => {
+        const originalText = ctxCopyBtn.innerText;
+        ctxCopyBtn.innerText = "Copied!";
+        setTimeout(() => { ctxCopyBtn.innerText = originalText; }, 1500);
+      });
+    }
+
+    // --- DYNAMIC TAB TITLE ---
     let originalTitle = document.title;
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) { document.title = "stay lowkey..."; } 
       else { document.title = originalTitle; }
     });
 
+    // --- LIVE CLOCK & WEATHER ---
     let cachedWeather = '';
     async function fetchWeather() {
       try {
@@ -292,6 +405,7 @@
     }
     setInterval(updateLocalInfo, 1000); updateLocalInfo();
 
+    // --- 3D TILT & GLARE ---
     const tiltCard = document.getElementById('tiltCard');
     const glare = document.getElementById('glare');
     document.addEventListener('mousemove', (e) => {
@@ -310,6 +424,7 @@
       glare.style.opacity = 0;
     });
 
+    // --- MAGNETIC BUTTONS ---
     const magneticBtns = document.querySelectorAll('.btn');
     magneticBtns.forEach(btn => {
       btn.addEventListener('mousemove', function(e) {
@@ -323,6 +438,7 @@
       btn.addEventListener('mouseleave', function() { this.style.transform = `translate(0px, 0px)`; });
     });
 
+    // --- AUDIO VISUALIZER & PROGRESS BAR ---
     let audioCtx, analyzer, dataArray;
     const music = document.getElementById('music');
     const progressBar = document.getElementById('audioProgress');
@@ -363,6 +479,7 @@
       renderFrame();
     }
 
+    // --- MEDIA & THEME CONTROLS ---
     const intro = document.getElementById('intro');
     const cardWrap = document.getElementById('cardWrap');
     const bgDark = document.getElementById('bg-dark');
@@ -378,7 +495,6 @@
       setTimeout(() => { intro.style.visibility = 'hidden'; }, 1200);
       cardWrap.classList.add("show");
       
-      // Play both videos silently in the background so the transition is instant
       bgDark.play().catch(e => console.error(e));
       bgLight.play().catch(e => console.error(e));
       
@@ -388,9 +504,13 @@
 
     function toggleMusic() {
       if (isPlaying) {
-        music.pause(); musicBtn.innerText = "[ Play Audio ]";
+        music.pause(); 
+        musicBtn.innerText = "[ Play Audio ]";
+        ctxAudioBtn.innerText = "Play Audio"; 
       } else {
-        music.play(); musicBtn.innerText = "[ Pause Audio ]";
+        music.play(); 
+        musicBtn.innerText = "[ Pause Audio ]";
+        ctxAudioBtn.innerText = "Pause Audio"; 
         if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
       }
       isPlaying = !isPlaying;
@@ -399,21 +519,24 @@
     function toggleTheme() {
       isLightMode = !isLightMode;
       document.body.classList.toggle('light-mode', isLightMode);
-      themeBtn.innerText = isLightMode ? "[ DARK MODE ]" : "[ LIGHT MODE ]";
       
-      // Swap audio track smoothly
+      themeBtn.innerText = isLightMode ? "[ DARK MODE ]" : "[ LIGHT MODE ]";
+      ctxThemeBtn.innerText = isLightMode ? "Switch to Dark Mode" : "Switch to Light Mode";
+      
       setTimeout(() => {
         music.src = isLightMode ? "music-light.mp3" : "music.mp3";
         music.load();
         if (isPlaying) { music.play().catch(e => console.log(e)); }
-      }, 400); // 400ms delay matches the video fade crossover point
+      }, 400); 
     }
 
+    // --- VIEWS COUNTER ---
     fetch("https://api.counterapi.dev/v1/lowkey-emal-dev/visits/up")
       .then(res => res.json())
       .then(data => { document.getElementById("view-count").innerText = data.count; })
       .catch(() => { document.getElementById("view-count").innerText = "-"; });
 
+    // --- TYPEWRITER ---
     const words = ["stay lowkey", "calm energy", "radiant mind"];
     let i = 0, j = 0, isDeleting = false;
     function typeEffect() {
@@ -430,6 +553,7 @@
     }
     typeEffect();
 
+    // --- LANYARD API ---
     function fetchLanyard() {
       fetch("https://api.lanyard.rest/v1/users/285468327135019019")
         .then(res => res.json())
@@ -464,6 +588,7 @@
     }
     fetchLanyard(); setInterval(fetchLanyard, 3000);
 
+    // --- SMART RAIN ---
     const canvas = document.getElementById("rain"); const ctx = canvas.getContext("2d");
     function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
     window.addEventListener('resize', resizeCanvas); resizeCanvas();
