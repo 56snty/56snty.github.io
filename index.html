@@ -17,7 +17,6 @@
       font-family: 'Inter', sans-serif; 
       color: white; 
       background-color: #030303; 
-      perspective: 1000px; 
       width: 100vw; 
       height: 100vh; 
       height: 100dvh; 
@@ -61,18 +60,19 @@
     }
     body.light-mode .watermark { color: rgba(0, 0, 0, 0.3); }
 
-    /* ART PIECE CARD */
+    /* ART PIECE CARD (Perspective moved here to fix PC Hitboxes) */
     .card-wrapper {
       position: fixed; top: 50%; left: 50%;
       transform: translate(-50%, -45%); opacity: 0;
       transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-      z-index: 10; transform-style: preserve-3d;
+      z-index: 10; 
+      perspective: 1200px; 
     }
     .card-wrapper.show { opacity: 1; transform: translate(-50%, -50%); }
     
     .card {
       position: relative; overflow: hidden; 
-      width: 90vw; max-width: 320px; padding: 35px 25px; /* Slightly wider to fit footer nicely */
+      width: 90vw; max-width: 320px; padding: 35px 25px;
       border-radius: 20px; 
       background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.005) 100%);
       border: 1px solid rgba(255, 255, 255, 0.06);
@@ -80,6 +80,7 @@
       backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
       text-align: center; display: flex; flex-direction: column; align-items: center;
       transition: transform 0.1s ease-out, background 0.8s, border 0.8s, box-shadow 0.8s; 
+      transform-style: preserve-3d;
     }
     body.light-mode .card {
       background: linear-gradient(135deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.2) 100%);
@@ -141,7 +142,7 @@
     body.light-mode .bio-text { color: rgba(0,0,0,0.7); }
 
     /* BUTTONS */
-    .btn-group { width: 100%; display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
+    .btn-group { width: 100%; display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; position: relative; z-index: 50; }
     .btn {
       display: flex; align-items: center; justify-content: center; gap: 8px;
       padding: 10px; border-radius: 50px; text-decoration: none; color: white; 
@@ -161,6 +162,7 @@
       border-radius: 50px; background: rgba(30, 215, 96, 0.05);
       border: 1px solid rgba(30, 215, 96, 0.15);
       align-items: center; text-align: left; gap: 10px; transition: all 0.5s ease;
+      position: relative; z-index: 50;
     }
     #spotify-widget:hover { border-color: rgba(30, 215, 96, 0.4); background: rgba(30, 215, 96, 0.1); }
     body.light-mode #spotify-widget { background: rgba(30, 215, 96, 0.1); border-color: rgba(30, 215, 96, 0.3); }
@@ -173,22 +175,23 @@
     body.light-mode .spotify-artist { color: rgba(0,0,0,0.6); }
     .spotify-icon { width: 14px; opacity: 0.8; }
 
-    /* FOOTER & VIEWS (RESTORED) */
+    /* FOOTER & VIEWS (Z-Index boosted for PC clicks) */
     .card-footer {
       display: flex; justify-content: space-between; align-items: center;
       width: 100%; margin-top: 25px; font-size: 9px; color: rgba(255,255,255,0.4);
       text-transform: uppercase; letter-spacing: 2px; transition: color 0.8s;
+      position: relative; z-index: 99; /* Force above the glare layer on PC */
     }
     body.light-mode .card-footer { color: rgba(0,0,0,0.5); }
-    .controls { cursor: pointer; transition: color 0.3s ease; }
+    .controls { cursor: pointer; transition: color 0.3s ease; padding: 5px; } /* Added padding for easier clicking */
     .controls:hover { color: rgba(255,255,255,0.9); }
     body.light-mode .controls:hover { color: #111; }
-    .views { display: flex; align-items: center; gap: 4px; }
+    .views { display: flex; align-items: center; gap: 4px; padding: 5px; }
 
     /* MUSIC PROGRESS LINE */
     .progress-container {
       position: absolute; bottom: 0; left: 0; width: 100%; height: 2px;
-      background: rgba(255,255,255,0.05); transition: background 0.8s;
+      background: rgba(255,255,255,0.05); transition: background 0.8s; z-index: 3;
     }
     .progress-bar {
       height: 100%; width: 0%; background: rgba(255,255,255,0.6);
@@ -269,17 +272,12 @@
   </audio>
 
   <script>
-    // --- DYNAMIC TAB TITLE ---
     let originalTitle = document.title;
     document.addEventListener("visibilitychange", () => {
-      if (document.hidden) {
-        document.title = "stay lowkey...";
-      } else {
-        document.title = originalTitle;
-      }
+      if (document.hidden) { document.title = "stay lowkey..."; } 
+      else { document.title = originalTitle; }
     });
 
-    // --- LIVE CLOCK & WEATHER ---
     let cachedWeather = '';
     async function fetchWeather() {
       try {
@@ -296,7 +294,6 @@
     }
     setInterval(updateLocalInfo, 1000); updateLocalInfo();
 
-    // --- 3D TILT & GLARE ---
     const tiltCard = document.getElementById('tiltCard');
     const glare = document.getElementById('glare');
     document.addEventListener('mousemove', (e) => {
@@ -315,7 +312,6 @@
       glare.style.opacity = 0;
     });
 
-    // --- MAGNETIC BUTTONS ---
     const magneticBtns = document.querySelectorAll('.btn');
     magneticBtns.forEach(btn => {
       btn.addEventListener('mousemove', function(e) {
@@ -329,12 +325,10 @@
       btn.addEventListener('mouseleave', function() { this.style.transform = `translate(0px, 0px)`; });
     });
 
-    // --- AUDIO VISUALIZER & PROGRESS BAR ---
     let audioCtx, analyzer, dataArray;
     const music = document.getElementById('music');
     const progressBar = document.getElementById('audioProgress');
 
-    // Update Progress Bar
     music.addEventListener('timeupdate', () => {
       if (music.duration) {
         const progress = (music.currentTime / music.duration) * 100;
@@ -371,7 +365,6 @@
       renderFrame();
     }
 
-    // --- MEDIA & THEME CONTROLS ---
     const intro = document.getElementById('intro');
     const cardWrap = document.getElementById('cardWrap');
     const bgVideo = document.getElementById('bg');
@@ -416,13 +409,11 @@
       }, 500); 
     }
 
-    // --- VIEWS COUNTER API (RESTORED) ---
     fetch("https://api.counterapi.dev/v1/lowkey-emal-dev/visits/up")
       .then(res => res.json())
       .then(data => { document.getElementById("view-count").innerText = data.count; })
       .catch(() => { document.getElementById("view-count").innerText = "-"; });
 
-    // --- TYPEWRITER ---
     const words = ["stay lowkey", "calm energy", "radiant mind"];
     let i = 0, j = 0, isDeleting = false;
     function typeEffect() {
@@ -439,7 +430,6 @@
     }
     typeEffect();
 
-    // --- LANYARD API ---
     function fetchLanyard() {
       fetch("https://api.lanyard.rest/v1/users/285468327135019019")
         .then(res => res.json())
@@ -474,7 +464,6 @@
     }
     fetchLanyard(); setInterval(fetchLanyard, 3000);
 
-    // --- SMART RAIN ---
     const canvas = document.getElementById("rain"); const ctx = canvas.getContext("2d");
     function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
     window.addEventListener('resize', resizeCanvas); resizeCanvas();
