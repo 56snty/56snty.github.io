@@ -14,42 +14,32 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
     html, body { 
-      font-family: 'Inter', sans-serif; 
-      color: white; 
+      font-family: 'Inter', sans-serif; color: white; 
       background-color: #030303; 
-      width: 100vw; 
-      height: 100vh; 
-      height: 100dvh; 
-      overflow: hidden; 
-      overscroll-behavior: none; 
-      touch-action: none; 
+      width: 100vw; height: 100vh; height: 100dvh; 
+      overflow: hidden; overscroll-behavior: none; touch-action: none; 
       transition: background-color 0.8s ease, color 0.8s ease;
     }
 
     body.light-mode { background-color: #e5e5e5; color: #1a1a1a; }
 
-    /* CINEMATIC INTRO */
-    #intro {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: #000; display: flex; flex-direction: column;
-      align-items: center; justify-content: center; z-index: 100; cursor: pointer;
-      transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 1.2s, background-color 0.8s;
-    }
-    body.light-mode #intro { background: #f5f5f5; color: #1a1a1a; }
-    #intro h1 { font-family: 'Playfair Display', serif; font-size: 28px; letter-spacing: 4px; font-weight: 500; }
-    .pulse-text { opacity: 0.5; font-size: 10px; margin-top: 15px; letter-spacing: 3px; text-transform: uppercase; animation: pulse 2.5s infinite; }
-    @keyframes pulse { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.8; } }
-
-    /* BACKGROUND VIDEO & RAIN (Bulletproof Z-Index) */
-    video {
+    /* DUAL BACKGROUND VIDEOS (Seamless Crossfade) */
+    .bg-video {
       position: fixed; top: 50%; left: 50%;
       min-width: 100%; min-height: 100%; width: auto; height: auto;
       transform: translateX(-50%) translateY(-50%);
-      object-fit: cover; z-index: -2; filter: brightness(0.65) contrast(1.1);
-      transition: opacity 0.5s ease, filter 0.8s ease;
+      object-fit: cover; z-index: 1; 
+      transition: opacity 1s ease-in-out; /* Smooth cinematic fade */
     }
-    body.light-mode video { filter: brightness(0.85) contrast(1.05); }
-    canvas { position: fixed; top: 0; left: 0; z-index: -1; pointer-events: none; opacity: 0.6; }
+    
+    #bg-dark { filter: brightness(0.65) contrast(1.1); opacity: 1; }
+    #bg-light { filter: brightness(0.85) contrast(1.05); opacity: 0; } /* Hidden by default */
+
+    /* When Light Mode is active, swap opacities */
+    body.light-mode #bg-dark { opacity: 0; }
+    body.light-mode #bg-light { opacity: 1; }
+    
+    canvas { position: fixed; top: 0; left: 0; z-index: 2; pointer-events: none; opacity: 0.6; }
 
     /* WATERMARK CREDIT */
     .watermark {
@@ -65,8 +55,7 @@
       position: fixed; top: 50%; left: 50%;
       transform: translate(-50%, -45%); opacity: 0;
       transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-      z-index: 10; 
-      perspective: 1200px; 
+      z-index: 10; perspective: 1500px; 
     }
     .card-wrapper.show { opacity: 1; transform: translate(-50%, -50%); }
     
@@ -199,6 +188,18 @@
     }
     body.light-mode .progress-container { background: rgba(0,0,0,0.05); }
     body.light-mode .progress-bar { background: rgba(0,0,0,0.4); }
+
+    /* CINEMATIC INTRO */
+    #intro {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: #000; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; 
+      z-index: 9999; cursor: pointer;
+      transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 1.2s, background-color 0.8s;
+    }
+    body.light-mode #intro { background: #f5f5f5; color: #1a1a1a; }
+    #intro h1 { font-family: 'Playfair Display', serif; font-size: 28px; letter-spacing: 4px; font-weight: 500; }
+    .pulse-text { opacity: 0.5; font-size: 10px; margin-top: 15px; letter-spacing: 3px; text-transform: uppercase; animation: pulse 2.5s infinite; }
   </style>
 </head>
 
@@ -209,7 +210,8 @@
     <span class="pulse-text">enter</span>
   </div>
 
-  <video id="bg" src="bg.mp4" autoplay loop muted playsinline></video>
+  <video id="bg-dark" class="bg-video" src="bg.mp4" autoplay loop muted playsinline></video>
+  <video id="bg-light" class="bg-video" src="bg-light.mp4" autoplay loop muted playsinline></video>
   
   <canvas id="rain"></canvas>
   <div class="watermark">fully custom made by emal.dev</div>
@@ -363,7 +365,8 @@
 
     const intro = document.getElementById('intro');
     const cardWrap = document.getElementById('cardWrap');
-    const bgVideo = document.getElementById('bg');
+    const bgDark = document.getElementById('bg-dark');
+    const bgLight = document.getElementById('bg-light');
     const musicBtn = document.getElementById('musicToggle');
     const themeBtn = document.getElementById('themeToggle');
     
@@ -375,8 +378,11 @@
       setTimeout(() => { intro.style.visibility = 'hidden'; }, 1200);
       cardWrap.classList.add("show");
       
-      bgVideo.load(); music.load(); music.volume = 0.4; 
-      bgVideo.play().catch(e => console.error(e));
+      // Play both videos silently in the background so the transition is instant
+      bgDark.play().catch(e => console.error(e));
+      bgLight.play().catch(e => console.error(e));
+      
+      music.volume = 0.4; 
       music.play().then(() => initVisualizer()).catch(e => console.error(e));
     }
 
@@ -395,20 +401,12 @@
       document.body.classList.toggle('light-mode', isLightMode);
       themeBtn.innerText = isLightMode ? "[ DARK MODE ]" : "[ LIGHT MODE ]";
       
-      bgVideo.style.opacity = 0;
-      
+      // Swap audio track smoothly
       setTimeout(() => {
-        // Bulletproof dynamic source swapping directly on the video/audio tags
-        bgVideo.src = isLightMode ? "bg-light.mp4" : "bg.mp4";
         music.src = isLightMode ? "music-light.mp3" : "music.mp3";
-        
-        bgVideo.load(); music.load();
-        
-        bgVideo.play().catch(e => console.log(e));
+        music.load();
         if (isPlaying) { music.play().catch(e => console.log(e)); }
-        
-        bgVideo.style.opacity = 1;
-      }, 500); 
+      }, 400); // 400ms delay matches the video fade crossover point
     }
 
     fetch("https://api.counterapi.dev/v1/lowkey-emal-dev/visits/up")
