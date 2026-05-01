@@ -40,16 +40,16 @@
     .pulse-text { opacity: 0.5; font-size: 10px; margin-top: 15px; letter-spacing: 3px; text-transform: uppercase; animation: pulse 2.5s infinite; }
     @keyframes pulse { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.8; } }
 
-    /* BACKGROUND VIDEO & RAIN (Z-Index Fixed to positive) */
+    /* BACKGROUND VIDEO & RAIN (Bulletproof Z-Index) */
     video {
       position: fixed; top: 50%; left: 50%;
       min-width: 100%; min-height: 100%; width: auto; height: auto;
       transform: translateX(-50%) translateY(-50%);
-      object-fit: cover; z-index: 1; filter: brightness(0.65) contrast(1.1);
+      object-fit: cover; z-index: -2; filter: brightness(0.65) contrast(1.1);
       transition: opacity 0.5s ease, filter 0.8s ease;
     }
     body.light-mode video { filter: brightness(0.85) contrast(1.05); }
-    canvas { position: fixed; top: 0; left: 0; z-index: 2; pointer-events: none; opacity: 0.6; }
+    canvas { position: fixed; top: 0; left: 0; z-index: -1; pointer-events: none; opacity: 0.6; }
 
     /* WATERMARK CREDIT */
     .watermark {
@@ -209,9 +209,7 @@
     <span class="pulse-text">enter</span>
   </div>
 
-  <video id="bg" autoplay loop muted playsinline>
-    <source id="bg-source" src="bg.mp4" type="video/mp4">
-  </video>
+  <video id="bg" src="bg.mp4" autoplay loop muted playsinline></video>
   
   <canvas id="rain"></canvas>
   <div class="watermark">fully custom made by emal.dev</div>
@@ -267,9 +265,7 @@
     </div>
   </div>
 
-  <audio id="music" loop crossorigin="anonymous">
-    <source id="music-source" src="music.mp3" type="audio/mpeg">
-  </audio>
+  <audio id="music" src="music.mp3" loop crossorigin="anonymous"></audio>
 
   <script>
     let originalTitle = document.title;
@@ -398,13 +394,19 @@
       isLightMode = !isLightMode;
       document.body.classList.toggle('light-mode', isLightMode);
       themeBtn.innerText = isLightMode ? "[ DARK MODE ]" : "[ LIGHT MODE ]";
+      
       bgVideo.style.opacity = 0;
+      
       setTimeout(() => {
-        document.getElementById('bg-source').src = isLightMode ? "bg-light.mp4" : "bg.mp4";
-        document.getElementById('music-source').src = isLightMode ? "music-light.mp3" : "music.mp3";
+        // Bulletproof dynamic source swapping directly on the video/audio tags
+        bgVideo.src = isLightMode ? "bg-light.mp4" : "bg.mp4";
+        music.src = isLightMode ? "music-light.mp3" : "music.mp3";
+        
         bgVideo.load(); music.load();
+        
         bgVideo.play().catch(e => console.log(e));
         if (isPlaying) { music.play().catch(e => console.log(e)); }
+        
         bgVideo.style.opacity = 1;
       }, 500); 
     }
