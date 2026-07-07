@@ -1,1288 +1,751 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vijfsluize — Autogarage · Spijkenisse</title>
-<!-- ============================================================
-  VIJFSLUIZE · LIVE SERVICE STATION — v3 editorial rebuild
-  black/white/racing-red · sharp editorial UI · inline SVG car
-  Live APIs inside Claude: model loading + AI Monteur (graceful
-  offline fallback everywhere else). Car photos: imagin.studio CDN
-  via plain <img> with self-hiding fallback.
-  SWAP POINTS: loadCars(), runAI(), submit(), IMG_CUSTOMER.
-============================================================ -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>lowkey — emal.dev</title>
+<meta name="description" content="lowkey. calm energy, radiant mind. — emal.dev">
+<meta name="theme-color" content="#0C0A08">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap');
+/* ============================================================
+   LOWKEY — v2 · editorial index
+   type   : Instrument Serif (display) / Instrument Sans / JetBrains Mono
+   palette: warm void #0C0A08 · bone #E8E1D5 · brass #B9A179
+   ============================================================ */
+
 :root{
-  --bg:#070708; --sur:#0C0C0D; --ink:#F2F2F0; --dim:rgba(255,255,255,.46);
-  --line:rgba(255,255,255,.13); --acc:#E10600; --accd:#A50400;
-  --gx:clamp(20px,4vw,56px); --carfill:#101114; --carstroke:#E8EAEE;
+  --bg:      #0C0A08;
+  --ink:     #E8E1D5;
+  --dim:     rgba(232,225,213,.44);
+  --faint:   rgba(232,225,213,.13);
+  --brass:   #B9A179;
+  --spotify: #1ED760;
+  --ease:    cubic-bezier(.16,1,.3,1);
 }
-*{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%}
-body{background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,sans-serif;
-  overflow:hidden;-webkit-font-smoothing:antialiased}
-::selection{background:var(--acc);color:#fff}
-button{font-family:inherit;color:inherit;background:none;border:0}
-a{color:inherit;text-decoration:none}
-input{color-scheme:dark}
-:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
-@media(hover:hover){ html,body,button,a,input,label{cursor:none} }
-.mono{font-family:'Space Mono',monospace}
-
-/* ============ STAGE ============ */
-#gl{position:fixed;inset:0;width:100%;height:100%;display:block;opacity:0;transition:opacity 1.2s ease}
-#gl.in{opacity:1}
-.fallb{position:fixed;inset:0;background:radial-gradient(90% 90% at 50% 30%,#0D0D0F,#070708);display:none}
-.vin{position:fixed;inset:0;pointer-events:none;z-index:2;
-  background:radial-gradient(130% 100% at 50% 40%,transparent 45%,rgba(3,3,4,.7) 100%)}
-.grain{position:fixed;inset:0;pointer-events:none;z-index:3;opacity:.3;mix-blend-mode:overlay;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
-  background-size:200px 200px}
-
-/* cursor */
-.cur{position:fixed;z-index:300;pointer-events:none;left:0;top:0;width:32px;height:32px;
-  margin:-16px 0 0 -16px;border:1.5px solid #fff;border-radius:50%;mix-blend-mode:difference;
-  transition:transform .18s ease}
-.cur.hot{transform:scale(1.6)}
-.curd{position:fixed;z-index:300;pointer-events:none;left:0;top:0;width:4px;height:4px;
-  margin:-2px 0 0 -2px;border-radius:50%;background:#fff;mix-blend-mode:difference}
-@media(hover:none){.cur,.curd{display:none}}
-
-/* wipe */
-.wiper{position:fixed;inset:0;z-index:200;pointer-events:none;transform:translateX(-103%);
-  background:#050506;border-right:2px solid var(--acc);display:flex;align-items:center;justify-content:center}
-.wiper span{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.42em;color:var(--acc);opacity:0}
-.wiper.go{animation:wipe .6s cubic-bezier(.75,0,.2,1) forwards}
-.wiper.go span{animation:wlogo .6s ease forwards}
-@keyframes wipe{0%{transform:translateX(-103%)}44%{transform:translateX(0)}56%{transform:translateX(0)}100%{transform:translateX(103%)}}
-@keyframes wlogo{0%,30%{opacity:0}45%,55%{opacity:1}75%,100%{opacity:0}}
-
-/* ============ HEADER ============ */
-.top{position:fixed;top:0;left:0;right:0;z-index:60;height:60px;display:flex;align-items:stretch;
-  justify-content:space-between;padding:0 var(--gx);background:rgba(7,7,8,.92);border-bottom:1px solid var(--line)}
-.brand{display:flex;align-items:center;gap:11px}
-.brand .sq{width:10px;height:10px;background:var(--acc)}
-.brand .n{font-family:'Space Mono',monospace;font-size:12.5px;font-weight:700;letter-spacing:.18em}
-.brand .t{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-top:3px}
-.stepper{display:flex;align-items:stretch}
-.step{display:flex;align-items:center;gap:8px;padding:0 clamp(10px,1.6vw,22px);position:relative;
-  font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--dim);border-left:1px solid var(--line);transition:color .25s}
-.step:last-child{border-right:1px solid var(--line)}
-.step .no{color:rgba(255,255,255,.3);transition:color .25s}
-.step::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--acc);
-  transform:scaleX(0);transform-origin:left;transition:transform .35s cubic-bezier(.2,0,0,1)}
-.step.on{color:var(--ink)}
-.step.on .no,.step.done .no{color:var(--acc)}
-.step.on::after{transform:scaleX(1)}
-.step.done{color:rgba(255,255,255,.65)}
-.step[data-ok]{cursor:none}
-.step:not([data-ok]){pointer-events:none;opacity:.55}
-.tr{display:flex;align-items:center;gap:16px}
-.meta{display:flex;align-items:center;gap:9px;font-family:'Space Mono',monospace;font-size:9.5px;
-  letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
-.meta i{width:6px;height:6px;border-radius:50%;background:var(--acc);box-shadow:0 0 8px var(--acc);animation:pp 2.4s infinite}
-@keyframes pp{50%{opacity:.3}}
-.lang{display:flex;border:1px solid var(--line)}
-.lang button{padding:6px 10px;font-family:'Space Mono',monospace;font-size:9.5px;font-weight:700;
-  letter-spacing:.08em;color:var(--dim)}
-.lang button+button{border-left:1px solid var(--line)}
-.lang button.on{background:var(--ink);color:#070708}
-
-/* ticker */
-.ticker{position:fixed;left:0;right:0;bottom:0;z-index:55;overflow:hidden;
-  border-top:1px solid var(--line);background:rgba(6,6,7,.9)}
-.tk{display:inline-flex;align-items:center;gap:36px;padding:10px 0;white-space:nowrap;animation:tick 34s linear infinite}
-.tk span{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--dim)}
-.tk em{font-style:normal;color:var(--acc);font-size:8px}
-@keyframes tick{to{transform:translateX(-33.3333%)}}
-
-/* ============ SCENES ============ */
-.scene{position:fixed;inset:0;z-index:20;display:none;flex-direction:column;align-items:center;
-  padding:60px var(--gx) 42px;overflow:auto}
-.scene.on{display:flex}
-.ghost{position:fixed;left:0;right:0;top:9%;display:flex;justify-content:center;pointer-events:none;z-index:0}
-.ghost span{font-family:'Anton',sans-serif;font-size:clamp(70px,16vw,230px);color:transparent;
-  -webkit-text-stroke:1px rgba(255,255,255,.07);text-transform:uppercase;letter-spacing:.01em;line-height:1;white-space:nowrap}
-.eyebrow{display:flex;align-items:center;gap:12px;font-family:'Space Mono',monospace;font-size:10.5px;
-  letter-spacing:.26em;text-transform:uppercase;color:var(--acc)}
-.eyebrow::before{content:"";width:34px;height:1px;background:var(--acc)}
-.btn{position:relative;display:inline-flex;align-items:center;gap:12px;font-family:'Space Mono',monospace;
-  font-weight:700;font-size:11px;letter-spacing:.16em;text-transform:uppercase;padding:16px 24px;
-  background:var(--acc);color:#fff;transition:background .25s,transform .2s;will-change:transform;
-  clip-path:polygon(0 0,calc(100% - 13px) 0,100% 13px,100% 100%,0 100%)}
-.btn:hover{background:var(--accd)}
-.btn svg{width:15px;height:15px;transition:transform .25s}
-.btn:hover svg{transform:translateX(4px)}
-.btn.g{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px var(--line);clip-path:none}
-.btn.g:hover{box-shadow:inset 0 0 0 1px rgba(255,255,255,.55);background:rgba(255,255,255,.03)}
-.btn[disabled]{opacity:.35;pointer-events:none}
-.tagline{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.32)}
-
-/* strips (section headers) */
-.strip{display:flex;align-items:center;justify-content:space-between;gap:14px;
-  padding:12px 18px;border-bottom:1px solid var(--line);
-  font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
-.strip b{color:var(--ink);font-weight:700}
-.strip .ix{color:var(--acc)}
-
-/* ---- SCENE 0 : SHOWROOM ---- */
-.s0{position:relative;width:min(1360px,100%);flex:1;display:flex;flex-direction:column;min-height:0}
-.s0meta{display:flex;justify-content:space-between;padding:18px 0 0;font-family:'Space Mono',monospace;
-  font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.34)}
-.carStage{position:absolute;right:-2%;top:4%;width:min(62vw,940px);pointer-events:none;z-index:1}
-.carStage svg{width:100%;height:auto;display:block;overflow:visible}
-.scan{position:absolute;left:4%;right:4%;height:2px;top:14%;opacity:.75;mix-blend-mode:screen;pointer-events:none;
-  background:linear-gradient(90deg,transparent,var(--acc) 30%,#fff 50%,var(--acc) 70%,transparent);
-  box-shadow:0 0 16px var(--acc);animation:scanY 6s cubic-bezier(.45,0,.55,1) infinite}
-@keyframes scanY{0%,100%{top:12%}50%{top:74%}}
-.s0copy{position:relative;z-index:5;margin-top:clamp(28px,7vh,84px);max-width:720px}
-.h0{font-family:'Anton',sans-serif;font-size:clamp(58px,8.6vw,132px);line-height:.9;letter-spacing:-1.5px;
-  text-transform:uppercase;text-shadow:0 8px 44px rgba(3,3,4,.85)}
-.h0 .a{color:var(--acc)}
-.s0copy .rule{width:88px;height:1px;background:var(--line);margin:26px 0 18px}
-.s0row{display:flex;gap:clamp(20px,3vw,44px);align-items:flex-start;flex-wrap:wrap}
-.s0row p{max-width:40ch;color:rgba(255,255,255,.7);font-size:14px;line-height:1.7;text-wrap:balance}
-.ctas{display:flex;gap:12px;flex-wrap:wrap}
-.statbar{position:relative;z-index:5;margin-top:auto;display:grid;grid-template-columns:repeat(4,1fr);
-  border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-.stx{padding:16px 20px;display:flex;flex-direction:column;gap:6px}
-.stx+.stx{border-left:1px solid var(--line)}
-.stx .v{font-family:'Space Mono',monospace;font-size:clamp(20px,2.2vw,27px);font-weight:700;font-variant-numeric:tabular-nums}
-.stx .v b{color:var(--acc)}
-.stx .k{font-family:'Space Mono',monospace;font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
-.stx .st{display:flex;align-items:center;gap:9px;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase}
-.stx .st i{width:7px;height:7px;border-radius:50%;background:#fff;opacity:.85}
-/* drive-in */
-.drive{transform:translateX(58%);animation:driveIn 1.6s cubic-bezier(.16,.8,.24,1) .25s forwards}
-@keyframes driveIn{to{transform:translateX(0)}}
-.drive .whl{animation:roll 1.6s cubic-bezier(.16,.8,.24,1) .25s forwards}
-@keyframes roll{from{transform:rotate(540deg)}to{transform:rotate(0deg)}}
-.dims{opacity:0;animation:rvIn .9s ease 1.9s forwards}
-.tail{animation:tp 3s ease-in-out infinite}
-@keyframes tp{0%,100%{opacity:1}50%{opacity:.55}}
-@media(prefers-reduced-motion:reduce){.drive{animation:none;transform:none}.drive .whl{animation:none}.dims{animation:none;opacity:1}}
-
-/* ---- SCENE 1 : CONFIG (workbench) ---- */
-.s1{width:min(1240px,100%);margin:auto 0;border:1px solid var(--line);background:var(--sur);
-  display:grid;grid-template-columns:1.05fr .95fr}
-.col{min-width:0}
-.col+.col{border-left:1px solid var(--line)}
-.col .bd{padding:clamp(16px,2vw,24px)}
-.lb{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin:18px 0 10px}
-.lb:first-child{margin-top:0}
-.tgrid,.bgrid{display:grid;gap:1px;background:var(--line);border:1px solid var(--line)}
-.bgrid{grid-template-columns:repeat(4,1fr)}
-.tgrid{grid-template-columns:repeat(6,1fr)}
-.bt{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.05em;text-transform:uppercase;
-  padding:13px 6px;background:var(--sur);transition:color .2s,background .2s;color:rgba(255,255,255,.8)}
-.bt:hover{color:var(--acc)}
-.bt.on{background:var(--acc);color:#fff;font-weight:700}
-.tp{display:flex;flex-direction:column;align-items:center;gap:7px;padding:12px 4px;background:var(--sur);transition:.2s}
-.tp svg{width:50px;height:25px;stroke:var(--ink);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;transition:stroke .2s}
-.tp span{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
-.tp:hover svg{stroke:var(--acc)}
-.tp.on{background:#101012;box-shadow:inset 0 -2px 0 var(--acc)}
-.tp.on svg{stroke:var(--acc)}
-.tp.on span{color:var(--ink)}
-.rowx{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start;margin-top:18px}
-.plate{display:flex;align-items:stretch;overflow:hidden;width:190px;border:1px solid rgba(255,255,255,.28);border-radius:4px}
-.plate .eu{background:var(--acc);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:3px;padding:0 7px;font-size:8px;font-weight:700}
-.plate .eu i{font-style:normal;font-size:7px;letter-spacing:1px;opacity:.85}
-.plate input{background:#0A0B0C;border:none;color:#fff;font-family:'Space Mono',monospace;font-weight:700;
-  font-size:16px;letter-spacing:.1em;text-transform:uppercase;padding:12px 10px;width:100%;min-width:0}
-.plate input::placeholder{color:rgba(255,255,255,.25)}
-.sw{display:flex;gap:8px}
-.sw button{width:26px;height:26px;border-radius:2px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25);transition:transform .2s}
-.sw button:hover{transform:translateY(-2px)}
-.sw button.on{box-shadow:inset 0 0 0 1px #fff,0 0 0 2px var(--acc)}
-.foot{display:flex;align-items:center;gap:14px;padding:16px 18px;border-top:1px solid var(--line)}
-/* dossier */
-.dosEmpty{padding:44px 8px;text-align:center;color:rgba(255,255,255,.35);font-family:'Space Mono',monospace;
-  font-size:10px;letter-spacing:.24em;text-transform:uppercase}
-.term{font-family:'Space Mono',monospace;font-size:11px;line-height:2;color:rgba(255,255,255,.8)}
-.term div::before{content:"► ";color:var(--acc)}
-.term .cur::after{content:"▊";animation:blink 1s steps(1) infinite;color:var(--acc)}
-@keyframes blink{50%{opacity:0}}
-.tbar{height:2px;background:var(--line);margin-top:14px;overflow:hidden}
-.tbar i{display:block;height:100%;width:0;background:var(--acc);transition:width .5s ease}
-.models{display:flex;flex-direction:column}
-.mc{display:flex;align-items:center;gap:14px;text-align:left;padding:12px 4px;width:100%;
-  border-bottom:1px solid var(--line);transition:.25s;position:relative}
-.mc::before{content:"";position:absolute;left:-18px;top:0;bottom:0;width:3px;background:var(--acc);
-  transform:scaleY(0);transition:transform .3s}
-.mc:hover{background:rgba(255,255,255,.025)}
-.mc.on::before{transform:scaleY(1)}
-.mc.on .nm{color:var(--acc)}
-.mc.dim{opacity:.4}
-.mc.dim:hover{opacity:.85}
-.mc .nm{font-family:'Anton',sans-serif;font-size:18px;text-transform:uppercase;letter-spacing:.3px;flex:1;transition:color .25s}
-.mc .mt{font-family:'Space Mono',monospace;font-size:9.5px;color:var(--dim);letter-spacing:.06em;text-align:right;line-height:1.7}
-.mc .pk{font-family:'Space Mono',monospace;font-size:12.5px;color:var(--acc);font-weight:700;white-space:nowrap}
-.mimg{width:84px;height:48px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;overflow:hidden;background:rgba(255,255,255,.025)}
-.mimg img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 6px 12px rgba(0,0,0,.5))}
-.specImg{position:relative;height:148px;margin:6px 0 12px;display:flex;align-items:center;justify-content:center}
-.specImg img{max-width:100%;max-height:148px;object-fit:contain;filter:drop-shadow(0 16px 28px rgba(0,0,0,.55))}
-.specImg .src{position:absolute;right:0;bottom:0;font-family:'Space Mono',monospace;font-size:8px;
-  letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.24)}
-.srow{display:flex;align-items:baseline;gap:12px;padding:9px 0;font-family:'Space Mono',monospace;font-size:11.5px}
-.srow .k{color:var(--dim);letter-spacing:.16em;font-size:9px;text-transform:uppercase}
-.srow .dots{flex:1;border-bottom:1px dotted rgba(255,255,255,.22);transform:translateY(-3px)}
-.srow .v{font-variant-numeric:tabular-nums}
-.livetag{margin-top:12px;font-family:'Space Mono',monospace;font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.36)}
-.livetag b{color:var(--acc);font-weight:400}
-
-/* ---- SCENE 2 : HEFBRUG ---- */
-.s2{width:min(1360px,100%);flex:1;display:flex;flex-direction:column;min-height:0}
-.s2strip{margin-top:16px;border:1px solid var(--line);background:var(--sur);display:flex;align-items:center;
-  justify-content:space-between;gap:14px;padding:11px 18px;font-family:'Space Mono',monospace;font-size:10px;
-  letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
-.s2strip .ix{color:var(--acc)}
-.s2strip b{color:var(--ink)}
-.s2strip .mid{color:rgba(255,255,255,.4);letter-spacing:.14em}
-.lift{position:relative;flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
-.lift>svg{width:100%;height:100%;overflow:visible}
-.liftrise{transform:translateY(26px);animation:rise 1.1s cubic-bezier(.2,.7,.2,1) .15s forwards}
-@keyframes rise{to{transform:translateY(0)}}
-.hot{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center;background:none;border:none;padding:0;z-index:6}
-.hot .pin{position:relative;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-  font-family:'Space Mono',monospace;font-size:9px;font-weight:700;color:var(--acc);
-  background:rgba(6,6,7,.85);box-shadow:inset 0 0 0 1.5px var(--acc);transition:.3s}
-.hot .pin::after{content:"";position:absolute;inset:0;border-radius:50%;border:1.5px solid var(--acc);
-  animation:ping 2.4s cubic-bezier(.2,0,.3,1) infinite}
-@keyframes ping{0%{transform:scale(1);opacity:.85}80%,100%{transform:scale(2.6);opacity:0}}
-.hot.on .pin{background:var(--acc);color:#fff;box-shadow:0 0 0 4px rgba(225,6,0,.32),0 0 20px var(--acc)}
-.hot .lbl{max-width:0;overflow:hidden;white-space:nowrap;font-family:'Space Mono',monospace;font-size:10px;
-  letter-spacing:.12em;text-transform:uppercase;transition:max-width .35s cubic-bezier(.2,0,0,1),padding .35s;padding-left:0;
-  text-shadow:0 2px 12px rgba(0,0,0,.95)}
-.hot:hover .lbl,.hot.on .lbl{max-width:240px;padding-left:11px}
-.specmini{position:absolute;left:0;top:4%;z-index:7;width:238px;max-width:38vw;
-  border:1px solid var(--line);background:var(--sur)}
-.specmini .hz{height:4px;background:repeating-linear-gradient(-45deg,var(--acc) 0 11px,#101011 11px 22px)}
-.specmini .in{padding:14px 16px}
-.smImg{height:80px;margin:0 0 8px;display:flex;align-items:center;justify-content:flex-start}
-.smImg img{max-height:80px;max-width:100%;object-fit:contain;filter:drop-shadow(0 10px 18px rgba(0,0,0,.5))}
-.specmini .mn{font-family:'Anton',sans-serif;font-size:20px;text-transform:uppercase;margin-bottom:2px}
-.specmini .ms{font-family:'Space Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:.08em;line-height:1.9}
-.specmini .pl2{display:inline-flex;margin-top:9px;overflow:hidden;border:1px solid rgba(255,255,255,.28);border-radius:3px}
-.specmini .pl2 i{background:var(--acc);color:#fff;font-size:6.5px;font-weight:700;font-style:normal;display:flex;align-items:center;padding:0 4px}
-.specmini .pl2 b{background:#0A0B0C;color:#fff;font-family:'Space Mono',monospace;font-size:10.5px;font-weight:700;letter-spacing:.08em;padding:4px 8px}
-.chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;padding:12px 0 2px}
-.chip{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;
-  padding:9px 14px;border:1px solid var(--line);transition:.22s;color:rgba(255,255,255,.75)}
-.chip:hover{border-color:rgba(225,6,0,.6);color:var(--ink)}
-.chip.on{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:700}
-.s2foot{display:flex;justify-content:center;padding-top:14px}
-.dock{position:fixed;right:var(--gx);bottom:56px;z-index:46;width:284px;
-  background:var(--sur);border:1px solid var(--line);display:none}
-.dock.show{display:block}
-.dock .dh{height:4px;background:repeating-linear-gradient(-45deg,var(--acc) 0 11px,#101011 11px 22px)}
-.dock .di{padding:12px 15px}
-.dock .dt{display:flex;justify-content:space-between;font-family:'Space Mono',monospace;font-size:9px;
-  letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin-bottom:8px}
-.dock .dt b{color:var(--acc)}
-.dock ul{list-style:none;max-height:148px;overflow:auto}
-.dock li{display:flex;align-items:center;gap:9px;padding:7px 0;font-family:'Space Mono',monospace;font-size:10px;border-bottom:1px solid var(--line)}
-.dock li i{width:6px;height:6px;background:var(--acc);flex:0 0 auto}
-.dock li b{margin-left:auto;color:var(--dim);font-weight:400;font-size:13px;line-height:1}
-.dock li b:hover{color:var(--acc)}
-.dempty{color:rgba(255,255,255,.35);font-size:10.5px;font-family:'Space Mono',monospace;letter-spacing:.06em}
-
-/* popover */
-.pop{position:fixed;z-index:210;background:#0B0B0C;border:1px solid var(--line);
-  padding:14px;width:244px;box-shadow:0 26px 64px rgba(0,0,0,.6);display:none}
-.pop.open{display:block}
-.pop h4{font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--acc);margin-bottom:10px;line-height:1.6}
-.pop .opt{display:block;width:100%;text-align:left;border:1px solid var(--line);
-  padding:10px 12px;margin-bottom:7px;font-size:12.5px;transition:.2s}
-.pop .opt:hover{border-color:rgba(225,6,0,.55);background:rgba(225,6,0,.08)}
-
-/* ---- SCENE 3 : WERKORDER ---- */
-.s3{width:min(1100px,100%);margin:auto 0;display:grid;grid-template-columns:1.08fr .92fr;gap:clamp(14px,2vw,22px);align-items:start}
-.card{border:1px solid var(--line);background:var(--sur)}
-.card .hz{height:4px;background:repeating-linear-gradient(-45deg,var(--acc) 0 11px,#101011 11px 22px)}
-.card .in{padding:clamp(16px,2vw,24px)}
-.tick .thead{display:flex;justify-content:space-between;align-items:baseline;font-family:'Space Mono',monospace;
-  font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:12px}
-.tick .thead b{color:var(--ink)}
-.tick .veh{font-family:'Anton',sans-serif;font-size:27px;text-transform:uppercase}
-.tick .vs{font-family:'Space Mono',monospace;font-size:9.5px;color:var(--dim);letter-spacing:.08em;margin:3px 0 14px}
-.wl{list-style:none;border-top:1px solid var(--line)}
-.wl li{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);
-  font-family:'Space Mono',monospace;font-size:11px;opacity:0;transform:translateY(8px);animation:pr .45s ease forwards}
-@keyframes pr{to{opacity:1;transform:none}}
-.wl li .n{color:var(--dim);width:24px;font-size:9.5px}
-.wl li i{width:6px;height:6px;background:var(--acc);flex:0 0 auto}
-.wl li .t{flex:1}
-.wl li .no{color:var(--dim);font-size:9.5px}
-.perf{border-top:2px dashed rgba(255,255,255,.16);margin:14px -24px 0;position:relative}
-.perf::before,.perf::after{content:"";position:absolute;top:-7px;width:14px;height:14px;border-radius:50%;background:var(--bg)}
-.perf::before{left:-7px}.perf::after{right:-7px}
-.bar{height:30px;margin-top:14px;opacity:.9;
-  background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 5px,var(--ink) 5px 6px,transparent 6px 11px,var(--ink) 11px 14px,transparent 14px 16px,var(--ink) 16px 17px,transparent 17px 22px)}
-.wono{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.32em;color:var(--dim);margin-top:8px;text-align:center}
-.ai{margin-top:16px;border-top:1px solid var(--line);padding-top:16px}
-.aibtn{display:inline-flex;align-items:center;gap:9px;font-family:'Space Mono',monospace;font-size:10px;
-  letter-spacing:.14em;text-transform:uppercase;padding:11px 16px;border:1px solid var(--line);transition:.25s}
-.aibtn:hover{border-color:var(--acc)}
-.aibtn[disabled]{opacity:.35;pointer-events:none}
-.aiout{display:none;margin-top:14px}
-.aiout.show{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap}
-.gauge{width:126px;flex:0 0 auto}
-.gauge svg{width:100%;display:block}
-.gauge .gl{font-family:'Space Mono',monospace;font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;text-align:center;color:var(--dim);margin-top:2px}
-.gauge .gv{font-family:'Anton',sans-serif;font-size:20px;text-align:center;text-transform:uppercase;margin-top:1px}
-.aitxt{flex:1;min-width:200px}
-.mrow{display:flex;gap:22px;margin-bottom:10px}
-.mm .k{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
-.mm .v{font-family:'Space Mono',monospace;font-size:17px;margin-top:3px;font-variant-numeric:tabular-nums}
-.aitxt p{font-size:12.5px;line-height:1.7;color:rgba(255,255,255,.74)}
-.aitag{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-top:8px}
-.bkh{font-family:'Anton',sans-serif;font-size:24px;text-transform:uppercase;margin-bottom:16px}
-.seg{display:flex;margin-bottom:16px;border:1px solid var(--line)}
-.seg button{flex:1;font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
-  padding:11px;color:var(--dim);transition:.25s}
-.seg button+button{border-left:1px solid var(--line)}
-.seg button.on{background:var(--acc);color:#fff;font-weight:700}
-.fr{display:flex;gap:20px;margin-bottom:16px;flex-wrap:wrap}
-.fd{flex:1;min-width:130px;display:flex;flex-direction:column;gap:7px}
-.fd.full{flex-basis:100%}
-.fd label{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
-.fd input{background:transparent;border:0;border-bottom:1px solid var(--line);padding:9px 2px;
-  color:var(--ink);font-family:'Inter',sans-serif;font-size:13.5px;width:100%;transition:border-color .25s}
-.fd input:focus{outline:none;border-color:var(--acc)}
-.confirm{display:none;text-align:center;max-width:560px;margin:auto}
-.confirm.show{display:block}
-.confirm h2{font-family:'Anton',sans-serif;font-size:clamp(36px,5.2vw,66px);text-transform:uppercase;line-height:.94}
-.confirm h2 .a{color:var(--acc)}
-.confirm p{margin:16px auto 0;color:rgba(255,255,255,.7);font-size:14px;line-height:1.7;max-width:44ch}
-.refno{font-family:'Space Mono',monospace;font-size:12.5px;letter-spacing:.18em;color:var(--acc);margin-top:18px}
-
-.rv{opacity:0;transform:translateY(16px);animation:rvIn .8s cubic-bezier(.2,0,0,1) forwards}
-@keyframes rvIn{to{opacity:1;transform:none}}
-.d1{animation-delay:.08s}.d2{animation-delay:.18s}.d3{animation-delay:.28s}.d4{animation-delay:.4s}.d5{animation-delay:.52s}
-
-@media(max-width:900px){
-  .s1{grid-template-columns:1fr}
-  .col+.col{border-left:0;border-top:1px solid var(--line)}
-  .s3{grid-template-columns:1fr}
-  .bgrid{grid-template-columns:repeat(3,1fr)}
-  .tgrid{grid-template-columns:repeat(3,1fr)}
-  .dock{display:none!important}
-  .specmini{position:static;width:100%;max-width:none;margin:10px 0}
-  .step .nm{display:none}
-  .step{padding:0 12px}
-  .tr .meta{display:none}
-  .scene{padding:60px 16px 46px}
-  .carStage{position:relative;right:0;top:0;width:100%;margin:14px 0 4px}
-  .s0copy{margin-top:6px;max-width:none}
-  .statbar{grid-template-columns:1fr 1fr}
-  .stx:nth-child(3){border-left:0;border-top:1px solid var(--line)}
-  .stx:nth-child(4){border-top:1px solid var(--line)}
-  .s2strip .mid{display:none}
-  .lift{min-height:36vh}
+body.light{
+  --bg:    #ECE6DA;
+  --ink:   #17140F;
+  --dim:   rgba(23,20,15,.5);
+  --faint: rgba(23,20,15,.14);
+  --brass: #8A7040;
 }
-@media(prefers-reduced-motion:reduce){
-  .rv{opacity:1;transform:none;animation:none}
-  .scan,.tk{animation:none}
-  .hot .pin::after{animation:none;opacity:0}
-  .liftrise{animation:none;transform:none}
-  .step::after{transition:none}
+
+*{ margin:0; padding:0; box-sizing:border-box; }
+html,body{
+  width:100vw; height:100vh; height:100dvh; overflow:hidden;
+  background:var(--bg); color:var(--ink);
+  font-family:'Instrument Sans',sans-serif;
+  overscroll-behavior:none; touch-action:none;
+  transition:background 1s var(--ease), color 1s var(--ease);
+  -webkit-font-smoothing:antialiased;
+}
+::selection{ background:var(--brass); color:var(--bg); }
+
+@media (pointer:fine){
+  body{ cursor:none; } a,button,input,li{ cursor:none; }
+}
+
+/* ---------- utilities ---------- */
+.mono{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px; letter-spacing:.18em; text-transform:uppercase;
+  font-weight:400; color:var(--dim);
+}
+.serif-i{ font-family:'Instrument Serif',serif; font-style:italic; }
+
+/* ---------- cursor ---------- */
+#cursor{
+  position:fixed; top:0; left:0; width:8px; height:8px; border-radius:50%;
+  background:var(--ink); pointer-events:none; z-index:10005;
+  transform:translate(-50%,-50%);
+  transition:width .35s var(--ease), height .35s var(--ease), opacity .35s;
+  mix-blend-mode:difference;
+}
+#cursor.hover{ width:40px; height:40px; opacity:.9; }
+@media (pointer:coarse){ #cursor{ display:none; } }
+
+/* ---------- film grain ---------- */
+.grain{
+  position:fixed; inset:-100px; z-index:9990; pointer-events:none; opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation:grainShift 1.2s steps(4) infinite;
+}
+body.light .grain{ opacity:.07; }
+@keyframes grainShift{
+  0%{transform:translate(0,0)} 25%{transform:translate(-30px,20px)}
+  50%{transform:translate(20px,-25px)} 75%{transform:translate(-15px,-10px)} 100%{transform:translate(0,0)}
+}
+
+/* ---------- background videos (bass reactive) ---------- */
+#bgWrap{
+  position:fixed; top:50%; left:50%; width:100%; height:100%;
+  transform:translate(-50%,-50%); z-index:0; will-change:transform;
+}
+.bg-video{
+  position:absolute; top:50%; left:50%;
+  min-width:100%; min-height:100%; width:auto; height:auto;
+  transform:translate(-50%,-50%); object-fit:cover;
+  transition:opacity 1s ease-in-out;
+}
+#bgDark{ filter:brightness(.5) contrast(1.08) saturate(.9); opacity:1; }
+#bgLight{ filter:brightness(.9) contrast(1.05); opacity:0; }
+body.light #bgDark{ opacity:0; }
+body.light #bgLight{ opacity:1; }
+#scrim{
+  position:fixed; inset:0; z-index:1; pointer-events:none;
+  background:radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(12,10,8,.55) 100%);
+  transition:background 1s;
+}
+body.light #scrim{
+  background:radial-gradient(ellipse at 50% 50%, transparent 45%, rgba(236,230,218,.45) 100%);
+}
+
+/* ---------- breathing glow (bass reactive) ---------- */
+#glow{
+  position:fixed; top:50%; left:50%; width:130vmax; height:130vmax;
+  transform:translate(-50%,-50%) scale(1); z-index:1; pointer-events:none;
+  background:radial-gradient(circle at 50% 48%, rgba(185,161,121,.09) 0%, rgba(185,161,121,.03) 30%, transparent 62%);
+  transition:opacity 1s;
+  will-change:transform;
+}
+body.light #glow{
+  background:radial-gradient(circle at 50% 48%, rgba(138,112,64,.10) 0%, rgba(138,112,64,.04) 30%, transparent 62%);
+}
+
+/* ---------- weather canvas ---------- */
+#weatherCanvas{ position:fixed; inset:0; z-index:2; pointer-events:none; opacity:.55; }
+
+/* ============================================================
+   GATE — loader that becomes hold-to-enter
+   ============================================================ */
+#gate{
+  position:fixed; inset:0; z-index:9999; background:var(--bg);
+  display:flex; align-items:center; justify-content:center;
+  transition:opacity 1.4s var(--ease), visibility 1.4s, background 1s;
+}
+#gate.done{ opacity:0; visibility:hidden; }
+
+#gateCount{
+  position:absolute; bottom:26px; right:28px;
+  font-family:'Instrument Serif',serif; font-style:italic;
+  font-size:clamp(60px,12vw,120px); line-height:1; color:var(--ink);
+  opacity:.9; transition:opacity .8s var(--ease), transform .8s var(--ease);
+  font-variant-numeric:tabular-nums;
+}
+#gateCount.hide{ opacity:0; transform:translateY(20px); }
+
+#holdZone{
+  position:relative; width:180px; height:180px;
+  display:flex; align-items:center; justify-content:center;
+  opacity:0; transform:scale(.94); pointer-events:none;
+  transition:opacity 1s var(--ease), transform 1s var(--ease);
+  -webkit-user-select:none; user-select:none;
+}
+#holdZone.ready{ opacity:1; transform:scale(1); pointer-events:auto; }
+#holdZone .name{
+  font-family:'Instrument Serif',serif; font-style:italic;
+  font-size:26px; letter-spacing:.04em; z-index:2;
+}
+#holdRing, #holdFill{ position:absolute; inset:0; border-radius:50%; }
+#holdRing{ border:1px solid var(--faint); transform:scale(.85); transition:transform .4s var(--ease); }
+#holdFill{ border:1.5px solid var(--ink); clip-path:circle(0% at 50% 50%); }
+#holdHint{
+  position:absolute; bottom:-34px; left:50%; transform:translateX(-50%);
+  white-space:nowrap; animation:pulse 2.6s infinite;
+}
+@keyframes pulse{ 0%,100%{opacity:.2} 50%{opacity:.75} }
+
+/* ============================================================
+   STAGE — the page itself
+   ============================================================ */
+#stage{ position:fixed; inset:0; z-index:10; }
+
+/* corner metadata */
+.corner{
+  position:fixed; z-index:20; opacity:0; transition:opacity 1.2s var(--ease) .9s;
+  line-height:1.7;
+}
+body.entered .corner{ opacity:1; }
+.corner.tl{ top:22px; left:26px; }
+.corner.tr{ top:22px; right:26px; text-align:right; }
+.corner.bl{ bottom:22px; left:26px; }
+.corner.br{ bottom:22px; right:26px; text-align:right; }
+.corner .strong{ color:var(--ink); }
+
+#statusDot{
+  display:inline-block; width:6px; height:6px; border-radius:50%;
+  background:#747f8d; margin-right:7px; vertical-align:1px;
+  transition:background .5s;
+}
+
+/* center composition */
+#center{
+  position:absolute; top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  text-align:center; width:min(92vw,1100px);
+  will-change:transform;
+}
+
+#eyebrow{
+  display:flex; align-items:center; justify-content:center; gap:12px;
+  margin-bottom:clamp(14px,3vh,28px);
+  opacity:0; transition:opacity 1s var(--ease) .55s;
+}
+body.entered #eyebrow{ opacity:1; }
+#avatar{
+  width:34px; height:34px; border-radius:50%; object-fit:cover;
+  border:1px solid var(--faint); filter:grayscale(.35);
+  transition:transform .06s linear, filter .6s;
+}
+#avatar:hover{ filter:grayscale(0); }
+
+/* the name — masked letter reveal */
+#name{
+  font-family:'Instrument Serif',serif; font-weight:400;
+  font-size:clamp(88px,21vw,250px); line-height:.92; letter-spacing:-.01em;
+  display:flex; justify-content:center;
+  will-change:transform;
+}
+#name .l{ display:inline-block; overflow:hidden; }
+#name .l span{
+  display:inline-block; transform:translateY(112%);
+  transition:transform 1.1s var(--ease);
+}
+body.entered #name .l span{ transform:translateY(0); }
+#name .l:nth-child(1) span{transition-delay:.10s}
+#name .l:nth-child(2) span{transition-delay:.16s}
+#name .l:nth-child(3) span{transition-delay:.22s}
+#name .l:nth-child(4) span{transition-delay:.28s}
+#name .l:nth-child(5) span{transition-delay:.34s}
+#name .l:nth-child(6) span{transition-delay:.40s}
+#name .l:nth-child(4) span, #name .l:nth-child(5) span{ font-style:italic; color:var(--brass); }
+
+/* rolling words */
+#roll{
+  height:34px; margin-top:clamp(8px,2vh,18px); overflow:hidden;
+  font-family:'Instrument Serif',serif; font-style:italic;
+  font-size:clamp(18px,2.6vw,26px); color:var(--dim);
+  opacity:0; transition:opacity 1s var(--ease) .8s;
+}
+body.entered #roll{ opacity:1; }
+#roll .track{ transition:transform .9s var(--ease); }
+#roll .track div{ height:34px; line-height:34px; }
+
+/* bio from discord custom status */
+#bio{
+  margin-top:10px; font-size:12px; letter-spacing:.04em; color:var(--dim);
+  font-weight:400; opacity:0; transition:opacity 1s var(--ease) 1s;
+}
+body.entered #bio{ opacity:1; }
+
+/* links row */
+#links{
+  margin-top:clamp(26px,5vh,48px); padding-top:18px;
+  border-top:1px solid var(--faint);
+  display:flex; justify-content:center; gap:clamp(28px,6vw,70px);
+  opacity:0; transition:opacity 1.2s var(--ease) 1.1s;
+}
+body.entered #links{ opacity:1; }
+#links a{
+  position:relative; text-decoration:none; color:var(--dim); padding:6px 0;
+  transition:color .4s;
+}
+#links a:hover, #links a:focus-visible{ color:var(--ink); }
+#links a::after{
+  content:""; position:absolute; left:0; bottom:0; height:1px; width:100%;
+  background:var(--ink); transform:scaleX(0); transform-origin:right;
+  transition:transform .5s var(--ease);
+}
+#links a:hover::after, #links a:focus-visible::after{ transform:scaleX(1); transform-origin:left; }
+#links .arr{ display:inline-block; transition:transform .4s var(--ease); }
+#links a:hover .arr{ transform:translate(3px,-3px); }
+a:focus-visible{ outline:1px solid var(--brass); outline-offset:4px; }
+
+/* now playing */
+#spotify{
+  position:fixed; bottom:56px; left:50%; transform:translate(-50%,10px);
+  display:flex; align-items:center; gap:10px; z-index:20;
+  max-width:min(80vw,420px); opacity:0; pointer-events:none;
+  transition:opacity .8s var(--ease), transform .8s var(--ease);
+}
+#spotify.on{ opacity:1; transform:translate(-50%,0); }
+#spArt{
+  width:22px; height:22px; border-radius:50%; object-fit:cover;
+  animation:spin 7s linear infinite; border:1px solid var(--faint);
+}
+@keyframes spin{ to{ transform:rotate(360deg); } }
+#spText{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#spText .song{ color:var(--ink); }
+#spDot{ width:5px; height:5px; border-radius:50%; background:var(--spotify); flex-shrink:0; }
+
+/* audio progress hairline */
+#progress{
+  position:fixed; bottom:0; left:0; height:1px; width:0%;
+  background:var(--dim); z-index:30; transition:background 1s;
+}
+
+/* footer controls (inside bottom-right corner) */
+.ctl{
+  background:none; border:none; color:var(--dim); font:inherit;
+  letter-spacing:inherit; text-transform:inherit; padding:4px 0 4px 14px;
+  transition:color .3s;
+}
+.ctl:hover{ color:var(--ink); }
+
+/* ---------- context menu ---------- */
+#ctxMenu{
+  position:fixed; z-index:10000; min-width:190px; padding:6px;
+  background:color-mix(in srgb, var(--bg) 82%, transparent);
+  border:1px solid var(--faint); border-radius:2px;
+  backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+  opacity:0; transform:scale(.96); pointer-events:none;
+  transition:opacity .18s var(--ease), transform .18s var(--ease);
+  box-shadow:0 24px 60px rgba(0,0,0,.35);
+}
+#ctxMenu.on{ opacity:1; transform:scale(1); pointer-events:auto; }
+#ctxMenu ul{ list-style:none; }
+#ctxMenu li{
+  padding:10px 12px; color:var(--dim); transition:color .2s, background .2s;
+}
+#ctxMenu li:hover{ color:var(--ink); background:var(--faint); }
+
+/* ---------- terminal ---------- */
+#terminal{
+  position:fixed; top:50%; left:50%; transform:translate(-50%,-48%);
+  width:min(86vw,620px); height:min(58vh,420px); z-index:100; padding:22px;
+  background:color-mix(in srgb, var(--bg) 88%, transparent);
+  border:1px solid var(--faint); border-radius:2px;
+  backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+  box-shadow:0 40px 100px rgba(0,0,0,.5);
+  opacity:0; pointer-events:none;
+  transition:opacity .6s var(--ease), transform .6s var(--ease);
+}
+#terminal.on{ opacity:1; pointer-events:auto; transform:translate(-50%,-50%); }
+#termOut{
+  height:calc(100% - 30px); overflow-y:auto;
+  font-family:'JetBrains Mono',monospace; font-size:12px; line-height:1.8;
+  color:var(--dim); letter-spacing:.03em;
+}
+#termOut .k{ color:var(--brass); }
+#termLine{ display:flex; gap:8px; align-items:center; margin-top:6px; }
+#termInput{
+  flex:1; background:none; border:none; outline:none; color:var(--ink);
+  font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.03em;
+}
+body.shattered #center{
+  opacity:0; transform:translate(-50%,-44%) scale(.97); filter:blur(14px);
+  pointer-events:none; transition:all .8s var(--ease);
+}
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion:reduce){
+  .grain{ animation:none; }
+  #name .l span{ transition-duration:.01s; }
+  *{ transition-duration:.01s !important; animation-duration:.01s !important; }
+}
+
+/* ---------- mobile ---------- */
+@media (max-width:600px){
+  .corner.tl,.corner.bl{ left:16px; } .corner.tr,.corner.br{ right:16px; }
+  .corner.tl,.corner.tr{ top:14px; } .corner.bl,.corner.br{ bottom:14px; }
+  .mono{ font-size:8px; letter-spacing:.14em; }
+  #links{ gap:22px; flex-wrap:wrap; }
+  #spotify{ bottom:64px; }
 }
 </style>
 </head>
 <body>
 
-<canvas id="gl"></canvas>
-<div class="fallb" id="fallb"></div>
-<div class="vin"></div>
+<div id="cursor"></div>
 <div class="grain"></div>
-<div class="wiper" id="wiper"><span>VIJFSLUIZE</span></div>
-<div class="cur" id="cur"></div><div class="curd" id="curd"></div>
 
-<!-- ==== SHARED SVG CAR ==== -->
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-<defs>
-  <filter id="rglow" x="-80%" y="-80%" width="260%" height="260%">
-    <feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-  </filter>
-  <pattern id="hzr" width="22" height="22" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
-    <rect width="22" height="22" fill="#101011"/><rect width="11" height="22" fill="#E10600"/>
-  </pattern>
-  <linearGradient id="fadeR" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
-  </linearGradient>
-  <mask id="refm"><rect x="0" y="371" width="1000" height="112" fill="url(#fadeR)"/></mask>
-  <g id="whlG">
-    <circle r="50" fill="#08090B" stroke="#C9CDD3" stroke-width="3"/>
-    <circle r="44" fill="none" stroke="rgba(255,255,255,.28)" stroke-width="2" stroke-dasharray="5 7"/>
-    <rect x="24" y="-10" width="13" height="20" rx="3" fill="#E10600"/>
-    <g class="whl" style="transform-origin:0 0">
-      <circle r="28" fill="#0B0C0F" stroke="#E6E8EC" stroke-width="2"/>
-      <g stroke="#E6E8EC" stroke-width="3" stroke-linecap="round">
-        <line x1="0" y1="-7" x2="0" y2="-24"/>
-        <line x1="6.7" y1="-2.2" x2="22.8" y2="-7.4"/>
-        <line x1="4.1" y1="5.7" x2="14.1" y2="19.4"/>
-        <line x1="-4.1" y1="5.7" x2="-14.1" y2="19.4"/>
-        <line x1="-6.7" y1="-2.2" x2="-22.8" y2="-7.4"/>
-      </g>
-      <circle r="6" fill="#DADDE2"/>
-    </g>
-  </g>
-  <g id="carBody">
-    <path class="cb" fill="var(--carfill)" stroke="var(--carstroke)" stroke-width="2.5" stroke-linejoin="round" d="
-      M 70 340 C 56 332 50 316 54 302 C 58 292 68 288 84 286
-      C 140 274 230 268 320 264
-      C 348 236 382 214 432 206
-      C 492 196 566 196 616 206
-      C 662 216 700 234 736 252
-      C 792 258 852 264 892 274
-      C 908 280 916 292 914 306 C 912 322 906 332 894 338
-      L 830 338 L 812 326
-      A 58 58 0 0 0 692 326
-      L 332 326
-      A 58 58 0 0 0 212 326
-      L 132 326 L 116 340 Z"/>
-    <path fill="#0A0B0D" stroke="rgba(255,255,255,.55)" stroke-width="1" d="M 348 260 C 372 236 400 220 440 214 L 470 214 L 470 258 Z"/>
-    <path fill="#0A0B0D" stroke="rgba(255,255,255,.55)" stroke-width="1" d="M 486 214 L 590 214 C 634 222 668 238 694 252 L 486 256 Z"/>
-    <path fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1" d="M 336 262 L 700 256"/>
-    <path fill="none" stroke="rgba(255,255,255,.3)" stroke-width="1" d="M 480 260 C 482 292 482 312 478 326"/>
-    <rect x="492" y="270" width="26" height="5" rx="2.5" fill="rgba(255,255,255,.6)"/>
-    <path fill="#F2F4F8" d="M 84 286 L 150 278 L 148 288 L 92 296 Z"/>
-    <path stroke="#E10600" stroke-width="2" d="M 92 292 L 144 284"/>
-    <path stroke="rgba(255,255,255,.4)" stroke-width="1.5" d="M 66 312 L 96 310 M 64 320 L 98 318"/>
-    <rect class="tail" x="872" y="277" width="36" height="10" rx="3" fill="#E10600" filter="url(#rglow)"/>
-    <path fill="#DADDE2" d="M 336 244 l 15 -9 l 6 6 l -15 9 z"/>
-    <use href="#whlG" x="272" y="320"/>
-    <use href="#whlG" x="752" y="320"/>
-  </g>
-</defs>
-</svg>
+<div id="bgWrap">
+  <video id="bgDark" class="bg-video" src="bg.mp4" autoplay loop muted playsinline preload="auto"></video>
+  <video id="bgLight" class="bg-video" src="bg-light.mp4" autoplay loop muted playsinline preload="auto"></video>
+</div>
+<div id="scrim"></div>
 
-<!-- HEADER -->
-<header class="top">
-  <div class="brand">
-    <div class="sq"></div>
-    <div>
-      <div class="n">VIJFSLUIZE</div>
-      <div class="t" data-i="tag">Autogarage · Spijkenisse</div>
-    </div>
-  </div>
-  <nav class="stepper" id="stepper" aria-label="Stappen"></nav>
-  <div class="tr">
-    <div class="meta"><span id="clk">--:--</span><span>·</span><i></i><span data-i="open">Open</span></div>
-    <div class="lang"><button id="nlB" class="on">NL</button><button id="enB">EN</button></div>
-  </div>
-</header>
+<div id="glow"></div>
+<canvas id="weatherCanvas"></canvas>
 
-<!-- SCENE 0 -->
-<section class="scene on" data-s="0">
-  <div class="ghost"><span data-i="g0">GARAGE</span></div>
-  <div class="s0">
-    <div class="s0meta">
-      <span data-i="m0a">AUTOGARAGE — SPIJKENISSE, NL</span>
-      <span>51.845°N / 4.329°E</span>
-    </div>
-    <div class="carStage" id="carHold">
-      <svg viewBox="0 0 1000 420">
-        <line x1="0" y1="371" x2="1000" y2="371" stroke="rgba(255,255,255,.16)" stroke-width="1.5"/>
-        <g opacity=".05" stroke="#fff"><line x1="120" y1="371" x2="80" y2="418"/><line x1="330" y1="371" x2="310" y2="418"/><line x1="540" y1="371" x2="540" y2="418"/><line x1="750" y1="371" x2="770" y2="418"/><line x1="930" y1="371" x2="970" y2="418"/></g>
-        <g class="drive" id="drive">
-          <g transform="translate(0,742) scale(1,-1)" opacity=".09" mask="url(#refm)"><use href="#carBody"/></g>
-          <use href="#carBody"/>
-        </g>
-        <g class="dims" font-family="'Space Mono',monospace" font-size="11" fill="rgba(255,255,255,.5)" stroke="rgba(255,255,255,.35)">
-          <line x1="272" y1="382" x2="272" y2="396"/><line x1="752" y1="382" x2="752" y2="396"/><line x1="272" y1="390" x2="752" y2="390"/>
-          <text x="512" y="384" text-anchor="middle" stroke="none" data-i="dimW">WIELBASIS 2.94 M</text>
-          <circle cx="190" cy="300" r="3.5" fill="#E10600" stroke="none"/>
-          <line x1="190" y1="300" x2="262" y2="150"/>
-          <text x="268" y="142" stroke="none" data-i="dimM">SERVICEPUNT 01 · MOTOR</text>
-          <circle cx="752" cy="320" r="3.5" fill="#E10600" stroke="none"/>
-          <line x1="752" y1="320" x2="846" y2="152"/>
-          <text x="850" y="144" text-anchor="end" stroke="none" data-i="dimR">SERVICEPUNT 02 · REMMEN</text>
-        </g>
-      </svg>
-      <div class="scan"></div>
-    </div>
-    <div class="s0copy">
-      <div class="eyebrow rv d1" data-i="e0">Autogarage Vijfsluize — Spijkenisse</div>
-      <h1 class="h0 rv d2" style="margin-top:14px"><span data-i="h0a">Elke auto</span><br><span class="a" data-i="h0b">in topvorm.</span></h1>
-      <div class="rule rv d3"></div>
-      <div class="s0row rv d3">
-        <p data-i="p0">Van APK tot volledige revisie. Kies je auto, wijs aan wat aandacht nodig heeft en ontvang direct je werkorder — zwart op wit.</p>
-        <div class="ctas rv d4">
-          <button class="btn mag" id="start">
-            <span data-i="c0">Start je werkorder</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          </button>
-          <button class="btn g mag" id="startApk"><span data-i="c0b">Direct APK plannen</span></button>
-        </div>
-      </div>
-    </div>
-    <div class="statbar rv d5">
-      <div class="stx"><div class="v"><span id="st1">0</span><b>+</b></div><div class="k" data-i="s1k">Jaar vakmanschap</div></div>
-      <div class="stx"><div class="v" id="st2w"><span id="st2">0</span></div><div class="k" data-i="s2k">Klantbeoordeling</div></div>
-      <div class="stx"><div class="v"><span id="st3">0</span><b>+</b></div><div class="k" data-i="s3k">Auto's per jaar</div></div>
-      <div class="stx"><div class="st"><i></i><span data-i="lift0">Hefbrug 01 — vrij</span></div><div class="k" data-i="s4k">Live status</div></div>
-    </div>
+<!-- GATE -->
+<div id="gate">
+  <div id="gateCount">00</div>
+  <div id="holdZone">
+    <div id="holdRing"></div>
+    <div id="holdFill"></div>
+    <div class="name">lowkey</div>
+    <div id="holdHint" class="mono">hold to enter</div>
   </div>
-</section>
+</div>
 
-<!-- SCENE 1 -->
-<section class="scene" data-s="1">
-  <div class="ghost"><span data-i="g1">CONFIG</span></div>
-  <div class="s1">
-    <div class="col">
-      <div class="strip"><span><span class="ix">01 /</span> <b data-i="h1">Jouw auto</b></span><span data-i="e1">Merk & type</span></div>
-      <div class="bd">
-        <div class="lb" data-i="lMerk">Merk</div>
-        <div class="bgrid" id="brands"></div>
-        <div class="lb" data-i="lType">Carrosserie</div>
-        <div class="tgrid" id="types"></div>
-        <div class="rowx">
-          <div>
-            <div class="lb" style="margin-top:0" data-i="lPlate">Kenteken</div>
-            <div class="plate"><span class="eu"><i>✦ ✦ ✦</i>NL</span><input id="plate" maxlength="8" placeholder="XX-999-X" autocomplete="off"></div>
-          </div>
-          <div>
-            <div class="lb" style="margin-top:0" data-i="lColor">Kleur</div>
-            <div class="sw" id="sw"></div>
-          </div>
-        </div>
-      </div>
-      <div class="foot">
-        <button class="btn mag" id="load" disabled>
-          <span data-i="cLoad">Laad mijn auto</span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v10m0 0l-4-4m4 4l4-4M4 17h16v4H4z"/></svg>
-        </button>
-        <span class="tagline" data-i="apiNote">modellen & foto’s via API</span>
-      </div>
-    </div>
-    <div class="col">
-      <div class="strip"><span><span class="ix">02 /</span> <b data-i="e1b">Voertuigdossier</b></span><span id="liveTag" class="mono"></span></div>
-      <div class="bd">
-        <div class="dosEmpty" id="dosEmpty" data-i="dosWait">— wacht op invoer —</div>
-        <div class="term" id="term" hidden></div>
-        <div class="tbar" id="tbarW" hidden><i id="tbar"></i></div>
-        <div class="models" id="models"></div>
-        <div class="spec" id="spec" hidden>
-          <div id="specRows"></div>
-          <div style="margin-top:20px">
-            <button class="btn mag" id="toLift">
-              <span data-i="cLift">Op de hefbrug</span>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
+<!-- STAGE -->
+<div id="stage">
 
-<!-- SCENE 2 -->
-<section class="scene" data-s="2">
-  <div class="ghost"><span data-i="g2">HEFBRUG</span></div>
-  <div class="s2">
-    <div class="s2strip">
-      <span><span class="ix">03 /</span> <b data-i="g2b">De hefbrug</b> <span id="s2car" style="letter-spacing:.1em"></span></span>
-      <span class="mid" data-i="e2">Klik aan wat aandacht nodig heeft — of kies een service</span>
-      <span><span data-i="pts">Punten</span> <b id="s2cnt">0</b></span>
-    </div>
-    <div class="lift" id="liftBox">
-      <svg viewBox="0 0 1000 470" id="liftSvg">
-        <line x1="0" y1="412" x2="1000" y2="412" stroke="rgba(255,255,255,.16)" stroke-width="1.5"/>
-        <rect x="132" y="46" width="30" height="366" fill="url(#hzr)" stroke="rgba(255,255,255,.3)" stroke-width="1"/>
-        <rect x="124" y="38" width="46" height="12" rx="3" fill="#17181A" stroke="rgba(255,255,255,.3)"/>
-        <rect x="838" y="46" width="30" height="366" fill="url(#hzr)" stroke="rgba(255,255,255,.3)" stroke-width="1"/>
-        <rect x="830" y="38" width="46" height="12" rx="3" fill="#17181A" stroke="rgba(255,255,255,.3)"/>
-        <g class="liftrise">
-          <rect x="162" y="262" width="146" height="12" rx="4" fill="#1B1D20" stroke="rgba(255,255,255,.35)"/>
-          <rect x="286" y="254" width="30" height="8" rx="3" fill="#E10600"/>
-          <rect x="692" y="262" width="146" height="12" rx="4" fill="#1B1D20" stroke="rgba(255,255,255,.35)"/>
-          <rect x="684" y="254" width="30" height="8" rx="3" fill="#E10600"/>
-          <g transform="translate(0,-64)"><use href="#carBody"/></g>
-        </g>
-        <g font-family="'Space Mono',monospace" font-size="10" fill="rgba(255,255,255,.4)">
-          <text x="147" y="440" text-anchor="middle">01</text><text x="853" y="440" text-anchor="middle">02</text>
-        </g>
-      </svg>
-      <div id="hots"></div>
-      <div class="specmini" id="specmini" hidden>
-        <div class="hz"></div>
-        <div class="in">
-          <div class="mn" id="smName">—</div>
-          <div class="ms" id="smSub"></div>
-          <div class="pl2" id="smPlate" hidden><i>NL</i><b id="smPlateTxt"></b></div>
-        </div>
-      </div>
-    </div>
-    <div class="chips" id="chips"></div>
-    <div class="s2foot">
-      <button class="btn mag" id="toWO">
-        <span data-i="cWO">Naar werkorder</span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-      </button>
-    </div>
+  <div class="corner tl mono">
+    <span class="strong">emal.dev</span><br>personal index
   </div>
-</section>
+  <div class="corner tr mono" id="localInfo">
+    eindhoven, nl<br>--:--
+  </div>
+  <div class="corner bl mono">
+    51.44°N — 5.47°E<br><span id="views">····</span> visits
+  </div>
+  <div class="corner br mono">
+    <span><span id="statusDot"></span><span id="statusText">offline</span></span><br>
+    <button class="ctl hover-t" id="themeBtn" onclick="toggleTheme()">light</button>
+    <button class="ctl hover-t" id="musicBtn" onclick="toggleMusic()">pause</button>
+  </div>
 
-<!-- SCENE 3 -->
-<section class="scene" data-s="3">
-  <div class="ghost"><span data-i="g3">WERKORDER</span></div>
-  <div class="s3" id="s3grid">
-    <div class="card tick">
-      <div class="hz"></div>
-      <div class="in">
-        <div class="thead"><span data-i="wkT">Werkorder</span><span>VIJFSLUIZE · <b id="wkDate"></b></span></div>
-        <div class="veh" id="wkVeh">—</div>
-        <div class="vs" id="wkVs"></div>
-        <ul class="wl" id="wkLines"></ul>
-        <div class="ai">
-          <button class="aibtn mag" id="aiBtn">
-            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg>
-            <span id="aiBtnT" data-i="aiB">AI Monteur-analyse</span>
-          </button>
-          <div class="aiout" id="aiOut">
-            <div class="gauge">
-              <svg viewBox="0 0 120 74">
-                <path d="M12 66 A48 48 0 0 1 108 66" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="8" stroke-linecap="round"/>
-                <path id="gArc" d="M12 66 A48 48 0 0 1 108 66" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round"
-                  stroke-dasharray="151" stroke-dashoffset="151" style="transition:stroke-dashoffset 1s cubic-bezier(.2,0,.2,1),stroke .6s"/>
-                <g id="gNdl" style="transform-origin:60px 66px;transition:transform 1s cubic-bezier(.2,0,.2,1);transform:rotate(-90deg)">
-                  <line x1="60" y1="66" x2="60" y2="30" stroke="#F2F2F0" stroke-width="2.4" stroke-linecap="round"/>
-                </g>
-                <circle cx="60" cy="66" r="4" fill="#F2F2F0"/>
-              </svg>
-              <div class="gl" data-i="gUrg">Urgentie</div>
-              <div class="gv" id="gVal">—</div>
-            </div>
-            <div class="aitxt">
-              <div class="mrow">
-                <div class="mm"><div class="k" data-i="gTime">Geschatte tijd</div><div class="v" id="aiTime">—</div></div>
-                <div class="mm"><div class="k" data-i="gPrice">Richtprijs</div><div class="v" id="aiPrice">—</div></div>
-              </div>
-              <p id="aiTxt"></p>
-              <div class="aitag" id="aiTag"></div>
-            </div>
-          </div>
-        </div>
-        <div class="perf"></div>
-        <div class="bar"></div>
-        <div class="wono" id="wono">WO-#####</div>
-      </div>
+  <div id="center">
+    <div id="eyebrow">
+      <img id="avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="lowkey">
+      <span class="mono">emal — netherlands</span>
     </div>
-    <div class="card">
-      <div class="hz"></div>
-      <div class="in">
-        <div class="bkh" data-i="bkH">Plan je afspraak</div>
-        <div class="seg" id="seg">
-          <button class="on" data-m="date" data-i="segD">Datum &amp; tijd</button>
-          <button data-m="call" data-i="segC">Bel me terug</button>
-        </div>
-        <div id="dateF" class="fr">
-          <div class="fd"><label data-i="lDate">Datum</label><input type="date" id="bDate"></div>
-          <div class="fd"><label data-i="lTime">Tijd</label><input type="time" id="bTime" value="09:00"></div>
-        </div>
-        <div class="fr"><div class="fd full"><label data-i="lName">Naam</label><input id="bName" autocomplete="name"></div></div>
-        <div class="fr">
-          <div class="fd"><label data-i="lPhone">Telefoon</label><input id="bPhone" placeholder="06 …"></div>
-          <div class="fd"><label data-i="lMail">E-mail</label><input id="bMail" placeholder="naam@mail.nl"></div>
-        </div>
-        <button class="btn mag" style="width:100%;justify-content:center;margin-top:8px" id="send">
-          <span data-i="cSend">Verstuur werkorder</span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-        </button>
-      </div>
-    </div>
-  </div>
-  <div class="confirm" id="confirm">
-    <div class="eyebrow" style="justify-content:center" data-i="okE">Verstuurd</div>
-    <h2 style="margin-top:14px"><span data-i="okH1">Je werkorder</span><br><span class="a" data-i="okH2">is onderweg.</span></h2>
-    <p data-i="okP">We nemen zo snel mogelijk contact met je op om de afspraak te bevestigen.</p>
-    <div class="refno" id="refno"></div>
-    <div style="margin-top:30px"><button class="btn g mag" id="again"><span data-i="okA">Nieuwe aanvraag</span></button></div>
-  </div>
-</section>
 
-<div class="ticker"><div class="tk" id="tk"></div></div>
-<div class="pop" id="pop"><h4 id="popT"></h4><div id="popO"></div></div>
+    <h1 id="name" aria-label="lowkey">
+      <span class="l"><span>l</span></span><span class="l"><span>o</span></span><span class="l"><span>w</span></span><span class="l"><span>k</span></span><span class="l"><span>e</span></span><span class="l"><span>y</span></span>
+    </h1>
+
+    <div id="roll" aria-hidden="true"><div class="track">
+      <div>stay lowkey</div>
+      <div>calm energy</div>
+      <div>radiant mind</div>
+      <div>stay lowkey</div>
+    </div></div>
+
+    <div id="bio">“staying lowkey.”</div>
+
+    <nav id="links" class="mono">
+      <a class="hover-t" href="https://tracker.gg/valorant/profile/riot/4owkey%23prx/overview" target="_blank" rel="noopener">valorant — radiant <span class="arr">↗</span></a>
+      <a class="hover-t" href="https://discord.com/users/285468327135019019" target="_blank" rel="noopener">discord — wzv <span class="arr">↗</span></a>
+    </nav>
+  </div>
+
+  <div id="spotify" class="mono">
+    <span id="spDot"></span>
+    <img id="spArt" src="" alt="">
+    <span id="spText">now playing — <span class="song" id="spSong"></span> · <span id="spArtist"></span></span>
+  </div>
+
+  <div id="progress"></div>
+</div>
+
+<!-- CONTEXT MENU -->
+<div id="ctxMenu" class="mono">
+  <ul>
+    <li class="hover-t" id="ctxCopy" onclick="copyDiscordId()">copy discord id</li>
+    <li class="hover-t" id="ctxTheme" onclick="toggleTheme()">switch to light</li>
+    <li class="hover-t" id="ctxAudio" onclick="toggleMusic()">pause audio</li>
+  </ul>
+</div>
+
+<!-- TERMINAL -->
+<div id="terminal">
+  <div id="termOut">system override — welcome, <span class="k">lowkey</span>.<br>type <span class="k">help</span> for commands.</div>
+  <div id="termLine"><span class="mono" style="color:var(--brass)">></span><input id="termInput" autocomplete="off" spellcheck="false"></div>
+</div>
+
+<audio id="music" src="music.mp3" loop crossorigin="anonymous"></audio>
 
 <script>
-/* ============ HELPERS ============ */
-const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+/* ================= state ================= */
+const $ = id => document.getElementById(id);
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let entered=false, isPlaying=true, isLight=false;
 
-/* ============ I18N ============ */
-const I18N={
-nl:{tag:'Autogarage · Spijkenisse',open:'Open',
- g0:'GARAGE',m0a:'AUTOGARAGE — SPIJKENISSE, NL',e0:'Autogarage Vijfsluize — Spijkenisse',
- h0a:'Elke auto',h0b:'in topvorm.',
- p0:'Van APK tot volledige revisie. Kies je auto, wijs aan wat aandacht nodig heeft en ontvang direct je werkorder — zwart op wit.',
- c0:'Start je werkorder',c0b:'Direct APK plannen',
- s1k:'Jaar vakmanschap',s2k:'Klantbeoordeling',s3k:"Auto's per jaar",s4k:'Live status',
- lift0:'Hefbrug 01 — vrij',dimW:'WIELBASIS 2.94 M',dimM:'SERVICEPUNT 01 · MOTOR',dimR:'SERVICEPUNT 02 · REMMEN',
- g1:'CONFIG',e1:'Merk & type',h1:'Jouw auto',lMerk:'Merk',lType:'Carrosserie',
- lPlate:'Kenteken',lColor:'Kleur',cLoad:'Laad mijn auto',apiNote:'modellen & foto’s via API',
- e1b:'Voertuigdossier',dosWait:'— wacht op invoer —',cLift:'Op de hefbrug',
- g2:'HEFBRUG',g2b:'De hefbrug',pts:'Punten',e2:'Klik aan wat aandacht nodig heeft — of kies een service',cWO:'Naar werkorder',
- g3:'WERKORDER',wkT:'Werkorder',aiB:'AI Monteur-analyse',aiThink:'Monteur analyseert…',
- gUrg:'Urgentie',gTime:'Geschatte tijd',gPrice:'Richtprijs',
- bkH:'Plan je afspraak',segD:'Datum & tijd',segC:'Bel me terug',lDate:'Datum',lTime:'Tijd',
- lName:'Naam',lPhone:'Telefoon',lMail:'E-mail',cSend:'Verstuur werkorder',
- okE:'Verstuurd',okH1:'Je werkorder',okH2:'is onderweg.',okP:'We nemen zo snel mogelijk contact met je op om de afspraak te bevestigen.',okA:'Nieuwe aanvraag',
- scenes:['SHOWROOM','CONFIGURATIE','DE HEFBRUG','WERKORDER'],
- term:['Verbinden met Vijfsluize AI','Modellen ophalen','Specificaties samenstellen'],
- specK:{model:'Model',jaren:'Bouwjaren',motor:'Motor',pk:'Vermogen',top:'Topsnelheid',gewicht:'Gewicht'},
- live:'● live AI',offline:'○ lokale database',hrs:'u',
- emptyWk:'Geen onderdelen geselecteerd.',dockT:'Werkorder',dockE:'Nog niets geselecteerd.',
- issueQ:'Wat is er aan de hand?',urg:{low:'Laag',mid:'Gemiddeld',high:'Hoog'},
- aiTagL:'● live AI-monteur',aiTagO:'○ offline-inschatting',ref:'Referentie'},
-en:{tag:'Auto garage · Spijkenisse',open:'Open',
- g0:'GARAGE',m0a:'AUTO GARAGE — SPIJKENISSE, NL',e0:'Autogarage Vijfsluize — Spijkenisse',
- h0a:'Every car',h0b:'in top form.',
- p0:'From MOT to full overhaul. Pick your car, point at what needs attention and get your work order instantly — in black and white.',
- c0:'Start your work order',c0b:'Book MOT directly',
- s1k:'Years of craft',s2k:'Customer rating',s3k:'Cars per year',s4k:'Live status',
- lift0:'Lift 01 — free',dimW:'WHEELBASE 2.94 M',dimM:'SERVICE POINT 01 · ENGINE',dimR:'SERVICE POINT 02 · BRAKES',
- g1:'CONFIG',e1:'Brand & type',h1:'Your car',lMerk:'Brand',lType:'Body type',
- lPlate:'Plate',lColor:'Colour',cLoad:'Load my car',apiNote:'models & photos via API',
- e1b:'Vehicle dossier',dosWait:'— waiting for input —',cLift:'Onto the lift',
- g2:'THE LIFT',g2b:'The lift',pts:'Items',e2:'Click what needs attention — or pick a service',cWO:'To work order',
- g3:'WORK ORDER',wkT:'Work order',aiB:'AI mechanic analysis',aiThink:'Mechanic analysing…',
- gUrg:'Urgency',gTime:'Est. time',gPrice:'Est. price',
- bkH:'Book your visit',segD:'Date & time',segC:'Call me back',lDate:'Date',lTime:'Time',
- lName:'Name',lPhone:'Phone',lMail:'E-mail',cSend:'Send work order',
- okE:'Sent',okH1:'Your work order',okH2:'is on its way.',okP:'We will contact you as soon as possible to confirm the appointment.',okA:'New request',
- scenes:['SHOWROOM','CONFIGURATION','THE LIFT','WORK ORDER'],
- term:['Connecting to Vijfsluize AI','Fetching models','Compiling specifications'],
- specK:{model:'Model',jaren:'Years',motor:'Engine',pk:'Power',top:'Top speed',gewicht:'Weight'},
- live:'● live AI',offline:'○ local database',hrs:'h',
- emptyWk:'No items selected.',dockT:'Work order',dockE:'Nothing selected yet.',
- issueQ:'What’s going on?',urg:{low:'Low',mid:'Medium',high:'High'},
- aiTagL:'● live AI mechanic',aiTagO:'○ offline estimate',ref:'Reference'}
-};
-let lang='nl'; const T=()=>I18N[lang];
-
-/* ============ DATA ============ */
-const BRANDS=['Volkswagen','Opel','Renault','Peugeot','Ford','Toyota','BMW','Mercedes-Benz','Audi','Volvo','Kia','Tesla'];
-const TYPES=[
- {id:'hatch',nl:'Hatchback',en:'Hatchback',d:'M4 22h52M6 20l3-7c.4-1 1.3-1.6 2.3-1.6h10l9 8.6h17c2 0 3.7 1.6 3.7 3.7M16 24a3 3 0 100-6 3 3 0 000 6M44 24a3 3 0 100-6 3 3 0 000 6'},
- {id:'sedan',nl:'Sedan',en:'Sedan',d:'M6 21h46M6 21l3-6c.4-.9 1.3-1.5 2.3-1.5h27c1 0 2 .5 2.6 1.3l5 6.2h2.8c1.3 0 2.3 1 2.3 2.3M17 24a3 3 0 100-6 3 3 0 000 6M45 24a3 3 0 100-6 3 3 0 000 6'},
- {id:'suv',nl:'SUV',en:'SUV',d:'M5 21h46M5 21V13c0-1 .8-1.8 1.8-1.8h36c1 0 2 .4 2.7 1.2l5 5.6h2c1 0 1.7.8 1.7 1.8M5 15h40M16 25a3.2 3.2 0 100-6.4 3.2 3.2 0 000 6.4M45 25a3.2 3.2 0 100-6.4 3.2 3.2 0 000 6.4'},
- {id:'wagon',nl:'Station',en:'Estate',d:'M5 21h47M5 21v-7.5c0-1 .8-1.7 1.8-1.7h40c1.4 0 2.6.7 3.3 1.9l1.4 2.5c.3.5.5 1.1.5 1.7M16 24a3 3 0 100-6 3 3 0 000 6M45 24a3 3 0 100-6 3 3 0 000 6'},
- {id:'van',nl:'Bus',en:'Van',d:'M4 21h46M4 21V12c0-.9.7-1.6 1.6-1.6h30c.9 0 1.6.7 1.6 1.6v9M37 21V14c0-.6.5-1 1-1h6.5c.5 0 1 .3 1.3.7l4 5.6c.2.3.4.7.4 1M15 24a3 3 0 100-6 3 3 0 000 6M44 24a3 3 0 100-6 3 3 0 000 6'},
- {id:'ev',nl:'EV',en:'EV',d:'M6 21h46M6 21l3-6c.4-.9 1.3-1.5 2.3-1.5h26c1 0 2 .5 2.6 1.3l5 6.2h2.8c1.3 0 2.3 1 2.3 2.3M17 24a3 3 0 100-6 3 3 0 000 6M45 24a3 3 0 100-6 3 3 0 000 6M30 9l-3 4h3l-3 4'}
-];
-const COLORS=[
- {n:'Zwart',e:'Black',h:'#101114',fill:'#101114',stroke:'#E8EAEE'},
- {n:'Grijs',e:'Grey',h:'#7A7F87',fill:'#585D64',stroke:'#F0F2F5'},
- {n:'Wit',e:'White',h:'#E9EBEE',fill:'#E9EBEE',stroke:'#101114'},
- {n:'Rood',e:'Red',h:'#C40D06',fill:'#A80B05',stroke:'#F4F4F5'}
-];
-const SERVICES=[
- {id:'apk',nl:'APK-keuring',en:'Inspection',h:.5,pr:[50,60]},
- {id:'onderhoud',nl:'Onderhoud',en:'Maintenance',h:1.5,pr:[120,240]},
- {id:'reparatie',nl:'Reparatie',en:'Repair',h:2,pr:[150,450]},
- {id:'banden',nl:'Banden & uitlijnen',en:'Tyres & alignment',h:1,pr:[80,320]},
- {id:'airco',nl:'Airco-service',en:'Air-con service',h:1,pr:[70,160]},
- {id:'diagnose',nl:'Diagnose',en:'Diagnostics',h:1,pr:[45,90]}
-];
-const PARTS=[
- {id:'motor',x:17,y:50,nl:'Motor',en:'Engine',h:2.5,pr:[200,800],
-  iss:{nl:['Start niet / slecht','Trilt of pingelt','Motorlampje brandt','Verliest olie'],en:['Won’t start','Vibrates / knocks','Engine light on','Losing oil']}},
- {id:'body',x:52,y:29,nl:'Carrosserie',en:'Bodywork',h:3,pr:[150,900],
-  iss:{nl:['Schade / deuk','Roest','Overspuiten'],en:['Damage / dent','Rust','Respray']}},
- {id:'doors',x:45,y:52,nl:'Portieren & elektra',en:'Doors & electrics',h:1.5,pr:[90,400],
-  iss:{nl:['Slot defect','Raam werkt niet','Bedradingsfout'],en:['Lock fault','Window fault','Wiring fault']}},
- {id:'interior',x:56,y:38,nl:'Interieur & airco',en:'Interior & A-C',h:1.2,pr:[70,300],
-  iss:{nl:['Airco koelt niet','Vreemde geur','Dashboard-storing'],en:['A-C not cooling','Strange smell','Dashboard fault']}},
- {id:'wheels',x:27,y:56,nl:'Wielen & banden',en:'Wheels & tyres',h:1,pr:[80,360],
-  iss:{nl:['Profiel versleten','Balanceren / uitlijnen','Verliest lucht'],en:['Worn tread','Balance / align','Losing air']}},
- {id:'chassis',x:64,y:60,nl:'Onderstel & ophanging',en:'Chassis & suspension',h:2,pr:[140,600],
-  iss:{nl:['Geluid bij hobbels','Stuurt schuin','Schokbreker lek'],en:['Noise over bumps','Pulls to side','Leaking shock']}},
- {id:'rear',x:87,y:50,nl:'Uitlaat & achterzijde',en:'Exhaust & rear',h:1.3,pr:[90,420],
-  iss:{nl:['Roffelt / lawaai','Lekt','Verlichting defect'],en:['Loud / rattling','Leaking','Light fault']}}
-];
-const KNOWN={
- 'Volkswagen':{hatch:'Golf',sedan:'Passat',suv:'Tiguan',wagon:'Passat Variant',van:'Transporter',ev:'ID.3'},
- 'Opel':{hatch:'Corsa',sedan:'Insignia',suv:'Mokka',wagon:'Astra Sports Tourer',van:'Vivaro',ev:'Corsa Electric'},
- 'Renault':{hatch:'Clio',sedan:'Talisman',suv:'Captur',wagon:'Mégane Estate',van:'Trafic',ev:'Mégane E-Tech'},
- 'Peugeot':{hatch:'208',sedan:'508',suv:'3008',wagon:'308 SW',van:'Expert',ev:'e-208'},
- 'Ford':{hatch:'Focus',sedan:'Mondeo',suv:'Kuga',wagon:'Focus Wagon',van:'Transit',ev:'Mustang Mach-E'},
- 'Toyota':{hatch:'Yaris',sedan:'Corolla Sedan',suv:'RAV4',wagon:'Corolla Touring',van:'Proace',ev:'bZ4X'},
- 'BMW':{hatch:'1 Serie',sedan:'3 Serie',suv:'X3',wagon:'3 Serie Touring',van:'2 Serie Tourer',ev:'i4'},
- 'Mercedes-Benz':{hatch:'A-Klasse',sedan:'C-Klasse',suv:'GLC',wagon:'C-Klasse Estate',van:'Vito',ev:'EQA'},
- 'Audi':{hatch:'A3 Sportback',sedan:'A4',suv:'Q3',wagon:'A4 Avant',van:'Q7',ev:'Q4 e-tron'},
- 'Volvo':{hatch:'V40',sedan:'S60',suv:'XC60',wagon:'V60',van:'XC90',ev:'EX30'},
- 'Kia':{hatch:'Picanto',sedan:'Stinger',suv:'Sportage',wagon:'Ceed SW',van:'Carnival',ev:'EV6'},
- 'Tesla':{hatch:'Model 3',sedan:'Model S',suv:'Model Y',wagon:'Model S',van:'Model X',ev:'Model 3'}
-};
-
-/* ============ STATE ============ */
-const S={scene:0,max:0,brand:null,type:null,color:COLORS[0],plate:'',models:[],car:null,live:false,items:[],mode:'date',booked:null};
-
-/* ============ CAR IMAGE API (imagin.studio render CDN) ============
-   Plain <img> tags — no fetch/CORS. SWAP POINT: replace the demo
-   customer key with your own imagin.studio key for production.   */
-const IMG_BASE=window.__IMAGIN_BASE||'https://cdn.imagin.studio/getImage';
-const IMG_CUSTOMER='hrjavascript-mastery';
-const PAINTS={Zwart:'black',Grijs:'grey',Wit:'white',Rood:'red'};
-function famFrom(model){
-  let m=(model||'').toLowerCase().trim()
-    .replace(/klasse/g,'class').replace(/\bserie\b/g,'series');
-  const brand=(S.brand||'').toLowerCase();
-  if(brand&&m.startsWith(brand))m=m.slice(brand.length).trim();
-  const t=m.split(/\s+/).filter(Boolean);
-  let fam=t[0]||'';
-  if(t[1]&&/^(series|class)$/.test(t[1]))fam=t[0]+'-'+t[1];
-  else if(t[0]==='model'&&t[1])fam='model-'+t[1];
-  return fam.replace(/[^a-z0-9.\-]/g,'');
-}
-function imaginUrl(model,angle){
-  const make=(S.brand||'').toLowerCase().replace('mercedes-benz','mercedes');
-  const q=new URLSearchParams({customer:IMG_CUSTOMER,zoomType:'fullscreen',
-    make,modelFamily:famFrom(model),angle:String(angle||'23'),
-    paintDescription:PAINTS[S.color.n]||'black'});
-  return IMG_BASE+'?'+q.toString();
-}
-function carImgEl(model,angle,cls){
-  const w=document.createElement('span');if(cls)w.className=cls;
-  const im=new Image();im.alt=model||'auto';
-  im.onerror=()=>{w.style.display='none';};
-  im.src=imaginUrl(model,angle);
-  w.appendChild(im);
-  requestAnimationFrame(()=>{if(im.complete&&!im.naturalWidth)w.style.display='none';});
-  return w;
-}
-function refreshPaint(){
-  if(!S.car)return;
-  const si=document.querySelector('#specImg img');if(si)si.src=imaginUrl(S.car.model,'23');
-  const mi=document.querySelector('#smImg img');if(mi)mi.src=imaginUrl(S.car.model,'01');
-}
-
-/* ============ SHADER (carbon black + rare red embers) ============ */
-const VERT='attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
-const FRAG=`precision highp float;
-uniform float u_time;uniform vec2 u_res;uniform vec2 u_mouse;
-float hash(vec2 p){p=fract(p*vec2(123.34,345.45));p+=dot(p,p+34.345);return fract(p.x*p.y);}
-float noise(vec2 p){vec2 i=floor(p),f=fract(p);float a=hash(i),b=hash(i+vec2(1,0)),c=hash(i+vec2(0,1)),d=hash(i+vec2(1,1));vec2 u=f*f*(3.-2.*f);return mix(mix(a,b,u.x),mix(c,d,u.x),u.y);}
-float fbm(vec2 p){float v=0.,a=.5;mat2 m=mat2(1.6,1.2,-1.2,1.6);for(int i=0;i<5;i++){v+=a*noise(p);p=m*p;a*=.5;}return v;}
-void main(){vec2 res=u_res;vec2 uv=(gl_FragCoord.xy-.5*res)/res.y;float t=u_time*.028;uv+=u_mouse*.03;
-vec2 q=vec2(fbm(uv*1.15+vec2(0,t)),fbm(uv*1.15+vec2(5.2,1.3)-t));
-vec2 r=vec2(fbm(uv*1.15+3.2*q+vec2(1.7,9.2)+t),fbm(uv*1.15+3.2*q+vec2(8.3,2.8)-t*.85));
-float f=fbm(uv*1.15+3.2*r);float metal=pow(clamp(f*1.05,0.,1.),2.4);
-vec3 col=mix(vec3(.004,.004,.005),vec3(.145,.15,.165),metal);
-float vein=pow(clamp(length(r)-.55,0.,1.),2.6);
-col+=vec3(.85,.02,0.)*vein*1.05;
-vec2 vu=gl_FragCoord.xy/res;
-col+=vec3(.4,.008,0.)*pow(clamp(1.-vu.y,0.,1.),3.2)*.16;
-col*=smoothstep(1.28,.22,length(vu-.5));
-col+=(hash(gl_FragCoord.xy+u_time)-.5)*.025;col=col/(col+.7);col=pow(col,vec3(.9));
-gl_FragColor=vec4(col,1.);}`;
-const cv=$('#gl');let gl,uT,uR,uM,glPaused=false,lastDraw=0;
-const mouse={x:0,y:0,tx:0,ty:0};
-(function(){
-  gl=cv.getContext('webgl')||cv.getContext('experimental-webgl');
-  if(!gl){$('#fallb').style.display='block';return;}
-  const mk=(t,s)=>{const sh=gl.createShader(t);gl.shaderSource(sh,s);gl.compileShader(sh);
-    if(!gl.getShaderParameter(sh,gl.COMPILE_STATUS)){console.error(gl.getShaderInfoLog(sh));return null;}return sh;};
-  const vs=mk(gl.VERTEX_SHADER,VERT),fs=mk(gl.FRAGMENT_SHADER,FRAG);
-  if(!vs||!fs){$('#fallb').style.display='block';gl=null;return;}
-  const pr=gl.createProgram();gl.attachShader(pr,vs);gl.attachShader(pr,fs);gl.linkProgram(pr);gl.useProgram(pr);
-  const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);
-  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
-  const lc=gl.getAttribLocation(pr,'p');gl.enableVertexAttribArray(lc);gl.vertexAttribPointer(lc,2,gl.FLOAT,false,0,0);
-  uT=gl.getUniformLocation(pr,'u_time');uR=gl.getUniformLocation(pr,'u_res');uM=gl.getUniformLocation(pr,'u_mouse');
-  resize();requestAnimationFrame(loop);requestAnimationFrame(()=>cv.classList.add('in'));
+/* ================= cursor ================= */
+const cursor=$('cursor');
+let mx=innerWidth/2,my=innerHeight/2,cx=mx,cy=my;
+addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+(function loopCursor(){
+  cx+=(mx-cx)*.22; cy+=(my-cy)*.22;
+  cursor.style.transform=`translate(${cx}px,${cy}px)`;
+  requestAnimationFrame(loopCursor);
 })();
-function resize(){if(!gl)return;const d=Math.min(devicePixelRatio||1,2);
-  const w=Math.floor(innerWidth*d),h=Math.floor(innerHeight*d);
-  if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;gl.viewport(0,0,w,h);}}
-const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;const t0=performance.now();
-function loop(now){requestAnimationFrame(loop);if(!gl||glPaused)return;
-  if(now-lastDraw<24)return;lastDraw=now;
-  mouse.x+=(mouse.tx-mouse.x)*.06;mouse.y+=(mouse.ty-mouse.y)*.06;
-  gl.uniform1f(uT,reduce?6:(now-t0)/1000);gl.uniform2f(uR,cv.width,cv.height);
-  gl.uniform2f(uM,mouse.x,mouse.y);gl.drawArrays(gl.TRIANGLES,0,3);}
-addEventListener('resize',()=>{resize();placeHots();});
-
-/* ============ CURSOR / PARALLAX / MAGNET ============ */
-const cur=$('#cur'),curd=$('#curd');let cx=innerWidth/2,cy=innerHeight/2,px=cx,py=cy;
-addEventListener('mousemove',e=>{cx=e.clientX;cy=e.clientY;
-  mouse.tx=(e.clientX/innerWidth)*2-1;mouse.ty=-((e.clientY/innerHeight)*2-1);
-  curd.style.left=cx+'px';curd.style.top=cy+'px';});
-(function cl(){px+=(cx-px)*.2;py+=(cy-py)*.2;cur.style.left=px+'px';cur.style.top=py+'px';requestAnimationFrame(cl);})();
-document.addEventListener('mouseover',e=>{
-  cur.classList.toggle('hot',!!e.target.closest('button,a,input,.hot,.mc,.tp,.bt,.chip,.step'));});
-const carHold=$('#carHold');
-(function par(){if(S.scene===0&&carHold)carHold.style.transform=`translate(${mouse.x*12}px,${mouse.y*6}px)`;
-  requestAnimationFrame(par);})();
-document.addEventListener('mousemove',e=>{
-  $$('.mag').forEach(b=>{const r=b.getBoundingClientRect();
-    const dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2);
-    b.style.transform=Math.hypot(dx,dy)<90?`translate(${dx*.16}px,${dy*.16}px)`:'';});});
-
-/* ============ SCENES + WIPE + STEPPER ============ */
-const scenes=$$('.scene'),wiper=$('#wiper');let wiping=false;
-function stepOk(n){return n<=S.max&&(n!==2||!!S.car);}
-function goScene(n){
-  if(wiping||n===S.scene)return;wiping=true;glPaused=true;
-  wiper.classList.remove('go');void wiper.offsetWidth;wiper.classList.add('go');
-  setTimeout(()=>{
-    scenes.forEach(s=>s.classList.toggle('on',+s.dataset.s===n));
-    S.scene=n;S.max=Math.max(S.max,n);syncChrome();closePop();
-    $('#dock').classList.toggle('show',n===2);
-    if(n===0)restartDrive();
-    if(n===2){fillSpecMini();$('#s2car').textContent=S.car?('— '+S.car.model):'';
-      setTimeout(placeHots,80);setTimeout(placeHots,320);refreshSel();
-      const g=$('#liftSvg .liftrise');if(g){g.style.animation='none';void g.getBoundingClientRect();g.style.animation='';}}
-    if(n===3)fillTicket();
-  },280);
-  setTimeout(()=>{glPaused=false;wiping=false;},760);
-}
-function restartDrive(){const d=$('#drive');if(!d||reduce)return;
-  d.style.animation='none';d.querySelectorAll('.whl').forEach(w=>w.style.animation='none');
-  void d.getBoundingClientRect();
-  d.style.animation='';d.querySelectorAll('.whl').forEach(w=>w.style.animation='');}
-function buildStepper(){
-  const st=$('#stepper');st.innerHTML='';
-  T().scenes.forEach((nm,i)=>{
-    const b=document.createElement('button');b.className='step';
-    b.innerHTML=`<span class="no">0${i+1}</span><span class="nm">${nm}</span>`;
-    b.addEventListener('click',()=>{if(stepOk(i))goScene(i);});
-    st.appendChild(b);});
-  syncChrome();
-}
-function syncChrome(){
-  [...$('#stepper').children].forEach((b,i)=>{
-    b.classList.toggle('on',i===S.scene);
-    b.classList.toggle('done',i<S.scene);
-    b.querySelector('.nm').textContent=T().scenes[i];
-    if(stepOk(i))b.setAttribute('data-ok','');else b.removeAttribute('data-ok');});
-}
-
-/* ============ CLOCK ============ */
-function tickClock(){$('#clk').textContent=new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});}
-setInterval(tickClock,10000);tickClock();
-
-/* ============ SCENE 0 ============ */
-function countUp(el,target,dur,dec){const s=performance.now();
-  (function t(n){const p=Math.min(1,(n-s)/dur);const v=target*(1-Math.pow(1-p,3));
-    el.textContent=dec?v.toFixed(1):Math.round(v).toLocaleString('nl-NL');
-    if(p<1)requestAnimationFrame(t);})(s);}
-setTimeout(()=>{countUp($('#st1'),15,1400);countUp($('#st2'),4.9,1400,true);countUp($('#st3'),2400,1600);},700);
-$('#start').addEventListener('click',()=>goScene(1));
-$('#startApk').addEventListener('click',()=>{
-  const sv=SERVICES[0];
-  if(!S.items.some(i=>i.key==='svc:apk'))S.items.push({key:'svc:apk',id:sv.id,label:sv[lang],note:'',h:sv.h,pr:sv.pr});
-  goScene(1);
-});
-
-/* ============ SCENE 1 : PICKERS ============ */
-const brandsEl=$('#brands'),typesEl=$('#types'),swEl=$('#sw');
-BRANDS.forEach(b=>{const x=document.createElement('button');x.className='bt';x.textContent=b;
-  x.addEventListener('click',()=>{S.brand=b;[...brandsEl.children].forEach(c=>c.classList.toggle('on',c===x));resetDossier();gate();});
-  brandsEl.appendChild(x);});
-TYPES.forEach(tp=>{const x=document.createElement('button');x.className='tp';
-  x.innerHTML=`<svg viewBox="0 0 60 30"><path d="${tp.d}"/></svg><span>${tp[lang]}</span>`;
-  x.addEventListener('click',()=>{S.type=tp;[...typesEl.children].forEach(c=>c.classList.toggle('on',c===x));resetDossier();gate();});
-  typesEl.appendChild(x);});
-function applyCarColor(){document.documentElement.style.setProperty('--carfill',S.color.fill);
-  document.documentElement.style.setProperty('--carstroke',S.color.stroke);refreshPaint();}
-COLORS.forEach((c,i)=>{const x=document.createElement('button');x.style.background=c.h;x.title=c.n;
-  if(i===0)x.classList.add('on');
-  x.addEventListener('click',()=>{S.color=c;[...swEl.children].forEach(k=>k.classList.toggle('on',k===x));applyCarColor();});
-  swEl.appendChild(x);});
-$('#plate').addEventListener('input',e=>{S.plate=e.target.value.toUpperCase();e.target.value=S.plate;});
-function gate(){$('#load').disabled=!(S.brand&&S.type);}
-function resetDossier(){S.models=[];S.car=null;
-  $('#models').innerHTML='';$('#spec').hidden=true;$('#term').hidden=true;$('#tbarW').hidden=true;
-  $('#liveTag').innerHTML='';$('#dosEmpty').style.display='';
-  const oldI=$('#specImg');if(oldI)oldI.remove();
-  syncChrome();}
-
-/* ============ SCENE 1 : API LOAD ============ */
-function scramble(el,text,dur=650){const CH='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&';
-  const s=performance.now();
-  (function t(n){const p=Math.min(1,(n-s)/dur);const cut=Math.floor(p*text.length);
-    let out=text.slice(0,cut);const tail=Math.min(text.length-cut,3);
-    for(let i=0;i<tail;i++)out+=text[cut+i]===' '?' ':CH[Math.random()*CH.length|0];
-    el.textContent=out;
-    if(p<1)requestAnimationFrame(t);else el.textContent=text;})(s);}
-function carPrompt(){
-  return `Database-taak voor een Nederlandse autogarage. Merk: ${S.brand}. Carrosserietype: ${S.type.nl}. `+
-  `Geef de 3 meest voorkomende ${S.brand} modellen van dit type in Nederland (recent eerst). `+
-  `Antwoord UITSLUITEND met geldige JSON, geen tekst of markdown, exact dit formaat: `+
-  `{"models":[{"model":"","jaren":"2019–2024","motor":"korte motoromschrijving","pk":0,"top":0,"gewicht":0}]} `+
-  `Wees realistisch; maakt het merk dit type niet, kies de dichtstbijzijnde modellen.`;
-}
-function fallbackModels(){
-  const base=(KNOWN[S.brand]||{})[S.type.id]||(S.brand+' '+S.type[lang]);
-  const ev=S.type.id==='ev'||S.brand==='Tesla';
-  return [
-   {model:base,jaren:'2019–2024',motor:ev?'elektrisch':'1.5 turbo benzine',pk:ev?204:130,top:ev?217:205,gewicht:ev?1750:1290},
-   {model:base+(ev?' Long Range':' Sport'),jaren:'2021–2026',motor:ev?'elektrisch AWD':'2.0 turbo benzine',pk:ev?351:190,top:ev?233:235,gewicht:ev?1930:1380},
-   {model:base+' Classic',jaren:'2013–2019',motor:ev?'elektrisch':'1.6 benzine',pk:ev?150:110,top:190,gewicht:1240}
-  ];
-}
-async function loadCars(){
-  /* SWAP POINT: outside Claude, route this through your own backend with your API key */
-  $('#load').disabled=true;$('#dosEmpty').style.display='none';
-  $('#models').innerHTML='';$('#spec').hidden=true;
-  const oldI=$('#specImg');if(oldI)oldI.remove();
-  const term=$('#term');term.hidden=false;term.innerHTML='';
-  $('#tbarW').hidden=false;const bar=$('#tbar');bar.style.width='6%';
-  const lines=T().term.map((l,i)=>l+(i===1?`: ${S.brand} / ${S.type[lang]}`:''));
-  let li=0;const tick=setInterval(()=>{
-    if(li<lines.length){[...term.children].forEach(c=>c.classList.remove('cur'));
-      const d=document.createElement('div');d.textContent=lines[li]+'…';d.className='cur';term.appendChild(d);
-      bar.style.width=(12+li*30)+'%';li++;}
-  },420);
-  const tS=performance.now();let models=null,live=false;
-  try{
-    const ctl=new AbortController();const to=setTimeout(()=>ctl.abort(),14000);
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
-      headers:{'Content-Type':'application/json'},signal:ctl.signal,
-      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,
-        messages:[{role:'user',content:carPrompt()}]})});
-    clearTimeout(to);
-    const d=await r.json();
-    const raw=(d.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('')
-      .replace(/```json|```/g,'').trim();
-    const j=JSON.parse(raw);
-    if(Array.isArray(j.models)&&j.models.length){models=j.models.slice(0,3);live=true;}
-  }catch(e){}
-  if(!models){models=fallbackModels();live=false;}
-  S.models=models;S.live=live;
-  await new Promise(r=>setTimeout(r,Math.max(0,1750-(performance.now()-tS))));
-  clearInterval(tick);bar.style.width='100%';
-  [...term.children].forEach(c=>c.classList.remove('cur'));
-  setTimeout(()=>{term.hidden=true;$('#tbarW').hidden=true;renderModels();},420);
-}
-$('#load').addEventListener('click',loadCars);
-function renderModels(){
-  const wrap=$('#models');wrap.innerHTML='';
-  $('#liveTag').innerHTML=S.live?`<b>${T().live}</b>`:T().offline;
-  S.models.forEach((m,i)=>{
-    const b=document.createElement('button');b.className='mc';
-    b.style.animation=`rvIn .5s ${i*0.09}s cubic-bezier(.2,0,0,1) both`;
-    b.innerHTML=`<span class="nm"></span><span class="pk">${m.pk||'—'} pk</span>
-      <span class="mt">${m.jaren||''}<br>${m.motor||''}</span>`;
-    b.prepend(carImgEl(m.model,'23','mimg'));
-    wrap.appendChild(b);
-    scramble(b.querySelector('.nm'),m.model||'—',600+i*120);
-    b.addEventListener('click',()=>{S.car=m;
-      [...wrap.children].forEach(c=>{c.classList.toggle('on',c===b);c.classList.toggle('dim',c!==b);});
-      renderSpec();syncChrome();});
+function bindHovers(){
+  document.querySelectorAll('.hover-t, a, button, li').forEach(t=>{
+    t.addEventListener('mouseenter',()=>cursor.classList.add('hover'));
+    t.addEventListener('mouseleave',()=>cursor.classList.remove('hover'));
   });
-  gate();
 }
-function renderSpec(){
-  const m=S.car;if(!m)return;
-  const rows=[['model',m.model],['jaren',m.jaren],['motor',m.motor],
-    ['pk',(m.pk||'—')+' pk'],['top',(m.top||'—')+' km/u'],['gewicht',(m.gewicht||'—')+' kg']];
-  const el=$('#specRows');el.innerHTML='';
-  const oldI=$('#specImg');if(oldI)oldI.remove();
-  const iw=document.createElement('div');iw.className='specImg';iw.id='specImg';
-  const im=new Image();im.alt=m.model;
-  im.onerror=()=>iw.remove();
-  im.src=imaginUrl(m.model,'23');
-  const srcTag=document.createElement('span');srcTag.className='src';srcTag.textContent='render · imagin.studio';
-  iw.append(im,srcTag);el.parentElement.insertBefore(iw,el);
-  rows.forEach(([k,v],i)=>{const r=document.createElement('div');r.className='srow';
-    r.style.animation=`rvIn .45s ${i*0.07}s cubic-bezier(.2,0,0,1) both`;
-    r.innerHTML=`<span class="k">${T().specK[k]}</span><span class="dots"></span><span class="v"></span>`;
-    el.appendChild(r);scramble(r.querySelector('.v'),String(v??'—'),520+i*90);});
-  $('#spec').hidden=false;
-}
-$('#toLift').addEventListener('click',()=>{if(S.car)goScene(2);});
+bindHovers();
 
-/* ============ SCENE 2 : HEFBRUG ============ */
-const hotsEl=$('#hots');
-PARTS.forEach((pt,i)=>{const b=document.createElement('button');b.className='hot';b.dataset.id=pt.id;
-  b.innerHTML=`<span class="pin">${String(i+1).padStart(2,'0')}</span><span class="lbl">${pt[lang]}</span>`;
-  b.addEventListener('click',e=>{e.stopPropagation();onPart(pt,b);});hotsEl.appendChild(b);});
-const AR=1000/470;
-function placeHots(){
-  if(S.scene!==2)return;
-  const box=$('#liftBox');if(!box)return;
-  const r=box.getBoundingClientRect();const ar=r.width/r.height;let dw,dh;
-  if(ar>AR){dh=r.height;dw=dh*AR;}else{dw=r.width;dh=dw/AR;}
-  const ox=(r.width-dw)/2,oy=(r.height-dh)/2;
-  [...hotsEl.children].forEach(b=>{const pt=PARTS.find(p=>p.id===b.dataset.id);
-    b.style.left=(ox+dw*pt.x/100)+'px';b.style.top=(oy+dh*pt.y/100)+'px';});
-}
-function fillSpecMini(){
-  const m=S.car;if(!m){$('#specmini').hidden=true;return;}
-  $('#specmini').hidden=false;$('#smName').textContent=m.model;
-  const oldM=$('#smImg');if(oldM)oldM.remove();
-  const mi=carImgEl(m.model,'01','smImg');mi.id='smImg';
-  $('#smName').parentElement.insertBefore(mi,$('#smName'));
-  $('#smSub').innerHTML=`${m.jaren||''}<br>${m.motor||''} · ${m.pk||'—'} pk<br>${S.color[lang==='nl'?'n':'e']}`;
-  if(S.plate){$('#smPlate').hidden=false;$('#smPlateTxt').textContent=S.plate;}else{$('#smPlate').hidden=true;}
-}
-const has=k=>S.items.some(i=>i.key===k);
-const rem=k=>{S.items=S.items.filter(i=>i.key!==k);refreshSel();};
-function refreshSel(){
-  [...hotsEl.children].forEach(b=>b.classList.toggle('on',has('part:'+b.dataset.id)));
-  [...$('#chips').children].forEach(b=>b.classList.toggle('on',has('svc:'+b.dataset.id)));
-  renderDock();
-}
-const chipsEl=$('#chips');
-SERVICES.forEach(sv=>{const b=document.createElement('button');b.className='chip';b.dataset.id=sv.id;b.textContent=sv[lang];
-  b.addEventListener('click',()=>{const k='svc:'+sv.id;
-    if(has(k))rem(k);else{S.items.push({key:k,id:sv.id,label:sv[lang],note:'',h:sv.h,pr:sv.pr});refreshSel();}});
-  chipsEl.appendChild(b);});
-function onPart(pt,btn){
-  const k='part:'+pt.id;
-  if(has(k)){rem(k);closePop();return;}
-  $('#popT').textContent=pt[lang]+' — '+T().issueQ;
-  const o=$('#popO');o.innerHTML='';
-  pt.iss[lang].forEach(iss=>{const x=document.createElement('button');x.className='opt';x.textContent=iss;
-    x.addEventListener('click',()=>{S.items.push({key:k,id:pt.id,label:pt[lang],note:iss,h:pt.h,pr:pt.pr});refreshSel();closePop();});
-    o.appendChild(x);});
-  const pop=$('#pop');pop.classList.add('open');
-  const r=btn.getBoundingClientRect();let x=r.right+14,y=r.top-8;
-  if(x+258>innerWidth)x=r.left-258;if(y+230>innerHeight)y=innerHeight-240;
-  pop.style.left=Math.max(10,x)+'px';pop.style.top=Math.max(10,y)+'px';
-}
-function closePop(){$('#pop').classList.remove('open');}
-document.addEventListener('click',e=>{const p=$('#pop');
-  if(p.classList.contains('open')&&!p.contains(e.target)&&!e.target.closest('.hot'))closePop();});
-const dock=document.createElement('div');dock.className='dock';dock.id='dock';
-dock.innerHTML=`<div class="dh"></div><div class="di">
- <div class="dt"><span data-i="dockT">Werkorder</span><b id="dockN">0</b></div>
- <ul id="dockL"></ul><div class="dempty" id="dockE" data-i="dockE">Nog niets geselecteerd.</div></div>`;
-document.body.appendChild(dock);
-function renderDock(){
-  $('#dockN').textContent=S.items.length;
-  const c=$('#s2cnt');if(c)c.textContent=S.items.length;
-  const ul=$('#dockL');ul.innerHTML='';
-  $('#dockE').style.display=S.items.length?'none':'block';
-  S.items.forEach(it=>{const li=document.createElement('li');
-    li.innerHTML=`<i></i><span>${it.label}</span><b>×</b>`;
-    li.querySelector('b').addEventListener('click',()=>rem(it.key));ul.appendChild(li);});
-}
-$('#toWO').addEventListener('click',()=>goScene(3));
+/* ================= gate: counter -> hold ================= */
+const gateCount=$('gateCount'), holdZone=$('holdZone');
+let count=0;
+(function tick(){
+  count+=Math.floor(Math.random()*4)+1;
+  if(count>100)count=100;
+  gateCount.innerText=String(count).padStart(2,'0');
+  if(count<100){ setTimeout(tick, Math.random()*26+12); }
+  else setTimeout(()=>{ gateCount.classList.add('hide'); holdZone.classList.add('ready'); },350);
+})();
 
-/* ============ SCENE 3 : WERKORDER ============ */
-function vehLabel(){return S.car?S.car.model:(S.brand?S.brand+' '+(S.type?S.type[lang]:''):'—');}
-function fillTicket(){
-  $('#s3grid').style.display='';$('#confirm').classList.remove('show');
-  $('#wkDate').textContent=new Date().toLocaleDateString(lang==='nl'?'nl-NL':'en-GB');
-  $('#wkVeh').textContent=vehLabel();
-  const bits=[];if(S.car)bits.push(S.car.motor,(S.car.pk||'')+' pk');
-  bits.push(S.color[lang==='nl'?'n':'e']);if(S.plate)bits.push(S.plate);
-  $('#wkVs').textContent=bits.filter(Boolean).join(' · ');
-  const ul=$('#wkLines');ul.innerHTML='';
-  if(!S.items.length){const d=document.createElement('div');
-    d.style.cssText='padding:16px 0;color:rgba(255,255,255,.5);font-size:12.5px';
-    d.textContent=T().emptyWk;ul.appendChild(d);}
-  S.items.forEach((it,i)=>{const li=document.createElement('li');
-    li.style.animationDelay=(i*0.09)+'s';
-    li.innerHTML=`<span class="n">${String(i+1).padStart(2,'0')}</span><i></i>
-      <span class="t">${it.label}</span><span class="no">${it.note||''}</span>`;ul.appendChild(li);});
-  $('#wono').textContent='WO-'+new Date().toISOString().slice(2,10).replace(/-/g,'')+'-'+String(S.items.length).padStart(2,'0');
-  $('#aiOut').classList.remove('show');$('#aiBtnT').textContent=T().aiB;
-  $('#aiBtn').disabled=!S.items.length;
+const holdFill=$('holdFill'), holdRing=$('holdRing');
+let holdTimer=null, holdProg=0;
+function startHold(){
+  if(entered)return;
+  holdRing.style.transform='scale(1)';
+  if(navigator.vibrate)navigator.vibrate(40);
+  holdTimer=setInterval(()=>{
+    holdProg+=2;
+    holdFill.style.clipPath=`circle(${holdProg}% at 50% 50%)`;
+    if(holdProg%20===0&&navigator.vibrate)navigator.vibrate(12);
+    if(holdProg>=75){
+      clearInterval(holdTimer);
+      if(navigator.vibrate)navigator.vibrate([90,40,90]);
+      enterSite();
+    }
+  },15);
 }
-function localAI(){
-  let hours=0,lo=0,hi=0,u=0;
-  const HI=['motor','chassis','reparatie'],MID=['body','doors','wheels','rear','onderhoud','banden'];
-  S.items.forEach(it=>{hours+=it.h;lo+=it.pr[0];hi+=it.pr[1];
-    if(HI.includes(it.id))u=Math.max(u,2);else if(MID.includes(it.id))u=Math.max(u,1);});
-  const urg=u===2?'high':u===1?'mid':'low';
-  const ls=S.items.map(i=>i.label.toLowerCase()).join(', ');
-  const txt=lang==='nl'
-   ?`Op basis van ${S.items.length} ${S.items.length===1?'punt':'punten'} (${ls}) adviseren wij een ${urg==='high'?'spoedige':urg==='mid'?'tijdige':'reguliere'} controle van je ${vehLabel()}. ${u===2?'Eén of meer punten kunnen de rijveiligheid beïnvloeden. ':''}Onze monteur reserveert circa ${hours.toFixed(1)} ${T().hrs} werkplaatstijd; na inspectie volgt een vaste prijsopgave.`
-   :`Based on ${S.items.length} ${S.items.length===1?'item':'items'} (${ls}) we advise a ${urg==='high'?'prompt':urg==='mid'?'timely':'routine'} check of your ${vehLabel()}. ${u===2?'One or more items may affect driving safety. ':''}Our mechanic reserves about ${hours.toFixed(1)} ${T().hrs} of workshop time; a fixed quote follows after inspection.`;
-  return {urgency:urg,hours,price:[lo,hi],text:txt};
+function stopHold(){
+  if(entered)return;
+  clearInterval(holdTimer); holdProg=0;
+  holdFill.style.clipPath='circle(0% at 50% 50%)';
+  holdRing.style.transform='scale(.85)';
 }
-async function runAI(){
-  /* SWAP POINT: outside Claude, route through your backend */
-  const btn=$('#aiBtn');btn.disabled=true;$('#aiBtnT').textContent=T().aiThink;
-  let res=null,live=false;
+holdZone.addEventListener('mousedown',startHold);
+holdZone.addEventListener('mouseup',stopHold);
+holdZone.addEventListener('mouseleave',stopHold);
+holdZone.addEventListener('touchstart',e=>{e.preventDefault();startHold();},{passive:false});
+holdZone.addEventListener('touchend',stopHold);
+
+/* ================= enter ================= */
+const music=$('music');
+function enterSite(){
+  entered=true;
+  $('gate').classList.add('done');
+  document.body.classList.add('entered');
+  $('bgDark').play().catch(()=>{}); $('bgLight').play().catch(()=>{});
+  music.volume=.4;
+  music.play().then(initAudio).catch(()=>{});
+}
+
+/* ================= audio: analyser + lowpass ================= */
+let audioCtx, analyser, dataArr, lowpass;
+function initAudio(){
+  if(audioCtx)return;
+  audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  analyser=audioCtx.createAnalyser();
+  lowpass=audioCtx.createBiquadFilter();
+  lowpass.type='lowpass'; lowpass.frequency.value=24000;
+  const src=audioCtx.createMediaElementSource(music);
+  src.connect(lowpass); lowpass.connect(analyser); analyser.connect(audioCtx.destination);
+  analyser.fftSize=256; dataArr=new Uint8Array(analyser.frequencyBinCount);
+  if(!reduceMotion) breathe();
+}
+function muffle(on){
+  if(!lowpass||!audioCtx)return;
+  lowpass.frequency.setTargetAtTime(on?700:24000, audioCtx.currentTime, .4);
+}
+const glow=$('glow'), nameEl=$('name'), avatar=$('avatar'), bgWrap=$('bgWrap');
+function breathe(){
+  requestAnimationFrame(breathe);
+  analyser.getByteFrequencyData(dataArr);
+  const bass=(dataArr[1]+dataArr[2]+dataArr[3])/3;
+  const g=1+bass/900, n=1+bass/9000, a=1+bass/2200, env=1+bass/3800;
+  glow.style.transform=`translate(-50%,-50%) scale(${g})`;
+  nameEl.style.transform=`translate(${px}px,${py}px) scale(${n})`;
+  avatar.style.transform=`scale(${a})`;
+  bgWrap.style.transform=`translate(-50%,-50%) scale(${bass>50?env:1})`;
+}
+music.addEventListener('timeupdate',()=>{
+  if(music.duration) $('progress').style.width=(music.currentTime/music.duration*100)+'%';
+});
+
+/* ================= controls ================= */
+function toggleMusic(){
+  if(isPlaying){ music.pause(); $('musicBtn').innerText='play'; $('ctxAudio').innerText='play audio'; }
+  else{ music.play(); $('musicBtn').innerText='pause'; $('ctxAudio').innerText='pause audio';
+        if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume(); }
+  isPlaying=!isPlaying;
+}
+function toggleTheme(){
+  isLight=!isLight;
+  document.body.classList.toggle('light',isLight);
+  $('themeBtn').innerText=isLight?'dark':'light';
+  $('ctxTheme').innerText=isLight?'switch to dark':'switch to light';
+  document.querySelector('meta[name=theme-color]').content=isLight?'#ECE6DA':'#0C0A08';
+  setTimeout(()=>{
+    music.src=isLight?'music-light.mp3':'music.mp3'; music.load();
+    if(isPlaying) music.play().catch(()=>{});
+  },400);
+}
+
+/* ================= tab title + muffle ================= */
+const origTitle=document.title;
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){ document.title='stay lowkey…'; muffle(true); }
+  else{ document.title=origTitle; muffle(false); }
+});
+
+/* ================= context menu ================= */
+const ctxMenu=$('ctxMenu');
+addEventListener('contextmenu',e=>{
+  e.preventDefault(); muffle(true);
+  let x=e.clientX,y=e.clientY;
+  if(x+200>innerWidth)x=innerWidth-210;
+  if(y+130>innerHeight)y=innerHeight-140;
+  ctxMenu.style.left=x+'px'; ctxMenu.style.top=y+'px';
+  ctxMenu.classList.add('on');
+});
+addEventListener('click',()=>{
+  if(ctxMenu.classList.contains('on')){ ctxMenu.classList.remove('on'); muffle(false); }
+});
+function copyDiscordId(){
+  navigator.clipboard.writeText('285468327135019019').then(()=>{
+    const b=$('ctxCopy'), o=b.innerText;
+    b.innerText='copied.'; setTimeout(()=>b.innerText=o,1400);
+  });
+}
+
+/* ================= parallax ================= */
+let px=0,py=0;
+if(!reduceMotion){
+  addEventListener('mousemove',e=>{
+    if(innerWidth<769)return;
+    px=(e.clientX/innerWidth-.5)*-14;
+    py=(e.clientY/innerHeight-.5)*-10;
+    if(!analyser) nameEl.style.transform=`translate(${px}px,${py}px)`;
+  });
+}
+
+/* ================= rolling words ================= */
+const track=document.querySelector('#roll .track');
+let rollIdx=0;
+setInterval(()=>{
+  rollIdx++;
+  track.style.transform=`translateY(-${rollIdx*34}px)`;
+  if(rollIdx===3){
+    setTimeout(()=>{
+      track.style.transition='none';
+      track.style.transform='translateY(0)'; rollIdx=0;
+      requestAnimationFrame(()=>requestAnimationFrame(()=>track.style.transition=''));
+    },950);
+  }
+},3200);
+
+/* ================= weather ================= */
+let weatherType='dust', wxLabel='';
+async function fetchWeather(){
   try{
-    const list=S.items.map(i=>`- ${i.label}${i.note?' ('+i.note+')':''}`).join('\n');
-    const prompt=`Je bent een ervaren automonteur bij Autogarage Vijfsluize in Spijkenisse. `+
-     `Een klant met een ${vehLabel()} heeft deze punten aangevinkt:\n${list}\n\n`+
-     `Geef een korte professionele inschatting. Antwoord UITSLUITEND met geldige JSON, geen markdown: `+
-     `{"urgency":"low|mid|high","hours":0,"priceLow":0,"priceHigh":0,"text_nl":"2-3 zinnen advies","text_en":"same in English"}`;
-    const ctl=new AbortController();const to=setTimeout(()=>ctl.abort(),14000);
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
-      headers:{'Content-Type':'application/json'},signal:ctl.signal,
-      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:800,
-        messages:[{role:'user',content:prompt}]})});
-    clearTimeout(to);
+    const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=51.4416&longitude=5.4697&current_weather=true');
     const d=await r.json();
-    const raw=(d.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('')
-      .replace(/```json|```/g,'').trim();
-    const j=JSON.parse(raw);
-    res={urgency:j.urgency,hours:+j.hours||0,price:[Math.round(j.priceLow),Math.round(j.priceHigh)],
-      text:lang==='nl'?j.text_nl:j.text_en};live=true;
+    const c=d.current_weather.weathercode;
+    if((c>=51&&c<=67)||(c>=80&&c<=82)){weatherType='rain';wxLabel='rain';}
+    else if((c>=71&&c<=77)||(c>=85&&c<=86)){weatherType='snow';wxLabel='snow';}
+    else{weatherType='dust';wxLabel='clear';}
+    wxLabel=`${Math.round(d.current_weather.temperature)}°c — ${wxLabel}`;
   }catch(e){}
-  if(!res)res=localAI();
-  paintAI(res,live);
-  btn.disabled=false;$('#aiBtnT').textContent=T().aiB;
 }
-function paintAI(res,live){
-  const F={low:.28,mid:.6,high:.92},C={low:'#F2F2F0',mid:'#FF5A50',high:'#E10600'};
-  const f=F[res.urgency]??.28,col=C[res.urgency]??'#F2F2F0';
-  $('#gArc').style.strokeDashoffset=String(151*(1-f));$('#gArc').style.stroke=col;
-  $('#gNdl').style.transform=`rotate(${-90+180*f}deg)`;
-  $('#gVal').textContent=T().urg[res.urgency];$('#gVal').style.color=col;
-  $('#aiTime').textContent=res.hours?res.hours.toFixed(1)+' '+T().hrs:'—';
-  $('#aiPrice').textContent=res.price[1]?`€${res.price[0]}–${res.price[1]}`:'—';
-  $('#aiTxt').textContent=res.text;
-  $('#aiTag').textContent=live?T().aiTagL:T().aiTagO;
-  $('#aiOut').classList.add('show');
-}
-$('#aiBtn').addEventListener('click',runAI);
-$$('#seg button').forEach(b=>b.addEventListener('click',()=>{
-  $$('#seg button').forEach(x=>x.classList.toggle('on',x===b));
-  S.mode=b.dataset.m;$('#dateF').style.display=b.dataset.m==='date'?'':'none';}));
-$('#send').addEventListener('click',()=>{
-  /* SWAP POINT: POST {items:S.items, vehicle:S.car, contact} to your booking endpoint */
-  S.booked='WO-'+new Date().toISOString().slice(2,10).replace(/-/g,'')+'-'+Math.floor(100+Math.random()*900);
-  $('#s3grid').style.display='none';
-  $('#confirm').classList.add('show');
-  $('#refno').textContent=T().ref+': '+S.booked;
-});
-$('#again').addEventListener('click',()=>{
-  S.brand=null;S.type=null;S.color=COLORS[0];S.plate='';S.models=[];S.car=null;S.live=false;S.items=[];S.booked=null;S.max=0;
-  [...brandsEl.children].forEach(c=>c.classList.remove('on'));
-  [...typesEl.children].forEach(c=>c.classList.remove('on'));
-  [...swEl.children].forEach((c,i)=>c.classList.toggle('on',i===0));
-  $('#plate').value='';applyCarColor();resetDossier();gate();refreshSel();goScene(0);
-});
+fetchWeather(); setInterval(fetchWeather,300000);
 
-/* ============ TICKER + LANG + BOOT ============ */
-function buildTicker(){
-  const items=[...SERVICES.map(s=>s[lang]),lang==='nl'?'APK vandaag klaar':'MOT done today','Spijkenisse','MA–VR 08:00–17:30'];
-  const row=items.map(t=>`<span>${t}</span><em>✦</em>`).join('');
-  $('#tk').innerHTML=row+row+row;
+function updateLocal(){
+  const t=new Date().toLocaleTimeString('en-GB',{timeZone:'Europe/Amsterdam',hour:'2-digit',minute:'2-digit'});
+  $('localInfo').innerHTML=`eindhoven, nl<br><span class="strong">${t}</span>${wxLabel?' · '+wxLabel:''}`;
 }
-function applyLang(){
-  document.documentElement.lang=lang;
-  $$('[data-i]').forEach(el=>{const k=el.dataset.i;if(T()[k]!==undefined)el.innerHTML=T()[k];});
-  [...typesEl.children].forEach((c,i)=>c.querySelector('span').textContent=TYPES[i][lang]);
-  [...chipsEl.children].forEach((c,i)=>c.textContent=SERVICES[i][lang]);
-  [...hotsEl.children].forEach((c,i)=>c.querySelector('.lbl').textContent=PARTS[i][lang]);
-  $('#nlB').classList.toggle('on',lang==='nl');$('#enB').classList.toggle('on',lang==='en');
-  buildTicker();syncChrome();
-  if(S.models.length&&!$('#spec').hidden){renderModels();
-    const sel=S.models.indexOf(S.car);if(sel>-1){const b=$('#models').children[sel];
-      b.classList.add('on');[...$('#models').children].forEach(c=>c.classList.toggle('dim',c!==b));renderSpec();}}
-  else if(S.models.length)renderModels();
-  if(S.scene===2){fillSpecMini();refreshSel();$('#s2car').textContent=S.car?('— '+S.car.model):'';}
-  if(S.scene===3&&!S.booked)fillTicket();
+setInterval(updateLocal,1000); updateLocal();
+
+/* weather canvas */
+const cv=$('weatherCanvas'), ctx=cv.getContext('2d');
+function resize(){ cv.width=innerWidth; cv.height=innerHeight; }
+addEventListener('resize',resize); resize();
+const parts=Array.from({length:70},()=>({
+  x:Math.random()*cv.width, y:Math.random()*cv.height,
+  s:Math.random()*2+1, d:Math.random()-.5
+}));
+function drawWx(){
+  ctx.clearRect(0,0,cv.width,cv.height);
+  const light=document.body.classList.contains('light');
+  ctx.fillStyle=light?'rgba(23,20,15,.35)':'rgba(232,225,213,.32)';
+  ctx.strokeStyle=light?'rgba(23,20,15,.14)':'rgba(232,225,213,.06)';
+  parts.forEach(p=>{
+    if(weatherType==='rain'){
+      ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x-p.d*2,p.y+p.s*5);ctx.stroke();
+      p.y+=p.s*4;p.x-=p.d;
+    }else if(weatherType==='snow'){
+      ctx.beginPath();ctx.arc(p.x,p.y,p.s/1.6,0,7);ctx.fill();
+      p.y+=p.s;p.x+=Math.sin(p.y/50)+p.d;
+    }else{
+      ctx.beginPath();ctx.arc(p.x,p.y,p.s/2.2,0,7);
+      ctx.fillStyle=light?'rgba(23,20,15,.10)':'rgba(232,225,213,.09)';ctx.fill();
+      p.y-=p.s*.2;p.x+=p.d;
+    }
+    if(p.y>cv.height||p.y<0){ p.y=weatherType==='dust'?cv.height:-20; p.x=Math.random()*cv.width; }
+  });
+  requestAnimationFrame(drawWx);
 }
-$('#nlB').addEventListener('click',()=>{lang='nl';applyLang();});
-$('#enB').addEventListener('click',()=>{lang='en';applyLang();});
-const tm=new Date(Date.now()+864e5);$('#bDate').value=tm.toISOString().slice(0,10);
-applyCarColor();buildTicker();buildStepper();gate();
+if(!reduceMotion) drawWx();
+
+/* ================= live data: views + lanyard ================= */
+fetch('https://api.counterapi.dev/v1/lowkey-emal-dev/visits/up')
+  .then(r=>r.json()).then(d=>{$('views').innerText=d.count;}).catch(()=>{});
+
+function fetchLanyard(){
+  fetch('https://api.lanyard.rest/v1/users/285468327135019019')
+    .then(r=>r.json()).then(d=>{
+      if(!d.success)return;
+      const u=d.data;
+      if(u.discord_user.avatar){
+        const ext=u.discord_user.avatar.startsWith('a_')?'gif':'webp';
+        avatar.src=`https://cdn.discordapp.com/avatars/${u.discord_user.id}/${u.discord_user.avatar}.${ext}?size=128`;
+      }
+      const colors={online:'#43b581',idle:'#faa61a',dnd:'#f04747',offline:'#747f8d'};
+      $('statusDot').style.background=colors[u.discord_status]||colors.offline;
+      $('statusText').innerText=u.discord_status||'offline';
+      const cs=u.activities.find(a=>a.type===4);
+      $('bio').innerText=cs&&cs.state
+        ?`“${cs.emoji?(cs.emoji.id?'':cs.emoji.name+' '):''}${cs.state}”`
+        :'“staying lowkey.”';
+      const sp=$('spotify');
+      if(u.listening_to_spotify&&u.spotify){
+        $('spArt').src=u.spotify.album_art_url;
+        $('spSong').innerText=u.spotify.song;
+        $('spArtist').innerText=u.spotify.artist;
+        sp.classList.add('on');
+      }else sp.classList.remove('on');
+    }).catch(()=>{});
+}
+fetchLanyard(); setInterval(fetchLanyard,3000);
+
+/* ================= terminal ================= */
+const seq=['l','o','w','k','e','y']; let ki=0;
+document.addEventListener('keydown',e=>{
+  if(document.activeElement===$('termInput'))return;
+  if(e.key.toLowerCase()===seq[ki]){
+    ki++;
+    if(ki===seq.length){
+      document.body.classList.add('shattered');
+      $('terminal').classList.add('on');
+      $('termInput').focus(); muffle(true); ki=0;
+    }
+  }else ki=0;
+});
+const termOut=$('termOut');
+const cmds={
+  help:()=>`commands: <span class="k">whoami</span> · <span class="k">status</span> · <span class="k">socials</span> · <span class="k">clear</span> · <span class="k">/exit</span>`,
+  whoami:()=>`lowkey — front-end developer. eindhoven, nl. radiant.`,
+  status:()=>`discord: ${$('statusText').innerText} · audio: ${isPlaying?'playing':'paused'} · theme: ${isLight?'light':'dark'}`,
+  socials:()=>`discord — wzv · valorant — 4owkey#prx · web — emal.dev`,
+  clear:()=>{termOut.innerHTML='';return null;}
+};
+$('termInput').addEventListener('keydown',e=>{
+  if(e.key!=='Enter')return;
+  const v=e.target.value.trim().toLowerCase(); e.target.value='';
+  if(v==='/exit'||v==='exit'){
+    $('terminal').classList.remove('on');
+    document.body.classList.remove('shattered'); muffle(false); return;
+  }
+  const out=cmds[v]?cmds[v]():`'${v}' not recognized. try <span class="k">help</span>`;
+  if(out!==null) termOut.innerHTML+=`<br><span class="k">></span> ${v}<br>${out}`;
+  termOut.scrollTop=termOut.scrollHeight;
+});
 </script>
 </body>
 </html>
