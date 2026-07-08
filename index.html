@@ -96,6 +96,12 @@ body.light .grain{ opacity:.07; }
 #bgLight{ filter:brightness(.9) contrast(1.05); opacity:0; }
 body.light #bgDark{ opacity:0; }
 body.light #bgLight{ opacity:1; }
+/* igloo-style camera: settle in, then perpetual slow drift */
+body.entered .bg-video{
+  animation:kbIn 2.8s var(--ease) both, kbDrift 34s ease-in-out 2.8s infinite alternate;
+}
+@keyframes kbIn{ from{ transform:translate(-50%,-50%) scale(1.18); } to{ transform:translate(-50%,-50%) scale(1.06); } }
+@keyframes kbDrift{ from{ transform:translate(-50%,-50%) scale(1.06); } to{ transform:translate(-50%,-50%) scale(1.12); } }
 #scrim{
   position:fixed; inset:0; z-index:1; pointer-events:none;
   background:radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(12,10,8,.55) 100%);
@@ -188,7 +194,12 @@ body.entered .corner{ opacity:1; }
   position:absolute; top:50%; left:50%;
   transform:translate(-50%,-50%);
   text-align:center; width:min(92vw,1100px);
-  will-change:transform;
+  will-change:transform; opacity:0;
+}
+body.entered #center{ animation:focusIn 1.7s var(--ease) both .25s; }
+@keyframes focusIn{
+  from{ opacity:0; filter:blur(16px); }
+  to{ opacity:1; filter:blur(0); }
 }
 
 #eyebrow{
@@ -225,16 +236,14 @@ body.entered #name .l span{ transform:translateY(0); }
 #name .l:nth-child(6) span{transition-delay:.40s}
 #name .l:nth-child(4) span, #name .l:nth-child(5) span{ font-style:italic; color:var(--brass); }
 
-/* rolling words */
+/* scrambling words (igloo-style glyph resolve) */
 #roll{
-  height:34px; margin-top:clamp(8px,2vh,18px); overflow:hidden;
+  height:34px; line-height:34px; margin-top:clamp(8px,2vh,18px);
   font-family:'Instrument Serif',serif; font-style:italic;
   font-size:clamp(18px,2.6vw,26px); color:var(--dim);
   opacity:0; transition:opacity 1s var(--ease) .8s;
 }
 body.entered #roll{ opacity:1; }
-#roll .track{ transition:transform .9s var(--ease); }
-#roll .track div{ height:34px; line-height:34px; }
 
 /* bio from discord custom status */
 #bio{
@@ -338,6 +347,7 @@ a:focus-visible{ outline:1px solid var(--brass); outline-offset:4px; }
   font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.03em;
 }
 body.shattered #center{
+  animation:none;
   opacity:0; transform:translate(-50%,-44%) scale(.97); filter:blur(14px);
   pointer-events:none; transition:all .8s var(--ease);
 }
@@ -388,13 +398,13 @@ body.shattered #center{
 <div id="stage">
 
   <div class="corner tl mono">
-    <span class="strong">emal.dev</span><br>personal index
+    <span class="strong scr">emal.dev</span><br><span class="scr">personal index</span>
   </div>
   <div class="corner tr mono" id="localInfo">
     eindhoven, nl<br>--:--
   </div>
   <div class="corner bl mono">
-    51.44°N — 5.47°E<br><span id="views">····</span> visits
+    <span class="scr">51.44°N — 5.47°E</span><br><span id="views">····</span> visits
   </div>
   <div class="corner br mono">
     <span><span id="statusDot"></span><span id="statusText">offline</span></span><br>
@@ -412,18 +422,13 @@ body.shattered #center{
       <span class="l"><span>l</span></span><span class="l"><span>o</span></span><span class="l"><span>w</span></span><span class="l"><span>k</span></span><span class="l"><span>e</span></span><span class="l"><span>y</span></span>
     </h1>
 
-    <div id="roll" aria-hidden="true"><div class="track">
-      <div>stay lowkey</div>
-      <div>calm energy</div>
-      <div>radiant mind</div>
-      <div>stay lowkey</div>
-    </div></div>
+    <div id="roll" aria-hidden="true"><span id="rollText" class="scr">stay lowkey</span></div>
 
     <div id="bio">“staying lowkey.”</div>
 
     <nav id="links" class="mono">
-      <a class="hover-t" href="https://tracker.gg/valorant/profile/riot/4owkey%23prx/overview" target="_blank" rel="noopener">valorant — radiant <span class="arr">↗</span></a>
-      <a class="hover-t" href="https://discord.com/users/285468327135019019" target="_blank" rel="noopener">discord — wzv <span class="arr">↗</span></a>
+      <a class="hover-t" href="https://tracker.gg/valorant/profile/riot/4owkey%23prx/overview" target="_blank" rel="noopener"><span class="scr">valorant — radiant</span> <span class="arr">↗</span></a>
+      <a class="hover-t" href="https://discord.com/users/285468327135019019" target="_blank" rel="noopener"><span class="scr">discord — wzv</span> <span class="arr">↗</span></a>
     </nav>
   </div>
 
@@ -468,9 +473,44 @@ addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
   cursor.style.transform=`translate(${cx}px,${cy}px)`;
   requestAnimationFrame(loopCursor);
 })();
+/* ================= scramble engine (igloo-style glyph resolve) ================= */
+const GLYPHS='—+*/<>[]{}#%&$_\\|=~';
+function scramble(el, text){
+  const final = text!==undefined ? text : el.innerText;
+  if(reduceMotion){ el.innerText=final; return; }
+  if(el._sc) cancelAnimationFrame(el._sc);
+  const lockAt=[...final].map((_,i)=>i*1.6+Math.random()*16);
+  const end=Math.max(...lockAt,1); let frame=0;
+  (function run(){
+    let out='';
+    for(let i=0;i<final.length;i++){
+      out+= frame>=lockAt[i] ? final[i]
+          : (final[i]===' ' ? ' ' : GLYPHS[Math.random()*GLYPHS.length|0]);
+    }
+    el.innerText=out; frame+=1.4;
+    if(frame<end){ el._sc=requestAnimationFrame(run); }
+    else{ el.innerText=final; el._sc=null; }
+  })();
+}
+
+/* ================= glassy interaction tick ================= */
+function tickSound(freq=1900){
+  if(!audioCtx||!isPlaying)return;
+  const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+  o.type='sine'; o.frequency.value=freq;
+  g.gain.setValueAtTime(.035,audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+.09);
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start(); o.stop(audioCtx.currentTime+.1);
+}
+
 function bindHovers(){
   document.querySelectorAll('.hover-t, a, button, li').forEach(t=>{
-    t.addEventListener('mouseenter',()=>cursor.classList.add('hover'));
+    t.addEventListener('mouseenter',()=>{
+      cursor.classList.add('hover');
+      tickSound(1900);
+      const s=t.querySelector('.scr'); if(s) scramble(s);
+    });
     t.addEventListener('mouseleave',()=>cursor.classList.remove('hover'));
   });
 }
@@ -525,6 +565,10 @@ function enterSite(){
   $('bgDark').play().catch(()=>{}); $('bgLight').play().catch(()=>{});
   music.volume=.4;
   music.play().then(initAudio).catch(()=>{});
+  /* staggered glyph resolve across every metadata label */
+  document.querySelectorAll('.scr').forEach((el,i)=>{
+    setTimeout(()=>scramble(el), 500+i*110);
+  });
 }
 
 /* ================= audio: analyser + lowpass ================= */
@@ -554,6 +598,11 @@ function breathe(){
   nameEl.style.transform=`translate(${px}px,${py}px) scale(${n})`;
   avatar.style.transform=`scale(${a})`;
   bgWrap.style.transform=`translate(-50%,-50%) scale(${bass>50?env:1})`;
+  /* chromatic aberration on heavy bass — rgb split like a lens defect */
+  const ab=Math.max(0,(bass-95)/40);
+  nameEl.style.textShadow = ab>.25
+    ? `${ab.toFixed(2)}px 0 rgba(255,84,72,.4), ${(-ab).toFixed(2)}px 0 rgba(88,150,255,.4)`
+    : 'none';
 }
 music.addEventListener('timeupdate',()=>{
   if(music.duration) $('progress').style.width=(music.currentTime/music.duration*100)+'%';
@@ -616,20 +665,14 @@ if(!reduceMotion){
   });
 }
 
-/* ================= rolling words ================= */
-const track=document.querySelector('#roll .track');
-let rollIdx=0;
+/* ================= scrambling words ================= */
+const rollText=$('rollText');
+const phrases=['stay lowkey','calm energy','radiant mind'];
+let phraseIdx=0;
 setInterval(()=>{
-  rollIdx++;
-  track.style.transform=`translateY(-${rollIdx*34}px)`;
-  if(rollIdx===3){
-    setTimeout(()=>{
-      track.style.transition='none';
-      track.style.transform='translateY(0)'; rollIdx=0;
-      requestAnimationFrame(()=>requestAnimationFrame(()=>track.style.transition=''));
-    },950);
-  }
-},3200);
+  phraseIdx=(phraseIdx+1)%phrases.length;
+  scramble(rollText, phrases[phraseIdx]);
+},3400);
 
 /* ================= weather ================= */
 let weatherType='dust', wxLabel='';
@@ -685,8 +728,9 @@ if(!reduceMotion) drawWx();
 
 /* ================= live data: views + lanyard ================= */
 fetch('https://api.counterapi.dev/v1/lowkey-emal-dev/visits/up')
-  .then(r=>r.json()).then(d=>{$('views').innerText=d.count;}).catch(()=>{});
+  .then(r=>r.json()).then(d=>{ scramble($('views'), String(d.count)); }).catch(()=>{});
 
+let lastStatus='';
 function fetchLanyard(){
   fetch('https://api.lanyard.rest/v1/users/285468327135019019')
     .then(r=>r.json()).then(d=>{
@@ -698,7 +742,10 @@ function fetchLanyard(){
       }
       const colors={online:'#43b581',idle:'#faa61a',dnd:'#f04747',offline:'#747f8d'};
       $('statusDot').style.background=colors[u.discord_status]||colors.offline;
-      $('statusText').innerText=u.discord_status||'offline';
+      if(u.discord_status!==lastStatus){
+        lastStatus=u.discord_status;
+        scramble($('statusText'), u.discord_status||'offline');
+      }
       const cs=u.activities.find(a=>a.type===4);
       $('bio').innerText=cs&&cs.state
         ?`“${cs.emoji?(cs.emoji.id?'':cs.emoji.name+' '):''}${cs.state}”`
@@ -723,7 +770,7 @@ document.addEventListener('keydown',e=>{
     if(ki===seq.length){
       document.body.classList.add('shattered');
       $('terminal').classList.add('on');
-      $('termInput').focus(); muffle(true); ki=0;
+      $('termInput').focus(); muffle(true); tickSound(640); ki=0;
     }
   }else ki=0;
 });
