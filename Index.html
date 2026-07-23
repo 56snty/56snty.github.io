@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GGzE Patiënt Informatiesysteem</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ggz-green:  #00a390;
+    --ggz-dark:   #004d42;
+    --ggz-light:  #e6f7f5;
+    --ink:        #1a1a1a;
+    --paper:      #ffffff;
+    --muted:      #666666;
+    --border:     #d4d4d4;
+    --red:        #dc2626;
+    --ease:       cubic-bezier(.22,.61,.36,1);
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+
+  body{
+    font-family:"Instrument Sans", system-ui, sans-serif;
+    color:var(--ink);
+    min-height:100dvh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    background:
+      radial-gradient(1200px 600px at 15% -10%, #d4f1ec 0%, transparent 60%),
+      radial-gradient(1000px 700px at 110% 10%, #eafaf5 0%, transparent 55%),
+      var(--ggz-light);
+    transition:background .4s var(--ease);
+  }
+
+  /* ===================================================================
+     THEME TOGGLE (floating pill, present on all pages)
+     =================================================================== */
+  .theme-toggle{
+    position:fixed;
+    top:20px;
+    right:20px;
+    z-index:500;
+    display:flex;
+    gap:4px;
+    background:rgba(255,255,255,.85);
+    backdrop-filter:blur(12px);
+    border:1px solid var(--border);
+    border-radius:100px;
+    padding:4px;
+    box-shadow:0 4px 20px rgba(0,0,0,.08);
+  }
+  .theme-btn{
+    border:none;
+    background:transparent;
+    width:34px;
+    height:34px;
+    border-radius:50%;
+    font-size:16px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:all .25s var(--ease);
+    opacity:.5;
+  }
+  .theme-btn:hover{ opacity:1; transform:translateY(-1px); }
+  .theme-btn.active{
+    background:var(--ggz-dark);
+    opacity:1;
+    box-shadow:0 2px 8px rgba(0,77,66,.3);
+  }
+
+  /* ===================================================================
+     PREMIUM THEME (default)
+     =================================================================== */
+  .card{
+    background:var(--paper);
+    border-radius:24px;
+    box-shadow:0 1px 2px rgba(0,0,0,.04), 0 24px 60px -12px rgba(0,77,66,.18);
+    max-width:440px;
+    width:100%;
+    overflow:hidden;
+    animation:rise .6s var(--ease);
+  }
+  @keyframes rise{
+    from{ opacity:0; transform:translateY(16px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+
+  .card-header{
+    padding:40px 40px 28px;
+    text-align:center;
+    border-bottom:1px solid var(--border);
+  }
+  .brand-mark{
+    width:52px;
+    height:52px;
+    margin:0 auto 20px;
+    border-radius:16px;
+    background:linear-gradient(135deg, var(--ggz-green), var(--ggz-dark));
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:white;
+    font-family:"Fraunces", serif;
+    font-weight:600;
+    font-size:22px;
+    box-shadow:0 8px 20px -6px rgba(0,77,66,.5);
+  }
+  .card-title{
+    font-family:"Fraunces", serif;
+    font-size:26px;
+    font-weight:600;
+    color:var(--ggz-dark);
+    margin-bottom:6px;
+  }
+  .card-subtitle{
+    font-size:14px;
+    color:var(--muted);
+  }
+
+  .card-body{ padding:32px 40px 40px; }
+
+  .field{ margin-bottom:20px; }
+  .field-label{
+    display:block;
+    font-size:12px;
+    font-weight:600;
+    letter-spacing:.03em;
+    text-transform:uppercase;
+    color:var(--ggz-dark);
+    margin-bottom:8px;
+  }
+  .field-input{
+    width:100%;
+    padding:13px 16px;
+    border:1.5px solid var(--border);
+    border-radius:12px;
+    font-family:inherit;
+    font-size:15px;
+    background:#fafafa;
+    transition:all .2s var(--ease);
+  }
+  .field-input:focus{
+    outline:none;
+    border-color:var(--ggz-green);
+    background:white;
+    box-shadow:0 0 0 4px rgba(0,163,144,.12);
+  }
+  .field-select{
+    width:100%;
+    padding:13px 16px;
+    border:1.5px solid var(--border);
+    border-radius:12px;
+    font-family:inherit;
+    font-size:15px;
+    background:#fafafa;
+    cursor:pointer;
+  }
+
+  .identity-preview{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    background:var(--ggz-light);
+    border-radius:14px;
+    padding:14px 16px;
+    margin-bottom:20px;
+    animation:rise .3s var(--ease);
+  }
+  .identity-avatar{
+    width:38px;
+    height:38px;
+    border-radius:50%;
+    background:linear-gradient(135deg, var(--ggz-green), var(--ggz-dark));
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:600;
+    font-size:14px;
+    flex-shrink:0;
+  }
+  .identity-text{ font-size:13px; line-height:1.4; }
+  .identity-name{ font-weight:600; color:var(--ggz-dark); }
+  .identity-id{ color:var(--muted); font-family:"JetBrains Mono", monospace; font-size:12px; }
+
+  .btn{
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:12px;
+    background:var(--ggz-dark);
+    color:white;
+    font-family:inherit;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    transition:all .25s var(--ease);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+  }
+  .btn:hover{ background:#003830; transform:translateY(-1px); box-shadow:0 8px 20px -6px rgba(0,77,66,.4); }
+  .btn:active{ transform:translateY(0); }
+  .btn:disabled{ opacity:.6; cursor:default; transform:none; box-shadow:none; }
+
+  .btn-ghost{
+    width:100%;
+    padding:12px;
+    border:none;
+    background:transparent;
+    color:var(--muted);
+    font-family:inherit;
+    font-size:13px;
+    font-weight:500;
+    cursor:pointer;
+    margin-top:8px;
+    transition:color .2s;
+  }
+  .btn-ghost:hover{ color:var(--ggz-dark); }
+
+  .message{
+    border-radius:12px;
+    padding:12px 16px;
+    font-size:13px;
+    font-weight:500;
+    margin-bottom:20px;
+    display:none;
+    align-items:center;
+    gap:8px;
+    animation:rise .3s var(--ease);
+  }
+  .message.show{ display:flex; }
+  .message.error{ background:#fef2f2; color:#991b1b; }
+  .message.success{ background:#f0fdf4; color:#166534; }
+
+  .attempts-note{
+    font-size:12px;
+    color:var(--muted);
+    text-align:center;
+    margin-top:16px;
+  }
+
+  .step-dots{
+    display:flex;
+    justify-content:center;
+    gap:6px;
+    margin-top:20px;
+  }
+  .step-dot{
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    background:var(--border);
+    transition:all .3s var(--ease);
+  }
+  .step-dot.active{ background:var(--ggz-green); width:20px; }
+
+  .footer-note{
+    text-align:center;
+    font-size:11px;
+    color:var(--muted);
+    margin-top:24px;
+    line-height:1.6;
+  }
+
+  .hidden{ display:none !important; }
+
+  /* ===================================================================
+     WIN95 THEME (legacy retro, opt-in)
+     =================================================================== */
+  body.theme-win95{
+    background:#008080 !important;
+    font-family:"MS Sans Serif","Microsoft Sans Serif","Segoe UI",Arial,sans-serif;
+    display:block;
+    padding:16px;
+  }
+  body.theme-win95 .card{
+    background:#c0c0c0;
+    border:2px outset #ffffff;
+    box-shadow:2px 2px 0 rgba(0,0,0,.5);
+    border-radius:0;
+    max-width:420px;
+    margin:40px auto;
+    animation:none;
+  }
+  body.theme-win95 .card-header{
+    background:linear-gradient(to right,#000080,#1084d0);
+    color:white;
+    padding:6px 8px;
+    text-align:left;
+    border-bottom:none;
+  }
+  body.theme-win95 .brand-mark{ display:none; }
+  body.theme-win95 .card-title{
+    font-family:inherit;
+    font-size:12px;
+    font-weight:bold;
+    color:white;
+    margin:0;
+  }
+  body.theme-win95 .card-subtitle{ display:none; }
+  body.theme-win95 .card-body{ padding:14px; }
+  body.theme-win95 .field-label{
+    text-transform:none;
+    font-size:11px;
+    font-weight:normal;
+    color:#000;
+    letter-spacing:0;
+  }
+  body.theme-win95 .field-input,
+  body.theme-win95 .field-select{
+    border-radius:0;
+    border:1px inset #808080;
+    font-size:11px;
+    padding:4px;
+    background:white;
+  }
+  body.theme-win95 .field-input:focus{ box-shadow:none; outline:1px dotted #000; }
+  body.theme-win95 .btn{
+    width:auto;
+    float:right;
+    background:#c0c0c0;
+    color:#000;
+    border:2px outset #ffffff;
+    border-radius:0;
+    font-size:11px;
+    font-weight:bold;
+    padding:5px 16px;
+  }
+  body.theme-win95 .btn:hover{ background:#d4d4d4; transform:none; box-shadow:none; }
+  body.theme-win95 .btn:active{ border-style:inset; }
+  body.theme-win95 .identity-preview{ border-radius:0; border:1px inset #808080; background:white; }
+  body.theme-win95 .identity-avatar{ border-radius:0; background:#000080; }
+  body.theme-win95 .message{ border-radius:0; }
+  body.theme-win95 .step-dots{ display:none; }
+</style>
+</head>
+<body>
+
+  <!-- Theme Toggle -->
+  <div class="theme-toggle" id="themeToggle">
+    <button class="theme-btn" data-theme="premium" title="Premium">✨</button>
+    <button class="theme-btn" data-theme="win95" title="Windows 95">🖥️</button>
+  </div>
+
+  <div class="card">
+
+    <div class="card-header">
+      <div class="brand-mark">G</div>
+      <div class="card-title" id="cardTitle">Welkom terug</div>
+      <div class="card-subtitle" id="cardSubtitle">Log in bij het GGzE Patiëntportaal</div>
+    </div>
+
+    <div class="card-body">
+
+      <div class="message error" id="errorMsg"></div>
+      <div class="message success" id="successMsg"></div>
+
+      <!-- STEP 1 -->
+      <div id="step1">
+        <div class="field">
+          <label class="field-label">Gebruikersnaam</label>
+          <input type="text" class="field-input" id="username" autocomplete="off" placeholder="Uw gebruikerscode" />
+        </div>
+
+        <div class="field">
+          <label class="field-label">Locatie</label>
+          <select class="field-select" id="location">
+            <option>GGzE Eindhoven — Hoofdlocatie</option>
+            <option>GGzE Woensel</option>
+            <option>GGzE Veldhoven</option>
+          </select>
+        </div>
+
+        <button class="btn" id="nextBtn">Volgende</button>
+
+        <div class="step-dots">
+          <div class="step-dot active"></div>
+          <div class="step-dot"></div>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div id="step2" class="hidden">
+        <div class="identity-preview">
+          <div class="identity-avatar" id="avatarInitial">?</div>
+          <div class="identity-text">
+            <div class="identity-name" id="userDisplay">-</div>
+            <div class="identity-id" id="clientIdDisplay">-</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Wachtwoord</label>
+          <input type="password" class="field-input" id="password" autocomplete="off" placeholder="••••••••" />
+        </div>
+
+        <button class="btn" id="loginBtn">Inloggen</button>
+        <button class="btn-ghost" id="backBtn">← Terug</button>
+
+        <div class="attempts-note">Pogingen: <span id="attempts">0</span>/3</div>
+
+        <div class="step-dots">
+          <div class="step-dot"></div>
+          <div class="step-dot active"></div>
+        </div>
+      </div>
+
+      <div class="footer-note">
+        GGzE Patiënt Informatiesysteem · NEN-7510 gecertificeerd<br>
+        Alle activiteiten worden gelogd conform beveiligingsbeleid.
+      </div>
+
+    </div>
+  </div>
+
+<script>
+/* ================================================================
+   THEME
+   ================================================================ */
+function applyGlobalTheme(theme){
+  document.body.classList.remove('theme-win95');
+  if(theme === 'win95') document.body.classList.add('theme-win95');
+  document.querySelectorAll('.theme-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.theme === theme);
+  });
+  localStorage.setItem('siteTheme', theme);
+}
+
+document.getElementById('themeToggle').addEventListener('click', (e) => {
+  const btn = e.target.closest('.theme-btn');
+  if(!btn) return;
+  applyGlobalTheme(btn.dataset.theme);
+});
+
+applyGlobalTheme(localStorage.getItem('siteTheme') || 'premium');
+
+/* ================================================================
+   USERS
+   ================================================================ */
+const USERS = {
+  "gebruiker162": {
+    pass: "Spanje2026!",
+    name: "SABINE N.",
+    clientId: "CLI-1998-0162",
+    destination: "units.html"
+  },
+  "gebruiker726": {
+    pass: "ZW2!",
+    name: "NIENKE V.",
+    clientId: "CLI-1998-0726",
+    destination: "units.html"
+  },
+  "gebruiker492": {
+    pass: "Wateentoestand!",
+    name: "DEMIAN",
+    clientId: "CLI-1998-0492",
+    destination: "units.html"
+  },
+  "admin": {
+    pass: "Poep123!",
+    name: "SYSTEEMBEHEERDER",
+    clientId: "ADM-SYS-ROOT",
+    destination: "admin.html"
+  }
+};
+
+/* ================================================================
+   ACTIVITY LOGGING
+   ================================================================ */
+function logActivity(username, action, details = {}){
+  const logs = JSON.parse(localStorage.getItem('activityLogs') || '[]');
+  logs.push({
+    timestamp: new Date().toISOString(),
+    username,
+    action,
+    details
+  });
+  localStorage.setItem('activityLogs', JSON.stringify(logs));
+}
+
+/* ================================================================
+   UI
+   ================================================================ */
+const step1 = document.getElementById('step1');
+const step2 = document.getElementById('step2');
+const usernameInput = document.getElementById('username');
+const passwordInput = document.getElementById('password');
+const nextBtn = document.getElementById('nextBtn');
+const backBtn = document.getElementById('backBtn');
+const loginBtn = document.getElementById('loginBtn');
+const errorMsg = document.getElementById('errorMsg');
+const successMsg = document.getElementById('successMsg');
+
+let currentUser = null;
+let attempts = 0;
+
+function showError(msg){
+  errorMsg.textContent = msg;
+  errorMsg.classList.add('show');
+  successMsg.classList.remove('show');
+}
+
+function showSuccess(msg){
+  successMsg.textContent = msg;
+  successMsg.classList.add('show');
+  errorMsg.classList.remove('show');
+}
+
+function hideMessages(){
+  errorMsg.classList.remove('show');
+  successMsg.classList.remove('show');
+}
+
+/* ================================================================
+   STEP 1
+   ================================================================ */
+nextBtn.addEventListener('click', () => {
+  const username = usernameInput.value.trim().toLowerCase();
+
+  if(!username){
+    showError('Voer een gebruikersnaam in.');
+    return;
+  }
+
+  if(USERS[username]){
+    currentUser = USERS[username];
+    hideMessages();
+
+    document.getElementById('userDisplay').textContent = currentUser.name;
+    document.getElementById('clientIdDisplay').textContent = currentUser.clientId;
+    document.getElementById('avatarInitial').textContent = currentUser.name.charAt(0);
+    document.getElementById('cardTitle').textContent = 'Welkom, ' + currentUser.name.split(' ')[0];
+    document.getElementById('cardSubtitle').textContent = 'Voer uw wachtwoord in om verder te gaan';
+
+    step1.classList.add('hidden');
+    step2.classList.remove('hidden');
+    passwordInput.focus();
+  } else {
+    showError('Gebruikersnaam niet gevonden. Controleer de spelling.');
+  }
+});
+
+usernameInput.addEventListener('keydown', (e) => {
+  if(e.key === 'Enter') nextBtn.click();
+});
+
+/* ================================================================
+   STEP 2
+   ================================================================ */
+loginBtn.addEventListener('click', () => {
+  const password = passwordInput.value;
+
+  if(!password){
+    showError('Voer een wachtwoord in.');
+    return;
+  }
+
+  if(password === currentUser.pass){
+    showSuccess('Authenticatie geslaagd — sessie wordt gestart…');
+    loginBtn.disabled = true;
+    loginBtn.textContent = 'Bezig…';
+
+    const username = Object.keys(USERS).find(key => USERS[key] === currentUser);
+    logActivity(username, 'login', {
+      name: currentUser.name,
+      clientId: currentUser.clientId
+    });
+    localStorage.setItem('currentUser', username);
+
+    setTimeout(() => {
+      window.location.href = currentUser.destination + '?user=' + username;
+    }, 900);
+  } else {
+    attempts++;
+    document.getElementById('attempts').textContent = attempts;
+    showError('Onjuist wachtwoord. Poging ' + attempts + ' van 3.');
+
+    if(attempts >= 3){
+      showError('Account tijdelijk geblokkeerd. Neem contact op met IT-beheer.');
+      loginBtn.disabled = true;
+      passwordInput.disabled = true;
+    }
+  }
+});
+
+passwordInput.addEventListener('keydown', (e) => {
+  if(e.key === 'Enter') loginBtn.click();
+});
+
+backBtn.addEventListener('click', () => {
+  step2.classList.add('hidden');
+  step1.classList.remove('hidden');
+  passwordInput.value = '';
+  attempts = 0;
+  document.getElementById('attempts').textContent = '0';
+  hideMessages();
+  currentUser = null;
+  loginBtn.disabled = false;
+  passwordInput.disabled = false;
+  document.getElementById('cardTitle').textContent = 'Welkom terug';
+  document.getElementById('cardSubtitle').textContent = 'Log in bij het GGzE Patiëntportaal';
+});
+
+/* ================================================================
+   INIT
+   ================================================================ */
+window.addEventListener('load', () => {
+  usernameInput.focus();
+});
+</script>
+</body>
+</html>

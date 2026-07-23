@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GGzE — Cliënt Dossier</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style id="baseStyles">
+  :root{
+    --ggz-green:  #00a390;
+    --ggz-dark:   #004d42;
+    --ggz-light:  #e6f7f5;
+    --ink:        #1a1a1a;
+    --paper:      #ffffff;
+    --muted:      #666666;
+    --border:     #d4d4d4;
+    --red:        #dc2626;
+    --ease:       cubic-bezier(.22,.61,.36,1);
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+
+  body{
+    font-family:"Instrument Sans", system-ui, sans-serif;
+    color:var(--ink);
+    min-height:100dvh;
+    background:
+      radial-gradient(1200px 600px at 15% -10%, #d4f1ec 0%, transparent 60%),
+      radial-gradient(1000px 700px at 110% 10%, #eafaf5 0%, transparent 55%),
+      var(--ggz-light);
+    transition:background .4s var(--ease);
+    padding-bottom:60px;
+  }
+
+  /* theme toggle */
+  .theme-toggle{
+    position:fixed; top:20px; right:20px; z-index:500;
+    display:flex; gap:4px;
+    background:rgba(255,255,255,.85);
+    backdrop-filter:blur(12px);
+    border:1px solid var(--border);
+    border-radius:100px; padding:4px;
+    box-shadow:0 4px 20px rgba(0,0,0,.08);
+  }
+  .theme-btn{
+    border:none; background:transparent;
+    width:34px; height:34px; border-radius:50%;
+    font-size:16px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    transition:all .25s var(--ease); opacity:.5;
+  }
+  .theme-btn:hover{ opacity:1; transform:translateY(-1px); }
+  .theme-btn.active{ background:var(--ggz-dark); opacity:1; box-shadow:0 2px 8px rgba(0,77,66,.3); }
+
+  /* header */
+  .topbar{
+    padding:20px clamp(20px,5vw,48px);
+    display:flex; justify-content:space-between; align-items:center;
+    flex-wrap:wrap; gap:16px;
+  }
+  .topbar-user{ display:flex; align-items:center; gap:12px; }
+  .avatar{
+    width:40px; height:40px; border-radius:50%;
+    background:linear-gradient(135deg, var(--ggz-green), var(--ggz-dark));
+    color:white; display:flex; align-items:center; justify-content:center;
+    font-weight:600; font-size:14px; flex-shrink:0;
+  }
+  .topbar-name{ font-weight:600; color:var(--ggz-dark); font-size:14px; }
+  .topbar-meta{ font-size:12px; color:var(--muted); font-family:"JetBrains Mono", monospace; }
+  .topbar-actions{ display:flex; align-items:center; gap:16px; }
+  .link-btn{
+    background:none; border:none; color:var(--muted); font-family:inherit;
+    font-size:13px; cursor:pointer; transition:color .2s;
+  }
+  .link-btn:hover{ color:var(--ggz-dark); }
+  .link-btn.danger:hover{ color:#dc2626; }
+
+  .main{ max-width:840px; margin:0 auto; padding:0 clamp(20px,5vw,48px); }
+
+  /* tabs */
+  .tabs{ display:flex; gap:6px; margin-bottom:24px; }
+  .tab{
+    background:rgba(255,255,255,.6);
+    border:1px solid var(--border);
+    border-radius:100px;
+    padding:9px 20px;
+    font-size:13px;
+    font-weight:600;
+    color:var(--muted);
+    cursor:pointer;
+    transition:all .25s var(--ease);
+  }
+  .tab:hover{ color:var(--ggz-dark); }
+  .tab.active{
+    background:var(--ggz-dark);
+    color:white;
+    border-color:var(--ggz-dark);
+  }
+
+  .tab-content{ display:none; animation:rise .4s var(--ease); }
+  .tab-content.active{ display:block; }
+  @keyframes rise{ from{ opacity:0; transform:translateY(10px);} to{ opacity:1; transform:translateY(0);} }
+
+  .card{
+    background:var(--paper);
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:28px;
+    margin-bottom:20px;
+    box-shadow:0 1px 2px rgba(0,0,0,.03);
+  }
+  .card-title{
+    font-family:"Fraunces", serif; font-weight:600; font-size:19px;
+    color:var(--ggz-dark); margin-bottom:18px;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+  }
+
+  .btn{
+    background:var(--ggz-dark); color:white; border:none;
+    border-radius:10px; padding:10px 18px; font-family:inherit;
+    font-size:13px; font-weight:600; cursor:pointer;
+    transition:all .25s var(--ease); white-space:nowrap;
+  }
+  .btn:hover{ background:#003830; transform:translateY(-1px); box-shadow:0 6px 16px -4px rgba(0,77,66,.4); }
+
+  .empty-state{
+    text-align:center; padding:36px 20px; color:var(--muted); font-size:13px;
+  }
+
+  .item{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:14px 16px; border-radius:14px; background:var(--ggz-light);
+    margin-bottom:10px; transition:all .2s var(--ease);
+  }
+  .item:last-child{ margin-bottom:0; }
+  .item:hover{ transform:translateX(2px); }
+  .item-main{ font-size:14px; }
+  .item-name{ font-weight:600; color:var(--ink); }
+  .item-sub{ font-size:12px; color:var(--muted); margin-top:2px; }
+  .item-del{
+    width:28px; height:28px; border-radius:50%; border:none;
+    background:transparent; color:var(--muted); cursor:pointer; font-size:15px;
+    display:flex; align-items:center; justify-content:center; transition:all .2s;
+    flex-shrink:0;
+  }
+  .item-del:hover{ background:#fee2e2; color:#dc2626; }
+
+  .moment-item{ background:var(--ggz-light); border-radius:14px; padding:14px 16px; margin-bottom:10px; font-size:14px; }
+  .moment-item:last-child{ margin-bottom:0; }
+
+  .other-user-chip{
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--ggz-light); border-radius:100px; padding:6px 14px 6px 6px;
+    font-size:13px; margin:0 8px 8px 0;
+  }
+  .chip-avatar{
+    width:22px; height:22px; border-radius:50%; background:var(--ggz-green);
+    color:white; font-size:10px; font-weight:600; display:flex; align-items:center; justify-content:center;
+  }
+
+  .thanks-text p{ margin-bottom:14px; line-height:1.7; font-size:15px; }
+  .thanks-text p:last-child{ margin-bottom:0; }
+
+  .cat-fact{
+    background:var(--ggz-light); border-radius:14px; padding:16px; font-size:14px;
+    line-height:1.6; margin-bottom:14px;
+  }
+
+  /* modal */
+  .modal{
+    display:none; position:fixed; inset:0; z-index:1000;
+    background:rgba(0,20,15,.4); backdrop-filter:blur(4px);
+    align-items:center; justify-content:center; padding:20px;
+  }
+  .modal.active{ display:flex; }
+  .modal-card{
+    background:white; border-radius:20px; max-width:420px; width:100%;
+    padding:28px; box-shadow:0 30px 80px -20px rgba(0,0,0,.3);
+    animation:rise .3s var(--ease);
+  }
+  .modal-title{ font-family:"Fraunces", serif; font-weight:600; font-size:20px; color:var(--ggz-dark); margin-bottom:20px; }
+  .modal-field{ margin-bottom:16px; }
+  .modal-label{ display:block; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.03em; color:var(--ggz-dark); margin-bottom:6px; }
+  .modal-input, .modal-textarea{
+    width:100%; padding:11px 14px; border:1.5px solid var(--border); border-radius:10px;
+    font-family:inherit; font-size:14px; background:#fafafa;
+  }
+  .modal-input:focus, .modal-textarea:focus{ outline:none; border-color:var(--ggz-green); background:white; box-shadow:0 0 0 4px rgba(0,163,144,.12); }
+  .modal-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:22px; }
+  .btn-cancel{
+    background:transparent; color:var(--muted); border:1.5px solid var(--border);
+    border-radius:10px; padding:10px 18px; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer;
+  }
+  .btn-cancel:hover{ background:#f5f5f5; }
+
+  .hidden{ display:none !important; }
+
+  /* =====================================================================
+     WIN95 THEME
+     ===================================================================== */
+  body.theme-win95{
+    background:#008080 !important;
+    font-family:"MS Sans Serif","Microsoft Sans Serif",Arial,sans-serif;
+    padding:16px;
+  }
+  body.theme-win95 .topbar{ display:none; }
+  body.theme-win95 .main{
+    max-width:900px; margin:0 auto;
+    background:#c0c0c0; border:2px outset #ffffff; box-shadow:3px 3px 0 rgba(0,0,0,.5);
+    padding:12px;
+  }
+  body.theme-win95 .win95-chrome{ display:block !important; }
+  body.theme-win95 .tabs{ border-bottom:2px solid #808080; border-radius:0; gap:2px; margin-bottom:12px; }
+  body.theme-win95 .tab{
+    background:#c0c0c0; border:2px outset #ffffff; border-bottom:none; border-radius:0;
+    font-size:11px; color:#000; padding:6px 16px;
+  }
+  body.theme-win95 .tab.active{ background:#ffffff; color:#000; margin-bottom:-2px; }
+  body.theme-win95 .card{
+    background:#c0c0c0; border:2px groove #ffffff; border-radius:0; box-shadow:none; padding:12px 12px 16px;
+  }
+  body.theme-win95 .card-title{ font-family:inherit; font-size:11px; font-weight:bold; color:#000080; }
+  body.theme-win95 .btn{
+    background:#c0c0c0; color:#000; border:2px outset #ffffff; border-radius:0; font-size:11px;
+  }
+  body.theme-win95 .btn:hover{ background:#d4d4d4; transform:none; box-shadow:none; }
+  body.theme-win95 .item, body.theme-win95 .moment-item{
+    background:#ffffff; border:1px outset #c0c0c0; border-radius:0;
+  }
+  body.theme-win95 .cat-fact{ background:#ffffe1; border:1px solid #808080; border-radius:0; }
+  body.theme-win95 .modal-card{ background:#c0c0c0; border:2px outset #ffffff; border-radius:0; }
+  body.theme-win95 .modal-input, body.theme-win95 .modal-textarea{ border-radius:0; border:1px inset #808080; }
+  body.theme-win95 .btn-cancel{ border-radius:0; }
+
+  /* =====================================================================
+     GRINCH THEME — premium winter
+     ===================================================================== */
+  body.theme-grinch{
+    background:
+      radial-gradient(1000px 500px at 10% -10%, rgba(196,30,58,.12), transparent 60%),
+      radial-gradient(900px 600px at 100% 0%, rgba(255,215,0,.08), transparent 55%),
+      linear-gradient(180deg, #0b3d24, #0f2e1c 60%);
+  }
+  body.theme-grinch .theme-toggle{ background:rgba(15,46,28,.75); border-color:rgba(255,255,255,.15); }
+  body.theme-grinch .topbar-name{ color:#f4e9c1; }
+  body.theme-grinch .topbar-meta, body.theme-grinch .link-btn{ color:#a9c9b3; }
+  body.theme-grinch .link-btn:hover{ color:#f4e9c1; }
+  body.theme-grinch .avatar{ background:linear-gradient(135deg,#c41e3a,#7a0f22); box-shadow:0 8px 20px -6px rgba(196,30,58,.6); }
+  body.theme-grinch .tab{ background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.15); color:#c9dccf; }
+  body.theme-grinch .tab.active{ background:#c41e3a; border-color:#c41e3a; color:#fff2ea; }
+  body.theme-grinch .card{
+    background:linear-gradient(160deg, #123924, #0e2a1a);
+    border:1px solid rgba(244,233,193,.15);
+    box-shadow:0 20px 50px -20px rgba(0,0,0,.5);
+  }
+  body.theme-grinch .card-title{ color:#f4e9c1; }
+  body.theme-grinch .btn{ background:linear-gradient(135deg,#c41e3a,#8f1729); box-shadow:0 6px 16px -4px rgba(196,30,58,.5); }
+  body.theme-grinch .btn:hover{ background:#a01729; }
+  body.theme-grinch .item, body.theme-grinch .moment-item{ background:rgba(244,233,193,.08); color:#f0f3ec; }
+  body.theme-grinch .item-name{ color:#f4e9c1; }
+  body.theme-grinch .item-sub{ color:#a9c9b3; }
+  body.theme-grinch .cat-fact{ background:rgba(244,233,193,.08); color:#f0f3ec; }
+  body.theme-grinch .thanks-text{ color:#e6efe8; }
+  body.theme-grinch .other-user-chip{ background:rgba(244,233,193,.1); color:#f0f3ec; }
+  body.theme-grinch .modal-card{ background:#123924; }
+  body.theme-grinch .modal-title{ color:#f4e9c1; }
+  body.theme-grinch .modal-label{ color:#c9dccf; }
+  body.theme-grinch .modal-input, body.theme-grinch .modal-textarea{ background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.2); color:#f0f3ec; }
+  body.theme-grinch .btn-cancel{ color:#c9dccf; border-color:rgba(255,255,255,.2); }
+
+  /* =====================================================================
+     SPORT THEME — premium stadium
+     ===================================================================== */
+  body.theme-sport{
+    background:
+      radial-gradient(1000px 500px at 90% -10%, rgba(255,102,0,.12), transparent 60%),
+      radial-gradient(900px 600px at 0% 100%, rgba(212,20,20,.1), transparent 55%),
+      linear-gradient(160deg, #0d1b2a, #16243a 55%, #0d1b2a);
+  }
+  body.theme-sport .theme-toggle{ background:rgba(13,27,42,.75); border-color:rgba(255,255,255,.15); }
+  body.theme-sport .topbar-name{ color:#fff; }
+  body.theme-sport .topbar-meta, body.theme-sport .link-btn{ color:#9fb2c9; }
+  body.theme-sport .link-btn:hover{ color:#fff; }
+  body.theme-sport .avatar{ background:linear-gradient(135deg,#ff6600,#c23b00); box-shadow:0 8px 20px -6px rgba(255,102,0,.6); }
+  body.theme-sport .tab{ background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.15); color:#c7d3e0; }
+  body.theme-sport .tab.active{ background:#d41414; border-color:#d41414; color:#fff; }
+  body.theme-sport .card{
+    background:linear-gradient(160deg, #16243a, #101c2e);
+    border:1px solid rgba(255,255,255,.12);
+    box-shadow:0 20px 50px -20px rgba(0,0,0,.6);
+  }
+  body.theme-sport .card-title{ color:#fff; }
+  body.theme-sport .btn{ background:linear-gradient(135deg,#ff6600,#d94e00); box-shadow:0 6px 16px -4px rgba(255,102,0,.5); }
+  body.theme-sport .btn:hover{ background:#c23b00; }
+  body.theme-sport .item, body.theme-sport .moment-item{ background:rgba(255,255,255,.07); color:#eef2f7; }
+  body.theme-sport .item-name{ color:#fff; }
+  body.theme-sport .item-sub{ color:#9fb2c9; }
+  body.theme-sport .cat-fact{ background:rgba(255,255,255,.07); color:#eef2f7; }
+  body.theme-sport .thanks-text{ color:#dde5ee; }
+  body.theme-sport .other-user-chip{ background:rgba(255,255,255,.08); color:#eef2f7; }
+  body.theme-sport .modal-card{ background:#16243a; }
+  body.theme-sport .modal-title{ color:#fff; }
+  body.theme-sport .modal-label{ color:#c7d3e0; }
+  body.theme-sport .modal-input, body.theme-sport .modal-textarea{ background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.2); color:#eef2f7; }
+  body.theme-sport .btn-cancel{ color:#c7d3e0; border-color:rgba(255,255,255,.2); }
+
+  /* =====================================================================
+     GTST THEME — premium drama/glam
+     ===================================================================== */
+  body.theme-gtst{
+    background:
+      radial-gradient(1000px 500px at 90% -10%, rgba(212,175,55,.15), transparent 60%),
+      radial-gradient(900px 600px at 0% 100%, rgba(139,0,0,.12), transparent 55%),
+      linear-gradient(160deg, #2c1810, #3d2420 55%, #2c1810);
+  }
+  body.theme-gtst .theme-toggle{ background:rgba(44,24,16,.75); border-color:rgba(212,175,55,.3); }
+  body.theme-gtst .topbar-name{ color:#f4e4a6; }
+  body.theme-gtst .topbar-meta, body.theme-gtst .link-btn{ color:#c9a876; }
+  body.theme-gtst .link-btn:hover{ color:#f4e4a6; }
+  body.theme-gtst .avatar{ background:linear-gradient(135deg,#d4af37,#8b6f1f); box-shadow:0 8px 20px -6px rgba(212,175,55,.6); }
+  body.theme-gtst .tab{ background:rgba(212,175,55,.08); border-color:rgba(212,175,55,.3); color:#d9c48f; }
+  body.theme-gtst .tab.active{ background:linear-gradient(135deg,#d4af37,#a8862c); border-color:#d4af37; color:#2c1810; }
+  body.theme-gtst .card{
+    background:linear-gradient(160deg, #4a2c2a, #2c1810);
+    border:1px solid rgba(212,175,55,.35);
+    box-shadow:0 20px 50px -20px rgba(0,0,0,.6), 0 0 40px -20px rgba(212,175,55,.3);
+  }
+  body.theme-gtst .card-title{ color:#f4e4a6; }
+  body.theme-gtst .btn{ background:linear-gradient(135deg,#d4af37,#a8862c); color:#2c1810; box-shadow:0 6px 16px -4px rgba(212,175,55,.5); }
+  body.theme-gtst .btn:hover{ background:#f4e4a6; }
+  body.theme-gtst .item, body.theme-gtst .moment-item{ background:rgba(212,175,55,.1); color:#f4e4d0; }
+  body.theme-gtst .item-name{ color:#f4e4a6; }
+  body.theme-gtst .item-sub{ color:#c9a876; }
+  body.theme-gtst .cat-fact{ background:rgba(212,175,55,.1); color:#f4e4d0; }
+  body.theme-gtst .thanks-text{ color:#eaddc7; }
+  body.theme-gtst .other-user-chip{ background:rgba(212,175,55,.12); color:#f4e4d0; }
+  body.theme-gtst .modal-card{ background:#3d2420; }
+  body.theme-gtst .modal-title{ color:#f4e4a6; }
+  body.theme-gtst .modal-label{ color:#d9c48f; }
+  body.theme-gtst .modal-input, body.theme-gtst .modal-textarea{ background:rgba(212,175,55,.08); border-color:rgba(212,175,55,.3); color:#f4e4d0; }
+  body.theme-gtst .btn-cancel{ color:#d9c48f; border-color:rgba(212,175,55,.3); }
+</style>
+</head>
+<body>
+
+  <!-- Theme Toggle -->
+  <div class="theme-toggle" id="themeToggle"></div>
+
+  <!-- Win95-only chrome (title bar / marquee), hidden by default -->
+  <div class="win95-chrome hidden" style="margin:-12px -12px 12px;">
+    <div style="background:linear-gradient(to right,#000080,#1084d0);color:white;padding:4px 6px;display:flex;justify-content:space-between;align-items:center;font-weight:bold;font-size:12px;">
+      <span id="windowTitle">GGzE Cliënt Dossier</span>
+      <div style="display:flex;gap:2px;">
+        <div style="width:18px;height:18px;background:#c0c0c0;border:1px outset white;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:10px;font-weight:bold;color:#000;">_</div>
+        <div style="width:18px;height:18px;background:#c0c0c0;border:1px outset white;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:10px;font-weight:bold;color:#000;">□</div>
+        <div onclick="logout()" style="width:18px;height:18px;background:#c0c0c0;border:1px outset white;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:10px;font-weight:bold;color:#000;">×</div>
+      </div>
+    </div>
+    <div style="background:#000080;color:#ffff00;padding:4px;font-size:11px;font-weight:bold;overflow:hidden;white-space:nowrap;">
+      <span id="marqueeText">████ WELKOM IN UW PERSOONLIJK DOSSIER ████</span>
+    </div>
+  </div>
+
+  <div class="topbar">
+    <div class="topbar-user">
+      <div class="avatar" id="avatarInitial">?</div>
+      <div>
+        <div class="topbar-name" id="userName"></div>
+        <div class="topbar-meta">Unit <span id="unitLabel"></span> · <span id="statusTime"></span></div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button class="link-btn" onclick="goBack()">← Units</button>
+      <button class="link-btn danger" onclick="logout()">Uitloggen</button>
+    </div>
+  </div>
+
+  <main class="main">
+
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('medicijnen', event)">Medicijnen</div>
+      <div class="tab" onclick="switchTab('momenten', event)">Mooie Momenten</div>
+      <div class="tab" onclick="switchTab('dankwoord', event)">Dankwoord</div>
+    </div>
+
+    <!-- Tab 1: Medicijnen -->
+    <div class="tab-content active" id="medicijnenTab">
+      <div class="card">
+        <div class="card-title">
+          Mijn Medicatielijst
+          <button class="btn" id="addMedBtn">+ Toevoegen</button>
+        </div>
+        <div id="medList"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Andere Gebruikers in Unit</div>
+        <div id="otherUsers"></div>
+      </div>
+    </div>
+
+    <!-- Tab 2: Mooie Momenten -->
+    <div class="tab-content" id="momentenTab">
+      <div class="card">
+        <div class="card-title">
+          Mijn Mooie Momenten
+          <button class="btn" id="addMomentBtn">+ Toevoegen</button>
+        </div>
+        <div id="momentsList"></div>
+      </div>
+    </div>
+
+    <!-- Tab 3: Dankwoord -->
+    <div class="tab-content" id="dankwoordTab">
+      <div class="card">
+        <div class="card-title">Dankwoord aan GGzE</div>
+        <div class="thanks-text">
+          <p><b>Beste GGzE team,</b></p>
+          <p>
+            Na 10 maanden bij GGzE wil ik jullie bedanken voor alles wat jullie voor mij hebben betekend.
+            De zorg, de aandacht, de momenten van menselijkheid — het heeft allemaal verschil gemaakt.
+          </p>
+          <p>
+            Jullie hebben mij geholpen om mezelf beter te begrijpen en om stappen vooruit te zetten.
+            Dat vergeet ik niet.
+          </p>
+          <p><b>Met oprechte dank,</b><br><i>Een dankbare cliënt</i></p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Leuke Kattenfact van de Dag</div>
+        <div class="cat-fact" id="catFact">Laden…</div>
+        <button class="btn" id="refreshCatBtn">Nieuwe Fact Ophalen</button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Modal: add med -->
+  <div class="modal" id="medModal">
+    <div class="modal-card">
+      <div class="modal-title">Medicatie Toevoegen</div>
+      <div class="modal-field">
+        <label class="modal-label">Medicijn Naam</label>
+        <input type="text" class="modal-input" id="medName" />
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">Dosering</label>
+        <input type="text" class="modal-input" id="medDosage" />
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">Tijden (gescheiden door komma)</label>
+        <input type="text" class="modal-input" id="medTimes" placeholder="bijv. 08:00, 20:00" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeMedModal()">Annuleren</button>
+        <button class="btn" onclick="saveMed()">Opslaan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: add moment -->
+  <div class="modal" id="momentModal">
+    <div class="modal-card">
+      <div class="modal-title">Mooi Moment Toevoegen</div>
+      <div class="modal-field">
+        <label class="modal-label">Beschrijving</label>
+        <textarea class="modal-textarea" id="momentText" rows="4"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeMomentModal()">Annuleren</button>
+        <button class="btn" onclick="saveMoment()">Opslaan</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+let currentUser = urlParams.get('user');
+let currentUnit = urlParams.get('unit');
+
+const USER_DATA = {
+  "gebruiker162": { name: "SABINE N.", personalTheme: "grinch", themeLabel: "The Grinch 🎄", clientId: "CLI-1998-0162" },
+  "gebruiker726": { name: "NIENKE V.", personalTheme: "sport",  themeLabel: "Sport ⚽",       clientId: "CLI-1998-0726" },
+  "gebruiker492": { name: "DEMIAN",    personalTheme: "gtst",   themeLabel: "GTST ✨",         clientId: "CLI-1998-0492" }
+};
+
+const UNIT_DATA = {
+  2: [
+    { username: 'patiënt_maria', name: 'Maria de Vries' },
+    { username: 'patiënt_jan', name: 'Jan Vermeulen' },
+    { username: 'patiënt_lisa', name: 'Lisa Bakker' },
+    { username: 'patiënt_tom', name: 'Tom Janssen' },
+    { username: 'patiënt_emma', name: 'Emma Peters' }
+  ],
+  3: [
+    { username: 'gebruiker162', name: 'SABINE N.' },
+    { username: 'gebruiker726', name: 'NIENKE V.' },
+    { username: 'gebruiker492', name: 'DEMIAN' }
+  ],
+  4: [
+    { username: 'patiënt_anna', name: 'Anna Smit' },
+    { username: 'patiënt_david', name: 'David Visser' },
+    { username: 'patiënt_sophie', name: 'Sophie Mulder' },
+    { username: 'patiënt_lucas', name: 'Lucas Bos' }
+  ]
+};
+
+if(!currentUser || !USER_DATA[currentUser]){
+  window.location.href = 'Index.html';
+}
+
+const userData = USER_DATA[currentUser];
+
+/* ================================================================
+   THEME (premium default, win95 legacy, + personal fun theme)
+   ================================================================ */
+const THEME_ICONS = { premium: '✨', win95: '🖥️' };
+const PERSONAL_ICONS = { grinch: '🎄', sport: '⚽', gtst: '📺' };
+
+function buildThemeToggle(){
+  const toggle = document.getElementById('themeToggle');
+  const themes = ['premium', 'win95', userData.personalTheme];
+  toggle.innerHTML = themes.map(t =>
+    `<button class="theme-btn" data-theme="${t}" title="${t === userData.personalTheme ? userData.themeLabel : t}">${THEME_ICONS[t] || PERSONAL_ICONS[t]}</button>`
+  ).join('');
+}
+
+function applyTheme(theme){
+  document.body.classList.remove('theme-win95','theme-grinch','theme-sport','theme-gtst');
+  const winChrome = document.querySelector('.win95-chrome');
+
+  if(theme === 'win95'){
+    document.body.classList.add('theme-win95');
+    winChrome.classList.remove('hidden');
+    document.getElementById('marqueeText').textContent = '████ WELKOM IN UW PERSOONLIJK DOSSIER ████';
+  } else {
+    winChrome.classList.add('hidden');
+    if(theme !== 'premium') document.body.classList.add('theme-' + theme);
+  }
+
+  document.querySelectorAll('.theme-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.theme === theme);
+  });
+
+  localStorage.setItem('dossierTheme_' + currentUser, theme);
+}
+
+buildThemeToggle();
+document.getElementById('themeToggle').addEventListener('click', (e) => {
+  const btn = e.target.closest('.theme-btn');
+  if(!btn) return;
+  applyTheme(btn.dataset.theme);
+});
+applyTheme(localStorage.getItem('dossierTheme_' + currentUser) || 'premium');
+
+/* ================================================================
+   HEADER
+   ================================================================ */
+document.getElementById('userName').textContent = userData.name;
+document.getElementById('avatarInitial').textContent = userData.name.charAt(0);
+document.getElementById('unitLabel').textContent = currentUnit;
+document.getElementById('windowTitle').textContent = `${userData.name} - Unit ${currentUnit}`;
+
+function updateClock(){
+  document.getElementById('statusTime').textContent = new Date().toLocaleTimeString('nl-NL', { hour12:false });
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+/* ================================================================
+   MEDICATIONS
+   ================================================================ */
+let medications = JSON.parse(localStorage.getItem('medications_' + currentUser) || '[]');
+
+function renderMeds(){
+  const medList = document.getElementById('medList');
+  if(medications.length === 0){
+    medList.innerHTML = '<div class="empty-state">Geen medicatie toegevoegd</div>';
+  } else {
+    medList.innerHTML = medications.map((med, i) => `
+      <div class="item">
+        <div class="item-main">
+          <div class="item-name">${med.name} — ${med.dosage}</div>
+          <div class="item-sub">Tijden: ${med.times.join(', ')}</div>
+        </div>
+        <button class="item-del" onclick="deleteMed(${i})">×</button>
+      </div>
+    `).join('');
+  }
+}
+
+function deleteMed(i){
+  if(confirm('Weet u zeker dat u deze medicatie wilt verwijderen?')){
+    medications.splice(i, 1);
+    localStorage.setItem('medications_' + currentUser, JSON.stringify(medications));
+    renderMeds();
+  }
+}
+
+document.getElementById('addMedBtn').onclick = () => {
+  document.getElementById('medModal').classList.add('active');
+};
+
+function closeMedModal(){
+  document.getElementById('medModal').classList.remove('active');
+}
+
+function saveMed(){
+  const name = document.getElementById('medName').value.trim();
+  const dosage = document.getElementById('medDosage').value.trim();
+  const times = document.getElementById('medTimes').value.split(',').map(t => t.trim()).filter(t => t);
+
+  if(!name || !dosage || times.length === 0){
+    alert('Vul alle velden in!');
+    return;
+  }
+
+  medications.push({ name, dosage, times });
+  localStorage.setItem('medications_' + currentUser, JSON.stringify(medications));
+  renderMeds();
+  closeMedModal();
+
+  document.getElementById('medName').value = '';
+  document.getElementById('medDosage').value = '';
+  document.getElementById('medTimes').value = '';
+}
+
+renderMeds();
+
+/* ================================================================
+   OTHER USERS
+   ================================================================ */
+function renderOtherUsers(){
+  const unitUsers = UNIT_DATA[currentUnit] || [];
+  const others = unitUsers.filter(u => u.username !== currentUser);
+  const container = document.getElementById('otherUsers');
+  if(others.length === 0){
+    container.innerHTML = '<div class="empty-state">Geen andere gebruikers</div>';
+    return;
+  }
+  container.innerHTML = others.map(u => `
+    <span class="other-user-chip">
+      <span class="chip-avatar">${u.name.charAt(0)}</span>
+      ${u.name}
+    </span>
+  `).join('');
+}
+renderOtherUsers();
+
+/* ================================================================
+   MOMENTS
+   ================================================================ */
+let moments = JSON.parse(localStorage.getItem('moments_' + currentUser) || '[]');
+if(moments.length === 0){
+  moments = [
+    { text: "De eerste ochtend dat ik me rustiger voelde" },
+    { text: "Een gesprek dat echt goed voelde" },
+    { text: "Koffie drinken zonder haast" }
+  ];
+}
+
+function renderMoments(){
+  const list = document.getElementById('momentsList');
+  list.innerHTML = moments.map(m => `<div class="moment-item">💫 ${m.text}</div>`).join('');
+}
+renderMoments();
+
+document.getElementById('addMomentBtn').onclick = () => {
+  document.getElementById('momentModal').classList.add('active');
+};
+
+function closeMomentModal(){
+  document.getElementById('momentModal').classList.remove('active');
+}
+
+function saveMoment(){
+  const text = document.getElementById('momentText').value.trim();
+  if(!text){
+    alert('Vul een beschrijving in!');
+    return;
+  }
+
+  moments.unshift({ text });
+  localStorage.setItem('moments_' + currentUser, JSON.stringify(moments));
+  renderMoments();
+  closeMomentModal();
+  document.getElementById('momentText').value = '';
+}
+
+/* ================================================================
+   CAT FACTS
+   ================================================================ */
+async function fetchCatFact(){
+  document.getElementById('catFact').textContent = 'Bezig met laden…';
+  try {
+    const response = await fetch('https://catfact.ninja/fact');
+    const data = await response.json();
+    document.getElementById('catFact').textContent = data.fact;
+  } catch(error) {
+    document.getElementById('catFact').textContent = 'Katten slapen ongeveer 70% van hun leven! 😺';
+  }
+}
+fetchCatFact();
+document.getElementById('refreshCatBtn').onclick = fetchCatFact;
+
+/* ================================================================
+   TABS
+   ================================================================ */
+function switchTab(tab, event){
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById(tab + 'Tab').classList.add('active');
+}
+
+function goBack(){
+  window.location.href = `units.html?user=${currentUser}`;
+}
+
+function logout(){
+  if(confirm('Weet u zeker dat u wilt uitloggen?')){
+    localStorage.removeItem('currentUser');
+    window.location.href = 'Index.html';
+  }
+}
+</script>
+</body>
+</html>

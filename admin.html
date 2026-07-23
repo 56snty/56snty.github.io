@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GGzE · Admin Panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ggz-green:    #00a390;
+    --ggz-dark:     #004d42;
+    --ggz-light:    #e6f7f5;
+    --ink:          #1a1a1a;
+    --paper:        #ffffff;
+    --muted:        #666666;
+    --border:       #d4d4d4;
+    --red:          #dc2626;
+    --orange:       #ea580c;
+    --ease:         cubic-bezier(.22,.61,.36,1);
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+
+  body{
+    font-family:"Instrument Sans", system-ui, sans-serif;
+    background:
+      radial-gradient(1200px 600px at 15% -10%, #d4f1ec 0%, transparent 60%),
+      radial-gradient(1000px 700px at 110% 10%, #eafaf5 0%, transparent 55%),
+      var(--ggz-light);
+    color:var(--ink);
+    min-height:100dvh;
+  }
+
+  /* header */
+  .header{
+    background:var(--ggz-dark);
+    color:white;
+    padding:20px clamp(20px,5vw,48px);
+    border-bottom:4px solid var(--ggz-green);
+  }
+  .header-content{
+    max-width:1400px;
+    margin:0 auto;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:20px;
+  }
+  .logo h1{
+    font-size:28px;
+    font-weight:700;
+  }
+  .logo p{
+    font-size:13px;
+    opacity:.8;
+    text-transform:uppercase;
+    letter-spacing:.1em;
+  }
+  .logout-btn{
+    background:var(--red);
+    color:white;
+    border:none;
+    border-radius:8px;
+    padding:10px 20px;
+    font-family:inherit;
+    font-weight:500;
+    font-size:14px;
+    cursor:pointer;
+    transition:all .3s var(--ease);
+  }
+  .logout-btn:hover{
+    background:#b91c1c;
+    transform:translateY(-2px);
+  }
+
+  /* main */
+  .main{
+    max-width:1400px;
+    margin:0 auto;
+    padding:40px clamp(20px,5vw,48px);
+  }
+
+  .page-title{
+    font-family:"Fraunces", serif;
+    font-size:clamp(32px,6vw,42px);
+    font-weight:600;
+    color:var(--ggz-dark);
+    margin-bottom:12px;
+  }
+  .page-subtitle{
+    font-size:16px;
+    color:var(--muted);
+    margin-bottom:40px;
+  }
+
+  /* stats grid */
+  .stats-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
+    gap:20px;
+    margin-bottom:40px;
+  }
+  .stat-card{
+    background:white;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:24px;
+    border-left:4px solid var(--ggz-green);
+  }
+  .stat-label{
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.1em;
+    color:var(--muted);
+    margin-bottom:8px;
+  }
+  .stat-value{
+    font-family:"Fraunces", serif;
+    font-size:36px;
+    font-weight:600;
+    color:var(--ggz-dark);
+  }
+
+  /* sections */
+  .section{
+    background:white;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:32px;
+    margin-bottom:24px;
+  }
+  .section-title{
+    font-family:"Fraunces", serif;
+    font-size:24px;
+    font-weight:600;
+    color:var(--ggz-dark);
+    margin-bottom:20px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .badge{
+    background:var(--ggz-green);
+    color:white;
+    font-size:12px;
+    font-weight:600;
+    padding:4px 12px;
+    border-radius:100px;
+  }
+
+  /* activity log */
+  .activity-log{
+    max-height:500px;
+    overflow-y:auto;
+  }
+  .log-item{
+    display:grid;
+    grid-template-columns:140px 120px 200px 1fr;
+    gap:16px;
+    padding:16px;
+    border-bottom:1px solid var(--border);
+    font-size:14px;
+    transition:background .2s;
+  }
+  .log-item:hover{
+    background:var(--ggz-light);
+  }
+  .log-item:last-child{
+    border-bottom:none;
+  }
+  .log-time{
+    font-family:"JetBrains Mono", monospace;
+    font-size:12px;
+    color:var(--muted);
+  }
+  .log-user{
+    font-weight:600;
+    color:var(--ggz-dark);
+  }
+  .log-action{
+    padding:4px 8px;
+    border-radius:6px;
+    font-size:12px;
+    font-weight:500;
+    text-align:center;
+  }
+  .log-action.login{
+    background:#dbeafe;
+    color:#1e40af;
+  }
+  .log-action.view{
+    background:#dcfce7;
+    color:#166534;
+  }
+  .log-action.add{
+    background:#fef3c7;
+    color:#92400e;
+  }
+  .log-action.delete{
+    background:#fee2e2;
+    color:#991b1b;
+  }
+
+  /* users table */
+  .users-table{
+    width:100%;
+    border-collapse:collapse;
+  }
+  .users-table th{
+    background:var(--ggz-light);
+    padding:12px;
+    text-align:left;
+    font-weight:600;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    color:var(--ggz-dark);
+  }
+  .users-table td{
+    padding:12px;
+    border-bottom:1px solid var(--border);
+  }
+  .users-table tr:hover{
+    background:var(--ggz-light);
+  }
+
+  .unit-badge{
+    display:inline-block;
+    padding:4px 10px;
+    background:var(--ggz-green);
+    color:white;
+    border-radius:6px;
+    font-size:11px;
+    font-weight:600;
+  }
+
+  .view-btn{
+    background:var(--ggz-green);
+    color:white;
+    border:none;
+    border-radius:6px;
+    padding:6px 16px;
+    font-size:13px;
+    font-weight:500;
+    cursor:pointer;
+    transition:all .3s var(--ease);
+  }
+  .view-btn:hover{
+    background:var(--ggz-dark);
+  }
+
+  .clear-logs-btn{
+    background:var(--orange);
+    color:white;
+    border:none;
+    border-radius:8px;
+    padding:10px 20px;
+    font-family:inherit;
+    font-weight:500;
+    font-size:14px;
+    cursor:pointer;
+    transition:all .3s var(--ease);
+    margin-top:16px;
+  }
+  .clear-logs-btn:hover{
+    background:#c2410c;
+  }
+
+  @media (max-width:768px){
+    .log-item{
+      grid-template-columns:1fr;
+      gap:8px;
+    }
+  }
+</style>
+</head>
+<body>
+
+  <!-- header -->
+  <header class="header">
+    <div class="header-content">
+      <div class="logo">
+        <h1>🔐 GGzE Admin Panel</h1>
+        <p>Beheerders Dashboard</p>
+      </div>
+      <button class="logout-btn" onclick="logout()">Uitloggen</button>
+    </div>
+  </header>
+
+  <!-- main -->
+  <main class="main">
+    <h1 class="page-title">Overzicht & Activiteit</h1>
+    <p class="page-subtitle">Real-time monitoring van alle gebruikersactiviteiten binnen het GGzE systeem</p>
+
+    <!-- stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Totaal Gebruikers</div>
+        <div class="stat-value" id="totalUsers">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Units</div>
+        <div class="stat-value">3</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Totale Activiteiten</div>
+        <div class="stat-value" id="totalActivities">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Vandaag Ingelogd</div>
+        <div class="stat-value" id="todayLogins">0</div>
+      </div>
+    </div>
+
+    <!-- activity log -->
+    <div class="section">
+      <div class="section-title">
+        <span>Activiteit Log</span>
+        <span class="badge" id="liveCount">0 events</span>
+      </div>
+      <div class="activity-log" id="activityLog">
+        <p style="text-align:center; color:var(--muted); padding:40px;">Geen activiteiten gevonden</p>
+      </div>
+      <button class="clear-logs-btn" onclick="clearLogs()">🗑️ Logs Wissen</button>
+    </div>
+
+    <!-- all users overview -->
+    <div class="section">
+      <div class="section-title">Alle Gebruikers per Unit</div>
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Gebruikersnaam</th>
+            <th>Naam</th>
+            <th>Unit</th>
+            <th>Laatste Activiteit</th>
+            <th>Actie</th>
+          </tr>
+        </thead>
+        <tbody id="usersTable">
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+<script>
+/* ================================================================
+   ADMIN AUTHENTICATION
+   ================================================================ */
+const urlParams = new URLSearchParams(window.location.search);
+let currentUser = urlParams.get('user') || localStorage.getItem('currentUser');
+
+if(currentUser !== 'admin'){
+  alert('Alleen admins hebben toegang tot deze pagina');
+  window.location.href = 'Index.html';
+}
+
+/* ================================================================
+   DATA
+   ================================================================ */
+const ALL_USERS = {
+  unit2: [
+    { id: 'u2_1', username: 'patiënt_maria', name: 'Maria de Vries', lastSeen: '2026-07-21' },
+    { id: 'u2_2', username: 'patiënt_jan', name: 'Jan Vermeulen', lastSeen: '2026-07-22' },
+    { id: 'u2_3', username: 'patiënt_lisa', name: 'Lisa Bakker', lastSeen: '2026-07-20' },
+    { id: 'u2_4', username: 'patiënt_tom', name: 'Tom Janssen', lastSeen: '2026-07-22' },
+    { id: 'u2_5', username: 'patiënt_emma', name: 'Emma Peters', lastSeen: '2026-07-19' }
+  ],
+  unit3: [
+    { id: 'gebruiker162', username: 'gebruiker162', name: 'Sabine N', lastSeen: 'Actief' },
+    { id: 'gebruiker726', username: 'gebruiker726', name: 'Nienke V', lastSeen: 'Actief' },
+    { id: 'gebruiker492', username: 'gebruiker492', name: 'Demian', lastSeen: 'Actief' }
+  ],
+  unit4: [
+    { id: 'u4_1', username: 'patiënt_anna', name: 'Anna Smit', lastSeen: '2026-07-21' },
+    { id: 'u4_2', username: 'patiënt_david', name: 'David Visser', lastSeen: '2026-07-22' },
+    { id: 'u4_3', username: 'patiënt_sophie', name: 'Sophie Mulder', lastSeen: '2026-07-20' },
+    { id: 'u4_4', username: 'patiënt_lucas', name: 'Lucas Bos', lastSeen: '2026-07-22' }
+  ]
+};
+
+/* ================================================================
+   ACTIVITY LOG
+   ================================================================ */
+function renderActivityLog(){
+  const logs = JSON.parse(localStorage.getItem('activityLogs') || '[]');
+  const logContainer = document.getElementById('activityLog');
+
+  if(logs.length === 0){
+    logContainer.innerHTML = '<p style="text-align:center; color:var(--muted); padding:40px;">Geen activiteiten gevonden</p>';
+    return;
+  }
+
+  // Reverse to show latest first
+  const reversed = [...logs].reverse();
+
+  logContainer.innerHTML = reversed.map(log => {
+    const date = new Date(log.timestamp);
+    const time = date.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const dateStr = date.toLocaleDateString('nl-NL', { day: '2-digit', month: '2-digit' });
+
+    let actionClass = log.action;
+    let actionText = log.action;
+
+    if(log.action === 'login') actionText = '🔑 Login';
+    if(log.action === 'view') actionText = '👁️ Bekeken';
+    if(log.action === 'add') actionText = '➕ Toegevoegd';
+    if(log.action === 'delete') actionText = '🗑️ Verwijderd';
+
+    const details = log.details ? JSON.stringify(log.details) : '';
+
+    return `
+      <div class="log-item">
+        <div class="log-time">${dateStr} ${time}</div>
+        <div class="log-user">${log.username}</div>
+        <div class="log-action ${actionClass}">${actionText}</div>
+        <div style="color:var(--muted); font-size:13px;">${details}</div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('liveCount').textContent = `${logs.length} events`;
+}
+
+/* ================================================================
+   STATS
+   ================================================================ */
+function updateStats(){
+  const logs = JSON.parse(localStorage.getItem('activityLogs') || '[]');
+
+  // Total users
+  const totalUsers = Object.values(ALL_USERS).flat().length;
+  document.getElementById('totalUsers').textContent = totalUsers;
+
+  // Total activities
+  document.getElementById('totalActivities').textContent = logs.length;
+
+  // Today's logins
+  const today = new Date().toDateString();
+  const todayLogins = logs.filter(log =>
+    log.action === 'login' && new Date(log.timestamp).toDateString() === today
+  ).length;
+  document.getElementById('todayLogins').textContent = todayLogins;
+}
+
+/* ================================================================
+   USERS TABLE
+   ================================================================ */
+function renderUsersTable(){
+  const tbody = document.getElementById('usersTable');
+
+  let rows = '';
+
+  ['unit2', 'unit3', 'unit4'].forEach(unit => {
+    ALL_USERS[unit].forEach(user => {
+      const unitNum = unit.replace('unit', '');
+      rows += `
+        <tr>
+          <td><code>${user.username}</code></td>
+          <td>${user.name}</td>
+          <td><span class="unit-badge">Unit ${unitNum}</span></td>
+          <td>${user.lastSeen}</td>
+          <td>
+            <button class="view-btn" onclick="viewUser('${user.username}', '${unitNum}')">
+              Bekijken
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+  });
+
+  tbody.innerHTML = rows;
+}
+
+/* ================================================================
+   ACTIONS
+   ================================================================ */
+function viewUser(username, unit){
+  window.location.href = `medicijnen.html?user=${username}&unit=${unit}&admin=true`;
+}
+
+function clearLogs(){
+  if(confirm('Weet je zeker dat je alle logs wilt wissen?')){
+    localStorage.setItem('activityLogs', '[]');
+    renderActivityLog();
+    updateStats();
+  }
+}
+
+function logout(){
+  localStorage.removeItem('currentUser');
+  window.location.href = 'Index.html';
+}
+
+/* ================================================================
+   INIT
+   ================================================================ */
+renderActivityLog();
+updateStats();
+renderUsersTable();
+
+// Auto-refresh every 5 seconds
+setInterval(() => {
+  renderActivityLog();
+  updateStats();
+}, 5000);
+</script>
+</body>
+</html>

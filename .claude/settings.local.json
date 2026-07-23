@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir /B \"C:\\Users\\emalk\\OneDrive\\Bureaublad\\Coding\\weg\")",
+      "Bash(del medicijnen.html)",
+      "Bash(ren:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
