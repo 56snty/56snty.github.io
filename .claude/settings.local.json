@@ -3,7 +3,9 @@
     "allow": [
       "Bash(dir /B \"C:\\Users\\emalk\\OneDrive\\Bureaublad\\Coding\\weg\")",
       "Bash(del medicijnen.html)",
-      "Bash(ren:*)"
+      "Bash(ren:*)",
+      "Bash(file *.gif)",
+      "Bash(node -e ' *)"
     ],
     "deny": [],
     "ask": []
