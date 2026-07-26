@@ -3,664 +3,469 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>GGzE Patiënt Informatiesysteem</title>
+<meta name="color-scheme" content="light" />
+<title>GGzE Patiëntportaal — Toegang</title>
+
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<!-- Tailwind Play CDN: used for layout/spacing utilities so the markup stays lean.
+     The bespoke "GGzE" look (motion, grain, theming) lives in the <style> layer below. -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Instrument Sans', 'system-ui', 'sans-serif'],
+          serif: ['Fraunces', 'serif'],
+          mono: ['JetBrains Mono', 'monospace'],
+        },
+        colors: {
+          ggz:  { DEFAULT: '#00a390', 2: '#00c2a8', dark: '#003b33', mist: '#e6f7f5' },
+          ink:  '#0d1414',
+        },
+      },
+    },
+  };
+</script>
+
 <style>
   :root{
-    --ggz-green:   #00a390;
-    --ggz-green-2: #00c2a8;
-    --ggz-dark:    #003b33;
-    --ggz-light:   #e6f7f5;
-    --gold:        #b08d4f;
-    --ink:         #0d1414;
-    --paper:       #ffffff;
-    --muted:       #6b7573;
-    --border:      rgba(0,59,51,.12);
-    --red:         #dc2626;
-    --ease:        cubic-bezier(.16,1,.3,1);
-    --shadow-sm:   0 1px 2px rgba(0,20,17,.04);
-    --shadow-lg:   0 1px 1px rgba(0,20,17,.03), 0 8px 16px -8px rgba(0,59,51,.12), 0 32px 64px -24px rgba(0,59,51,.22);
+    --ggz-green:#00a390; --ggz-green-2:#00c2a8; --ggz-dark:#003b33;
+    --ink:#0d1414; --paper:#ffffff; --muted:#6b7573;
+    --border:rgba(0,59,51,.12); --border-strong:rgba(0,59,51,.22);
+    --gold:#b08d4f;
+    --ease:cubic-bezier(.16,1,.3,1);
+    --shadow-lg:0 1px 1px rgba(0,20,17,.03), 0 10px 20px -12px rgba(0,59,51,.16), 0 40px 72px -32px rgba(0,59,51,.24);
+    /* signature hint colour — swapped in when a user is recognised */
+    --hint:#00a390;
   }
 
-  *{ box-sizing:border-box; margin:0; padding:0; }
-  html,body{ height:100%; }
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; margin:0; }
 
   body{
-    font-family:"Instrument Sans", system-ui, sans-serif;
+    font-family:'Instrument Sans', system-ui, sans-serif;
     font-feature-settings:"tnum" 1, "ss01" 1;
     color:var(--ink);
     min-height:100dvh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
+    display:flex; align-items:center; justify-content:center;
     padding:24px;
+    position:relative;
+    overflow:hidden;
+    background:linear-gradient(180deg,#f3f9f7,#e6f7f5);
+  }
+
+  /* ── ambient: slow-drifting clinical mesh (the one ambient element) ── */
+  .ambient{ position:fixed; inset:-20%; z-index:0; pointer-events:none;
     background:
-      radial-gradient(1100px 560px at 12% -12%, #d9f4ef 0%, transparent 58%),
-      radial-gradient(900px 640px at 108% 8%, #eefaf6 0%, transparent 52%),
-      linear-gradient(180deg, #f3f9f7, var(--ggz-light));
-    transition:background .4s var(--ease);
+      radial-gradient(680px 520px at 14% 8%,  rgba(0,194,168,.28), transparent 60%),
+      radial-gradient(720px 560px at 88% 4%,  rgba(0,163,144,.16), transparent 58%),
+      radial-gradient(900px 700px at 50% 118%,rgba(0,59,51,.10),  transparent 60%);
+    animation:drift 26s var(--ease) infinite alternate;
+    will-change:transform;
+  }
+  @keyframes drift{
+    from{ transform:translate3d(-1.5%,-1%,0) scale(1); }
+    to{   transform:translate3d(2%,1.5%,0)  scale(1.06); }
   }
 
-  /* ===================================================================
-     THEME TOGGLE (floating pill, present on all pages)
-     =================================================================== */
-  .theme-toggle{
-    position:fixed;
-    top:20px;
-    right:20px;
-    z-index:500;
-    display:flex;
-    gap:3px;
-    background:rgba(255,255,255,.75);
-    backdrop-filter:blur(16px) saturate(1.4);
-    border:1px solid rgba(0,59,51,.08);
-    border-radius:100px;
-    padding:4px;
-    box-shadow:0 1px 1px rgba(255,255,255,.5) inset, 0 8px 24px -8px rgba(0,20,17,.16);
-  }
-  .theme-btn{
-    border:none;
-    background:transparent;
-    width:34px;
-    height:34px;
-    border-radius:50%;
-    font-size:15px;
-    cursor:pointer;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    transition:all .25s var(--ease);
-    opacity:.45;
-  }
-  .theme-btn:hover{ opacity:.9; transform:translateY(-1px); }
-  .theme-btn.active{
-    background:var(--ggz-dark);
-    opacity:1;
-    box-shadow:0 4px 12px -2px rgba(0,59,51,.4);
-  }
+  /* ── film grain overlay (very subtle) ── */
+  .grain{ position:fixed; inset:0; z-index:1; pointer-events:none; opacity:.05; mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
 
-  /* ===================================================================
-     PREMIUM THEME (default)
-     =================================================================== */
+  /* ── card ── */
   .card{
-    background:var(--paper);
-    border-radius:20px;
+    position:relative; z-index:2;
+    background:var(--paper); border-radius:22px;
     box-shadow:var(--shadow-lg);
     border:1px solid rgba(0,59,51,.06);
-    max-width:440px;
-    width:100%;
-    overflow:hidden;
-    animation:rise .7s var(--ease);
-    position:relative;
+    max-width:452px; width:100%; overflow:hidden;
+    animation:rise .8s var(--ease);
   }
-  .card::before{
-    content:"";
-    position:absolute;
-    top:0; left:0; right:0;
-    height:3px;
-    background:linear-gradient(90deg, var(--ggz-green), var(--gold) 50%, var(--ggz-green));
-    background-size:200% 100%;
-  }
-  @keyframes rise{
-    from{ opacity:0; transform:translateY(20px) scale(.98); }
-    to{ opacity:1; transform:translateY(0) scale(1); }
-  }
+  .card::before{ content:""; position:absolute; top:0; left:0; right:0; height:3px;
+    background:linear-gradient(90deg, var(--ggz-green), var(--hint) 50%, var(--ggz-green));
+    background-size:200% 100%; animation:sheen 6s linear infinite;
+    transition:background .5s var(--ease); }
+  @keyframes sheen{ to{ background-position:200% 0; } }
+  @keyframes rise{ from{ opacity:0; transform:translateY(18px) scale(.985); } to{ opacity:1; transform:none; } }
 
-  .card-header{
-    padding:44px 40px 26px;
-    text-align:center;
-    border-bottom:1px solid var(--border);
-  }
   .brand-mark{
-    width:50px;
-    height:50px;
-    margin:0 auto 22px;
-    border-radius:14px;
-    background:linear-gradient(150deg, var(--ggz-green-2), var(--ggz-dark) 85%);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    color:white;
-    font-family:"Fraunces", serif;
-    font-weight:600;
-    font-size:20px;
-    letter-spacing:-.01em;
-    box-shadow:0 1px 1px rgba(255,255,255,.2) inset, 0 10px 24px -8px rgba(0,59,51,.55);
-    position:relative;
+    width:52px; height:52px; margin:0 auto 22px; border-radius:15px;
+    background:linear-gradient(150deg, var(--ggz-green-2), var(--ggz-dark) 88%);
+    display:flex; align-items:center; justify-content:center; color:#fff;
+    font-family:'Fraunces',serif; font-weight:600; font-size:21px; letter-spacing:-.01em;
+    box-shadow:0 1px 1px rgba(255,255,255,.25) inset, 0 12px 26px -10px rgba(0,59,51,.6);
+    cursor:pointer; user-select:none; transition:transform .3s var(--ease);
   }
-  .brand-eyebrow{
-    font-size:10.5px;
-    font-weight:600;
-    letter-spacing:.16em;
-    text-transform:uppercase;
-    color:var(--ggz-green);
-    margin-bottom:10px;
-  }
-  .card-title{
-    font-family:"Fraunces", serif;
-    font-size:25px;
-    font-weight:600;
-    letter-spacing:-.01em;
-    color:var(--ggz-dark);
-    margin-bottom:6px;
-  }
-  .card-subtitle{
-    font-size:13.5px;
-    color:var(--muted);
-  }
+  .brand-mark:active{ transform:scale(.94) rotate(-3deg); }
 
-  .card-body{ padding:32px 40px 36px; }
+  .eyebrow{ font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:500;
+    letter-spacing:.22em; text-transform:uppercase; color:var(--ggz-green); }
+  .display{ font-family:'Fraunces',serif; font-weight:600; letter-spacing:-.015em; color:var(--ggz-dark); }
 
-  .field{ margin-bottom:18px; }
-  .field-label{
-    display:block;
-    font-size:11.5px;
-    font-weight:600;
-    letter-spacing:.08em;
-    text-transform:uppercase;
-    color:var(--ggz-dark);
-    opacity:.75;
-    margin-bottom:8px;
-  }
-  .field-input{
-    width:100%;
-    padding:13px 16px;
-    border:1.5px solid var(--border);
-    border-radius:11px;
-    font-family:inherit;
-    font-size:15px;
-    color:var(--ink);
-    background:#fafbfa;
+  .label{ font-family:'JetBrains Mono',monospace; font-size:10.5px; font-weight:500;
+    letter-spacing:.14em; text-transform:uppercase; color:var(--ggz-dark); opacity:.7; }
+
+  .field-input, .field-select{
+    width:100%; padding:13px 15px; border:1.5px solid var(--border); border-radius:12px;
+    font-family:inherit; font-size:15px; color:var(--ink); background:#fafbfa;
     transition:border-color .2s var(--ease), box-shadow .2s var(--ease), background .2s var(--ease);
   }
   .field-input::placeholder{ color:#a8b0ae; }
-  .field-input:hover{ border-color:rgba(0,59,51,.22); }
-  .field-input:focus{
-    outline:none;
-    border-color:var(--ggz-green);
-    background:white;
-    box-shadow:0 0 0 4px rgba(0,163,144,.12);
-  }
-  .field-select{
-    width:100%;
-    padding:13px 16px;
-    border:1.5px solid var(--border);
-    border-radius:11px;
-    font-family:inherit;
-    font-size:15px;
-    color:var(--ink);
-    background:#fafbfa;
-    cursor:pointer;
-    transition:border-color .2s var(--ease);
-  }
-  .field-select:hover{ border-color:rgba(0,59,51,.22); }
-  .field-select:focus{ outline:none; border-color:var(--ggz-green); box-shadow:0 0 0 4px rgba(0,163,144,.12); }
-
-  .identity-preview{
-    display:flex;
-    align-items:center;
-    gap:12px;
-    background:linear-gradient(160deg, var(--ggz-light), #dcf3ef);
-    border:1px solid rgba(0,163,144,.15);
-    border-radius:14px;
-    padding:14px 16px;
-    margin-bottom:20px;
-    animation:rise .35s var(--ease);
-  }
-  .identity-avatar{
-    width:38px;
-    height:38px;
-    border-radius:50%;
-    background:linear-gradient(150deg, var(--ggz-green-2), var(--ggz-dark) 85%);
-    color:white;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-weight:600;
-    font-size:14px;
-    flex-shrink:0;
-    box-shadow:0 6px 14px -4px rgba(0,59,51,.5);
-  }
-  .identity-text{ font-size:13px; line-height:1.4; }
-  .identity-name{ font-weight:600; color:var(--ggz-dark); letter-spacing:-.005em; }
-  .identity-id{ color:var(--muted); font-family:"JetBrains Mono", monospace; font-size:11.5px; }
+  .field-input:hover, .field-select:hover{ border-color:var(--border-strong); }
+  .field-input:focus, .field-select:focus{ outline:none; border-color:var(--hint);
+    background:#fff; box-shadow:0 0 0 4px color-mix(in srgb, var(--hint) 14%, transparent); }
+  .field-select{ cursor:pointer; appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='none' stroke='%236b7573' stroke-width='2'%3E%3Cpath d='M3 5l4 4 4-4'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 15px center; padding-right:38px; }
 
   .btn{
-    width:100%;
-    padding:14px;
-    border:none;
-    border-radius:11px;
-    background:linear-gradient(160deg, #005b4e, var(--ggz-dark));
-    color:white;
-    font-family:inherit;
-    font-size:14.5px;
-    font-weight:600;
-    letter-spacing:.005em;
-    cursor:pointer;
-    transition:transform .2s var(--ease), box-shadow .2s var(--ease), background .2s var(--ease);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:8px;
+    width:100%; padding:14px; border:none; border-radius:12px;
+    background:linear-gradient(160deg, #005b4e, var(--ggz-dark)); color:#fff;
+    font-family:inherit; font-size:14.5px; font-weight:600; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:8px;
     box-shadow:0 1px 1px rgba(255,255,255,.12) inset, 0 8px 20px -8px rgba(0,59,51,.55);
+    transition:transform .2s var(--ease), box-shadow .2s var(--ease);
   }
   .btn:hover{ transform:translateY(-1px); box-shadow:0 1px 1px rgba(255,255,255,.16) inset, 0 12px 26px -8px rgba(0,59,51,.6); }
   .btn:active{ transform:translateY(0); }
   .btn:disabled{ opacity:.55; cursor:default; transform:none; box-shadow:none; }
-
-  .btn-ghost{
-    width:100%;
-    padding:11px;
-    border:none;
-    background:transparent;
-    color:var(--muted);
-    font-family:inherit;
-    font-size:13px;
-    font-weight:600;
-    cursor:pointer;
-    margin-top:6px;
-    transition:color .2s;
-  }
+  .btn-ghost{ width:100%; padding:11px; border:none; background:transparent; color:var(--muted);
+    font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; margin-top:4px; transition:color .2s; }
   .btn-ghost:hover{ color:var(--ggz-dark); }
 
-  .message{
-    border-radius:11px;
-    padding:12px 16px;
-    font-size:13px;
-    font-weight:500;
-    margin-bottom:18px;
-    display:none;
-    align-items:center;
-    gap:8px;
-    border:1px solid transparent;
-    animation:rise .3s var(--ease);
-  }
-  .message.show{ display:flex; }
-  .message.error{ background:#fef2f2; color:#991b1b; border-color:#fecaca; }
-  .message.success{ background:#f0fdf4; color:#166534; border-color:#bbf7d0; }
+  .msg{ border-radius:12px; padding:12px 15px; font-size:13px; font-weight:500; margin-bottom:18px;
+    display:none; align-items:center; gap:8px; border:1px solid transparent; animation:rise .3s var(--ease); }
+  .msg.show{ display:flex; }
+  .msg.error{ background:#fef2f2; color:#991b1b; border-color:#fecaca; }
+  .msg.success{ background:#f0fdf4; color:#166534; border-color:#bbf7d0; }
 
-  .attempts-note{
-    font-size:12px;
-    color:var(--muted);
-    text-align:center;
-    margin-top:16px;
-    font-variant-numeric:tabular-nums;
+  .identity{
+    display:flex; align-items:center; gap:12px;
+    background:linear-gradient(160deg, color-mix(in srgb,var(--hint) 12%,#fff), color-mix(in srgb,var(--hint) 22%,#fff));
+    border:1px solid color-mix(in srgb,var(--hint) 22%,transparent);
+    border-radius:15px; padding:14px 16px; margin-bottom:20px; animation:rise .35s var(--ease);
+    transition:background .4s var(--ease), border-color .4s var(--ease);
   }
+  .identity-avatar{ width:40px; height:40px; border-radius:50%;
+    background:linear-gradient(150deg, var(--hint), color-mix(in srgb,var(--hint) 45%, #000)); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-weight:600; font-size:15px; flex-shrink:0;
+    box-shadow:0 6px 14px -4px color-mix(in srgb,var(--hint) 60%, transparent); }
+  .identity-name{ font-weight:600; color:var(--ggz-dark); letter-spacing:-.005em; font-size:14px; }
+  .identity-id{ color:var(--muted); font-family:'JetBrains Mono',monospace; font-size:11.5px; }
 
-  .step-dots{
-    display:flex;
-    justify-content:center;
-    gap:6px;
-    margin-top:22px;
-  }
-  .step-dot{
-    width:6px;
-    height:6px;
-    border-radius:50%;
-    background:var(--border);
-    transition:all .35s var(--ease);
-  }
-  .step-dot.active{ background:var(--ggz-green); width:22px; }
+  .dots{ display:flex; justify-content:center; gap:6px; margin-top:22px; }
+  .dot{ width:6px; height:6px; border-radius:50%; background:var(--border); transition:all .35s var(--ease); }
+  .dot.active{ background:var(--hint); width:22px; }
 
-  .footer-note{
-    text-align:center;
-    font-size:10.5px;
-    color:var(--muted);
-    margin-top:24px;
-    line-height:1.7;
-    letter-spacing:.01em;
-  }
+  .footer-note{ text-align:center; font-family:'JetBrains Mono',monospace; font-size:9.5px;
+    color:var(--muted); margin-top:24px; line-height:1.8; letter-spacing:.04em; }
 
   .hidden{ display:none !important; }
 
-  /* ===================================================================
-     WIN95 THEME (legacy retro, opt-in)
-     =================================================================== */
-  body.theme-win95{
-    background:#008080 !important;
-    font-family:"MS Sans Serif","Microsoft Sans Serif","Segoe UI",Arial,sans-serif;
-    display:block;
-    padding:16px;
+  /* ── theme toggle pill ── */
+  .toggle{ position:fixed; top:20px; right:20px; z-index:60; display:flex; gap:3px;
+    background:rgba(255,255,255,.75); backdrop-filter:blur(16px) saturate(1.4);
+    border:1px solid rgba(0,59,51,.08); border-radius:100px; padding:4px;
+    box-shadow:0 1px 1px rgba(255,255,255,.5) inset, 0 8px 24px -8px rgba(0,20,17,.16); }
+  .tbtn{ border:none; background:transparent; width:34px; height:34px; border-radius:50%;
+    font-size:15px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    transition:all .25s var(--ease); opacity:.45; }
+  .tbtn:hover{ opacity:.9; transform:translateY(-1px); }
+  .tbtn.active{ background:var(--ggz-dark); opacity:1; box-shadow:0 4px 12px -2px rgba(0,59,51,.4); }
+
+  /* ── easter-egg toast ── */
+  .toast{ position:fixed; left:50%; bottom:28px; transform:translate(-50%, 140%); z-index:80;
+    background:var(--ggz-dark); color:#fff; padding:12px 18px; border-radius:100px;
+    font-size:13px; font-weight:500; box-shadow:0 16px 40px -12px rgba(0,59,51,.5);
+    display:flex; align-items:center; gap:9px; transition:transform .5s var(--ease); max-width:90vw; }
+  .toast.show{ transform:translate(-50%, 0); }
+
+  /* ── WIN95 easter-egg theme ── */
+  body.win95{ background:#008080 !important; font-family:'MS Sans Serif','Microsoft Sans Serif','Segoe UI',Arial,sans-serif; display:block; padding:16px; overflow:auto; }
+  body.win95 .ambient,body.win95 .grain{ display:none; }
+  body.win95 .card{ background:#c0c0c0; border:2px solid; border-color:#fff #808080 #808080 #fff; box-shadow:2px 2px 0 rgba(0,0,0,.5); border-radius:0; max-width:420px; margin:40px auto; animation:none; }
+  body.win95 .card::before{ display:none; }
+  body.win95 .eyebrow{ display:none; }
+  body.win95 .brand-mark{ display:none; }
+  body.win95 .display{ font-family:inherit; font-size:12px; font-weight:bold; color:#fff; }
+  body.win95 .win95-title{ background:linear-gradient(to right,#000080,#1084d0); margin:-1px -1px 0; padding:4px 8px; text-align:left; }
+  body.win95 .label{ text-transform:none; font-family:inherit; font-size:11px; font-weight:normal; color:#000; letter-spacing:0; opacity:1; }
+  body.win95 .field-input,body.win95 .field-select{ border-radius:0; border:1px solid; border-color:#808080 #fff #fff #808080; font-size:11px; padding:4px; background:#fff; box-shadow:none; }
+  body.win95 .field-input:focus{ box-shadow:none; outline:1px dotted #000; }
+  body.win95 .btn{ width:auto; float:right; background:#c0c0c0; color:#000; border:2px solid; border-color:#fff #808080 #808080 #fff; border-radius:0; font-size:11px; font-weight:bold; padding:5px 16px; box-shadow:none; }
+  body.win95 .btn:hover{ background:#d4d4d4; transform:none; }
+  body.win95 .btn:active{ border-color:#808080 #fff #fff #808080; }
+  body.win95 .btn-ghost{ float:left; }
+  body.win95 .identity{ border-radius:0; border:1px solid #808080; background:#fff; }
+  body.win95 .identity-avatar{ border-radius:0; background:#000080; }
+  body.win95 .msg{ border-radius:0; }
+  body.win95 .dots{ display:none; }
+  body.win95 .toggle{ border-radius:0; background:#c0c0c0; border:1px solid; border-color:#fff #808080 #808080 #fff; }
+
+  @media (max-width:480px){
+    .card{ border-radius:18px; }
+    body{ padding:16px; }
   }
-  body.theme-win95 .card{
-    background:#c0c0c0;
-    border:2px outset #ffffff;
-    box-shadow:2px 2px 0 rgba(0,0,0,.5);
-    border-radius:0;
-    max-width:420px;
-    margin:40px auto;
-    animation:none;
+  @media (prefers-reduced-motion:reduce){
+    *{ animation-duration:.001ms !important; transition-duration:.08s !important; }
+    .ambient{ animation:none; }
   }
-  body.theme-win95 .card::before{ display:none; }
-  body.theme-win95 .brand-eyebrow{ display:none; }
-  body.theme-win95 .card-header{
-    background:linear-gradient(to right,#000080,#1084d0);
-    color:white;
-    padding:6px 8px;
-    text-align:left;
-    border-bottom:none;
-  }
-  body.theme-win95 .brand-mark{ display:none; }
-  body.theme-win95 .card-title{
-    font-family:inherit;
-    font-size:12px;
-    font-weight:bold;
-    color:white;
-    margin:0;
-  }
-  body.theme-win95 .card-subtitle{ display:none; }
-  body.theme-win95 .card-body{ padding:14px; }
-  body.theme-win95 .field-label{
-    text-transform:none;
-    font-size:11px;
-    font-weight:normal;
-    color:#000;
-    letter-spacing:0;
-  }
-  body.theme-win95 .field-input,
-  body.theme-win95 .field-select{
-    border-radius:0;
-    border:1px inset #808080;
-    font-size:11px;
-    padding:4px;
-    background:white;
-  }
-  body.theme-win95 .field-input:focus{ box-shadow:none; outline:1px dotted #000; }
-  body.theme-win95 .btn{
-    width:auto;
-    float:right;
-    background:#c0c0c0;
-    color:#000;
-    border:2px outset #ffffff;
-    border-radius:0;
-    font-size:11px;
-    font-weight:bold;
-    padding:5px 16px;
-  }
-  body.theme-win95 .btn:hover{ background:#d4d4d4; transform:none; box-shadow:none; }
-  body.theme-win95 .btn:active{ border-style:inset; }
-  body.theme-win95 .identity-preview{ border-radius:0; border:1px inset #808080; background:white; }
-  body.theme-win95 .identity-avatar{ border-radius:0; background:#000080; }
-  body.theme-win95 .message{ border-radius:0; }
-  body.theme-win95 .step-dots{ display:none; }
 </style>
 </head>
 <body>
 
-  <!-- Theme Toggle -->
-  <div class="theme-toggle" id="themeToggle">
-    <button class="theme-btn" data-theme="premium" title="Premium">✨</button>
-    <button class="theme-btn" data-theme="win95" title="Windows 95">🖥️</button>
+  <div class="ambient" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <div class="toggle" id="toggle" role="group" aria-label="Weergave">
+    <button class="tbtn" data-theme="premium" title="Premium">✦</button>
+    <button class="tbtn" data-theme="win95" title="Windows 95">🖥️</button>
   </div>
 
-  <div class="card">
+  <main class="card">
+    <div class="win95-title"><span class="display">GGzE Patiëntportaal</span></div>
 
-    <div class="card-header">
-      <div class="brand-mark">G</div>
-      <div class="brand-eyebrow">GGzE Patiëntportaal</div>
-      <div class="card-title" id="cardTitle">Welkom terug</div>
-      <div class="card-subtitle" id="cardSubtitle">Log in om verder te gaan</div>
-    </div>
+    <header class="px-9 pt-10 pb-6 text-center border-b" style="border-color:var(--border)">
+      <div class="brand-mark" id="mark">G</div>
+      <div class="eyebrow mb-2.5">GGzE Patiëntportaal</div>
+      <h1 class="display text-[26px] mb-1.5" id="title">Welkom terug</h1>
+      <p class="text-[13.5px]" style="color:var(--muted)" id="subtitle">Log in om verder te gaan</p>
+    </header>
 
-    <div class="card-body">
-
-      <div class="message error" id="errorMsg"></div>
-      <div class="message success" id="successMsg"></div>
+    <div class="px-9 pt-8 pb-9">
+      <div class="msg error" id="errorMsg" role="alert"></div>
+      <div class="msg success" id="successMsg" role="status"></div>
 
       <!-- STEP 1 -->
-      <div id="step1">
-        <div class="field">
-          <label class="field-label">Gebruikersnaam</label>
-          <input type="text" class="field-input" id="username" autocomplete="off" placeholder="Uw gebruikerscode" />
+      <section id="step1">
+        <div class="mb-[18px]">
+          <label class="label block mb-2" for="username">Gebruikersnaam</label>
+          <input type="text" class="field-input" id="username" autocomplete="off" spellcheck="false" placeholder="Uw gebruikerscode" />
         </div>
-
-        <div class="field">
-          <label class="field-label">Locatie</label>
+        <div class="mb-[18px]">
+          <label class="label block mb-2" for="location">Locatie</label>
           <select class="field-select" id="location">
             <option>GGzE Eindhoven — Hoofdlocatie</option>
             <option>GGzE Woensel</option>
             <option>GGzE Veldhoven</option>
           </select>
         </div>
-
         <button class="btn" id="nextBtn">Volgende</button>
-
-        <div class="step-dots">
-          <div class="step-dot active"></div>
-          <div class="step-dot"></div>
-        </div>
-      </div>
+        <div class="dots"><div class="dot active"></div><div class="dot"></div></div>
+      </section>
 
       <!-- STEP 2 -->
-      <div id="step2" class="hidden">
-        <div class="identity-preview">
+      <section id="step2" class="hidden">
+        <div class="identity">
           <div class="identity-avatar" id="avatarInitial">?</div>
-          <div class="identity-text">
-            <div class="identity-name" id="userDisplay">-</div>
-            <div class="identity-id" id="clientIdDisplay">-</div>
+          <div class="leading-tight">
+            <div class="identity-name" id="userDisplay">–</div>
+            <div class="identity-id" id="clientIdDisplay">–</div>
           </div>
         </div>
-
-        <div class="field">
-          <label class="field-label">Wachtwoord</label>
+        <div class="mb-[18px]">
+          <label class="label block mb-2" for="password">Wachtwoord</label>
           <input type="password" class="field-input" id="password" autocomplete="off" placeholder="••••••••" />
         </div>
-
         <button class="btn" id="loginBtn">Inloggen</button>
         <button class="btn-ghost" id="backBtn">← Terug</button>
+        <p class="text-center text-[12px] mt-4 tabular-nums" style="color:var(--muted)">Pogingen: <span id="attempts">0</span>/3</p>
+        <div class="dots"><div class="dot"></div><div class="dot active"></div></div>
+      </section>
 
-        <div class="attempts-note">Pogingen: <span id="attempts">0</span>/3</div>
-
-        <div class="step-dots">
-          <div class="step-dot"></div>
-          <div class="step-dot active"></div>
-        </div>
-      </div>
-
-      <div class="footer-note">
+      <p class="footer-note">
         GGzE Patiënt Informatiesysteem · NEN-7510 gecertificeerd<br>
         Alle activiteiten worden gelogd conform beveiligingsbeleid.
-      </div>
-
+      </p>
     </div>
-  </div>
+  </main>
+
+  <div class="toast" id="toast" role="status"><span id="toastText"></span></div>
 
 <script>
-/* ================================================================
-   THEME
-   ================================================================ */
-function applyGlobalTheme(theme){
-  document.body.classList.remove('theme-win95');
-  if(theme === 'win95') document.body.classList.add('theme-win95');
-  document.querySelectorAll('.theme-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.theme === theme);
-  });
-  localStorage.setItem('siteTheme', theme);
-}
+/* ══════════════════════════════════════════════════════════════
+   GGzE Patiëntportaal — gemaakt door 56 · @56isk · github.com/56snty
+   Een afscheidscadeau, geen echt portaal. Wachtwoorden staan met opzet
+   in de client — dit is een grap tussen vrienden, geen beveiliging. ♥
+   ══════════════════════════════════════════════════════════════ */
 
-document.getElementById('themeToggle').addEventListener('click', (e) => {
-  const btn = e.target.closest('.theme-btn');
-  if(!btn) return;
-  applyGlobalTheme(btn.dataset.theme);
-});
-
-applyGlobalTheme(localStorage.getItem('siteTheme') || 'premium');
-
-/* ================================================================
-   USERS
-   ================================================================ */
+/* ── shared user directory (identiek in index.html + units.html) ── */
 const USERS = {
-  "gebruiker162": {
-    pass: "Spanje2026!",
-    name: "SABINE N.",
-    clientId: "CLI-1998-0162",
-    destination: "units.html"
-  },
-  "gebruiker726": {
-    pass: "ZW2!",
-    name: "NIENKE V.",
-    clientId: "CLI-1998-0726",
-    destination: "units.html"
-  },
-  "gebruiker492": {
-    pass: "Wateentoestand!",
-    name: "DEMIAN",
-    clientId: "CLI-1998-0492",
-    destination: "units.html"
-  },
-  "admin": {
-    pass: "Poep123!",
-    name: "SYSTEEMBEHEERDER",
-    clientId: "ADM-SYS-ROOT",
-    destination: "admin.html"
+  gebruiker162:{ pass:"Spanje2026!",     name:"Sabine N.", first:"Sabine",    clientId:"CLI-1998-0162", unit:1, theme:"costa",    dest:"units.html" },
+  gebruiker726:{ pass:"ZW2!",            name:"Nienke V.", first:"Nienke",    clientId:"CLI-1998-0726", unit:1, theme:"kust",     dest:"units.html" },
+  gebruiker492:{ pass:"Wateentoestand!", name:"Demian",    first:"Demian",    clientId:"CLI-1998-0492", unit:2, theme:"toestand", dest:"units.html" },
+  gebruiker892:{ pass:"Tanteleo!",       name:"Leonie",    first:"Leonie",    clientId:"CLI-1998-0892", unit:3, theme:"tanteleo", dest:"units.html" },
+  gebruiker83: { pass:"House1!",         name:"Bram",      first:"Bram",      clientId:"CLI-1998-0083", unit:3, theme:"house",    dest:"units.html" },
+  gebruiker744:{ pass:"Estherrr!",       name:"Esther",    first:"Esther",    clientId:"CLI-1998-0744", unit:3, theme:"zonnig",   dest:"units.html" },
+  gebruiker56: { pass:"Viaplay!",        name:"Mike",      first:"Mike",      clientId:"CLI-1998-0056", unit:3, theme:"pole",     dest:"units.html" },
+  gebruiker729:{ pass:"Veronique!",      name:"Veronique", first:"Veronique", clientId:"CLI-1998-0729", unit:3, theme:"chic",     dest:"units.html" },
+  admin:       { pass:"Poep123!",        name:"Systeembeheerder", first:"Beheer", clientId:"ADM-SYS-ROOT", unit:0, theme:"system", dest:"admin.html" },
+};
+
+/* accent hint per theme, so the gate warms toward the user's colour on step 2 */
+const HINTS = { costa:"#C6582B", kust:"#2E7D74", toestand:"#DA425E", tanteleo:"#B26E6E",
+  house:"#7C5CFF", zonnig:"#F0567E", pole:"#E5482B", chic:"#6B2D4F", system:"#00a390" };
+
+/* ── centralized activity log (shared key across all pages) ── */
+const GGZ = {
+  log(action, details = {}, username = null){
+    try{
+      const logs = JSON.parse(localStorage.getItem('activityLogs') || '[]');
+      logs.push({ timestamp:new Date().toISOString(), username: username ?? '(anoniem)', action, details });
+      // keep it bounded so the admin panel never chokes
+      localStorage.setItem('activityLogs', JSON.stringify(logs.slice(-500)));
+    }catch(e){ /* private mode / quota — logging is best-effort */ }
   }
 };
 
-/* ================================================================
-   ACTIVITY LOGGING
-   ================================================================ */
-function logActivity(username, action, details = {}){
-  const logs = JSON.parse(localStorage.getItem('activityLogs') || '[]');
-  logs.push({
-    timestamp: new Date().toISOString(),
-    username,
-    action,
-    details
-  });
-  localStorage.setItem('activityLogs', JSON.stringify(logs));
+/* ── theme toggle ── */
+function applyTheme(t){
+  document.body.classList.toggle('win95', t === 'win95');
+  document.querySelectorAll('.tbtn').forEach(b => b.classList.toggle('active', b.dataset.theme === t));
+  localStorage.setItem('siteTheme', t);
+}
+document.getElementById('toggle').addEventListener('click', e => {
+  const b = e.target.closest('.tbtn'); if(!b) return;
+  applyTheme(b.dataset.theme);
+  GGZ.log('theme_change', { theme:b.dataset.theme });
+});
+applyTheme(localStorage.getItem('siteTheme') || 'premium');
+
+/* ── toast helper (used by easter eggs) ── */
+let toastTimer;
+function toast(msg){
+  const t = document.getElementById('toast');
+  document.getElementById('toastText').textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3400);
 }
 
-/* ================================================================
-   UI
-   ================================================================ */
-const step1 = document.getElementById('step1');
-const step2 = document.getElementById('step2');
-const usernameInput = document.getElementById('username');
-const passwordInput = document.getElementById('password');
-const nextBtn = document.getElementById('nextBtn');
-const backBtn = document.getElementById('backBtn');
-const loginBtn = document.getElementById('loginBtn');
-const errorMsg = document.getElementById('errorMsg');
-const successMsg = document.getElementById('successMsg');
+/* ── DOM refs ── */
+const step1 = document.getElementById('step1'), step2 = document.getElementById('step2');
+const usernameInput = document.getElementById('username'), passwordInput = document.getElementById('password');
+const nextBtn = document.getElementById('nextBtn'), backBtn = document.getElementById('backBtn'), loginBtn = document.getElementById('loginBtn');
+const errorMsg = document.getElementById('errorMsg'), successMsg = document.getElementById('successMsg');
 
-let currentUser = null;
-let attempts = 0;
+let currentUser = null, currentKey = null, attempts = 0;
 
-function showError(msg){
-  errorMsg.textContent = msg;
-  errorMsg.classList.add('show');
-  successMsg.classList.remove('show');
-}
+const showError = m => { errorMsg.textContent = m; errorMsg.classList.add('show'); successMsg.classList.remove('show'); };
+const showSuccess = m => { successMsg.textContent = m; successMsg.classList.add('show'); errorMsg.classList.remove('show'); };
+const hideMsgs = () => { errorMsg.classList.remove('show'); successMsg.classList.remove('show'); };
 
-function showSuccess(msg){
-  successMsg.textContent = msg;
-  successMsg.classList.add('show');
-  errorMsg.classList.remove('show');
-}
+function setHint(theme){ document.documentElement.style.setProperty('--hint', HINTS[theme] || HINTS.system); }
 
-function hideMessages(){
-  errorMsg.classList.remove('show');
-  successMsg.classList.remove('show');
-}
-
-/* ================================================================
-   STEP 1
-   ================================================================ */
+/* ── STEP 1: recognise the user ── */
 nextBtn.addEventListener('click', () => {
-  const username = usernameInput.value.trim().toLowerCase();
+  const key = usernameInput.value.trim().toLowerCase();
+  if(!key){ showError('Voer een gebruikersnaam in.'); return; }
 
-  if(!username){
-    showError('Voer een gebruikersnaam in.');
-    return;
-  }
-
-  if(USERS[username]){
-    currentUser = USERS[username];
-    hideMessages();
+  if(USERS[key]){
+    currentUser = USERS[key]; currentKey = key; hideMsgs();
+    setHint(currentUser.theme);
 
     document.getElementById('userDisplay').textContent = currentUser.name;
     document.getElementById('clientIdDisplay').textContent = currentUser.clientId;
     document.getElementById('avatarInitial').textContent = currentUser.name.charAt(0);
-    document.getElementById('cardTitle').textContent = 'Welkom, ' + currentUser.name.split(' ')[0];
-    document.getElementById('cardSubtitle').textContent = 'Voer uw wachtwoord in om verder te gaan';
+    document.getElementById('title').textContent = 'Dag ' + currentUser.first;
+    document.getElementById('subtitle').textContent = 'Voer uw wachtwoord in om verder te gaan';
 
-    step1.classList.add('hidden');
-    step2.classList.remove('hidden');
+    step1.classList.add('hidden'); step2.classList.remove('hidden');
     passwordInput.focus();
+    GGZ.log('auth_username_ok', { name:currentUser.name }, key);
   } else {
     showError('Gebruikersnaam niet gevonden. Controleer de spelling.');
+    GGZ.log('auth_username_fail', { attempted:key }, key);
   }
 });
+usernameInput.addEventListener('keydown', e => { if(e.key === 'Enter') nextBtn.click(); });
 
-usernameInput.addEventListener('keydown', (e) => {
-  if(e.key === 'Enter') nextBtn.click();
-});
-
-/* ================================================================
-   STEP 2
-   ================================================================ */
+/* ── STEP 2: password check, with escalating (friendly) error copy ── */
+const FAIL_LINES = [
+  p => `Onjuist wachtwoord. Poging ${p} van 3.`,
+  p => `Nog steeds niet. Even goed nadenken… poging ${p} van 3.`,
+  p => `Laatste poging (${p}/3). Geen druk. Oké, een beetje druk.`,
+];
 loginBtn.addEventListener('click', () => {
-  const password = passwordInput.value;
+  const pw = passwordInput.value;
+  if(!pw){ showError('Voer een wachtwoord in.'); return; }
 
-  if(!password){
-    showError('Voer een wachtwoord in.');
-    return;
-  }
-
-  if(password === currentUser.pass){
+  if(pw === currentUser.pass){
     showSuccess('Authenticatie geslaagd — sessie wordt gestart…');
-    loginBtn.disabled = true;
-    loginBtn.textContent = 'Bezig…';
-
-    const username = Object.keys(USERS).find(key => USERS[key] === currentUser);
-    logActivity(username, 'login', {
-      name: currentUser.name,
-      clientId: currentUser.clientId
-    });
-    localStorage.setItem('currentUser', username);
-
-    setTimeout(() => {
-      window.location.href = currentUser.destination + '?user=' + username;
-    }, 900);
+    loginBtn.disabled = true; loginBtn.textContent = 'Bezig…';
+    localStorage.setItem('currentUser', currentKey);
+    GGZ.log('login_success', { name:currentUser.name, clientId:currentUser.clientId }, currentKey);
+    setTimeout(() => { window.location.href = currentUser.dest + '?user=' + currentKey; }, 900);
   } else {
     attempts++;
     document.getElementById('attempts').textContent = attempts;
-    showError('Onjuist wachtwoord. Poging ' + attempts + ' van 3.');
-
+    GGZ.log('login_fail', { attempt:attempts }, currentKey);
+    showError((FAIL_LINES[attempts-1] || FAIL_LINES[2])(attempts));
     if(attempts >= 3){
-      showError('Account tijdelijk geblokkeerd. Neem contact op met IT-beheer.');
-      loginBtn.disabled = true;
-      passwordInput.disabled = true;
+      showError('Account tijdelijk geblokkeerd. Neem contact op met IT-beheer. (Grapje. Probeer gewoon opnieuw.)');
+      GGZ.log('account_locked', {}, currentKey);
+      loginBtn.disabled = true; passwordInput.disabled = true;
+      // gentle self-unlock after a beat — it's a goodbye card, not Fort Knox
+      setTimeout(() => { attempts = 0; document.getElementById('attempts').textContent = '0';
+        loginBtn.disabled = false; passwordInput.disabled = false; passwordInput.value = ''; hideMsgs(); }, 4000);
     }
   }
 });
-
-passwordInput.addEventListener('keydown', (e) => {
-  if(e.key === 'Enter') loginBtn.click();
-});
+passwordInput.addEventListener('keydown', e => { if(e.key === 'Enter') loginBtn.click(); });
 
 backBtn.addEventListener('click', () => {
-  step2.classList.add('hidden');
-  step1.classList.remove('hidden');
-  passwordInput.value = '';
-  attempts = 0;
-  document.getElementById('attempts').textContent = '0';
-  hideMessages();
-  currentUser = null;
-  loginBtn.disabled = false;
-  passwordInput.disabled = false;
-  document.getElementById('cardTitle').textContent = 'Welkom terug';
-  document.getElementById('cardSubtitle').textContent = 'Log in om verder te gaan';
+  step2.classList.add('hidden'); step1.classList.remove('hidden');
+  passwordInput.value = ''; attempts = 0; document.getElementById('attempts').textContent = '0';
+  hideMsgs(); currentUser = currentKey = null; setHint('system');
+  loginBtn.disabled = passwordInput.disabled = false; loginBtn.textContent = 'Inloggen';
+  document.getElementById('title').textContent = 'Welkom terug';
+  document.getElementById('subtitle').textContent = 'Log in om verder te gaan';
 });
 
-/* ================================================================
-   INIT
-   ================================================================ */
-window.addEventListener('load', () => {
-  usernameInput.focus();
+/* ══════════════════════════════════════════════════════════════
+   EASTER EGGS
+   ══════════════════════════════════════════════════════════════ */
+
+/* 1 — Konami code → confetti + secret ward */
+const KON = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+let konIdx = 0;
+window.addEventListener('keydown', e => {
+  konIdx = (e.key.toLowerCase() === KON[konIdx].toLowerCase()) ? konIdx + 1 : 0;
+  if(konIdx === KON.length){ konIdx = 0; confetti(); toast('🕹️ Afdeling 0 ontgrendeld — je hebt goede ogen.'); GGZ.log('easter_egg', { egg:'konami' }); }
 });
+
+/* 2 — click the logo 5× → dev credit */
+let markClicks = 0, markTimer;
+document.getElementById('mark').addEventListener('click', () => {
+  markClicks++; clearTimeout(markTimer); markTimer = setTimeout(() => markClicks = 0, 1200);
+  if(markClicks === 5){ markClicks = 0; toast('☕ Gebouwd met te veel koffie door 56 · @56isk'); GGZ.log('easter_egg', { egg:'logo5' }); }
+});
+
+/* 3 — lightweight confetti (no dependency) */
+function confetti(){
+  const cols = ['#00c2a8','#b08d4f','#DA425E','#7C5CFF','#E5482B','#F0567E'];
+  for(let i=0;i<80;i++){
+    const s = document.createElement('span');
+    s.style.cssText = `position:fixed;z-index:200;top:-12px;left:${Math.random()*100}vw;width:${6+Math.random()*6}px;height:${8+Math.random()*8}px;background:${cols[i%cols.length]};border-radius:2px;pointer-events:none;transform:rotate(${Math.random()*360}deg)`;
+    document.body.appendChild(s);
+    const dur = 2200 + Math.random()*1800, drift = (Math.random()-.5)*260;
+    s.animate([{ transform:s.style.transform, opacity:1 },
+               { transform:`translate(${drift}px,105vh) rotate(${Math.random()*720}deg)`, opacity:.9 }],
+              { duration:dur, easing:'cubic-bezier(.2,.6,.4,1)' }).onfinish = () => s.remove();
+  }
+}
+
+/* 4 — hidden console note (devs peek; some of these friends will) */
+console.log('%cGGzE Patiëntportaal','color:#00c2a8;font:600 22px Georgia,serif');
+console.log('%cJe zoekt de broncode? Braaf. Er zit hier niks engs — alleen een afscheid.\nGemaakt door 56 · instagram @56isk · github.com/56snty','color:#6b7573;font:13px monospace');
+console.log('%cPsst: ↑↑↓↓←→←→ B A','color:#b08d4f;font:12px monospace');
+
+/* ── init ── */
+window.addEventListener('load', () => { GGZ.log('page_view', { page:'gate' }); usernameInput.focus(); });
 </script>
 </body>
 </html>
