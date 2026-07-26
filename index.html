@@ -184,6 +184,8 @@
     display:flex; align-items:center; gap:9px; transition:transform .5s var(--ease); max-width:90vw; }
   .toast.show{ transform:translate(-50%, 0); }
 
+  .win95-title{ display:none; }
+
   /* ── WIN95 easter-egg theme ── */
   body.win95{ background:#008080 !important; font-family:'MS Sans Serif','Microsoft Sans Serif','Segoe UI',Arial,sans-serif; display:block; padding:16px; overflow:auto; }
   body.win95 .ambient,body.win95 .grain{ display:none; }
@@ -192,7 +194,7 @@
   body.win95 .eyebrow{ display:none; }
   body.win95 .brand-mark{ display:none; }
   body.win95 .display{ font-family:inherit; font-size:12px; font-weight:bold; color:#fff; }
-  body.win95 .win95-title{ background:linear-gradient(to right,#000080,#1084d0); margin:-1px -1px 0; padding:4px 8px; text-align:left; }
+  body.win95 .win95-title{ display:block; background:linear-gradient(to right,#000080,#1084d0); margin:-1px -1px 0; padding:4px 8px; text-align:left; }
   body.win95 .label{ text-transform:none; font-family:inherit; font-size:11px; font-weight:normal; color:#000; letter-spacing:0; opacity:1; }
   body.win95 .field-input,body.win95 .field-select{ border-radius:0; border:1px solid; border-color:#808080 #fff #fff #808080; font-size:11px; padding:4px; background:#fff; box-shadow:none; }
   body.win95 .field-input:focus{ box-shadow:none; outline:1px dotted #000; }
@@ -200,6 +202,7 @@
   body.win95 .btn:hover{ background:#d4d4d4; transform:none; }
   body.win95 .btn:active{ border-color:#808080 #fff #fff #808080; }
   body.win95 .btn-ghost{ float:left; }
+  body.win95 #step1::after, body.win95 #step2::after{ content:""; display:block; clear:both; }
   body.win95 .identity{ border-radius:0; border:1px solid #808080; background:#fff; }
   body.win95 .identity-avatar{ border-radius:0; background:#000080; }
   body.win95 .msg{ border-radius:0; }
@@ -249,6 +252,7 @@
         <div class="mb-[18px]">
           <label class="label block mb-2" for="location">Locatie</label>
           <select class="field-select" id="location">
+            <option>GGzE Eindhoven — OPSY</option>
             <option>GGzE Eindhoven — Hoofdlocatie</option>
             <option>GGzE Woensel</option>
             <option>GGzE Veldhoven</option>
@@ -301,7 +305,7 @@ const USERS = {
   gebruiker892:{ pass:"Tanteleo!",       name:"Leonie",    first:"Leonie",    clientId:"CLI-1998-0892", unit:3, theme:"tanteleo", dest:"units.html" },
   gebruiker83: { pass:"House1!",         name:"Bram",      first:"Bram",      clientId:"CLI-1998-0083", unit:3, theme:"house",    dest:"units.html" },
   gebruiker744:{ pass:"Estherrr!",       name:"Esther",    first:"Esther",    clientId:"CLI-1998-0744", unit:3, theme:"zonnig",   dest:"units.html" },
-  gebruiker56: { pass:"Viaplay!",        name:"Mike",      first:"Mike",      clientId:"CLI-1998-0056", unit:3, theme:"pole",     dest:"units.html" },
+  gebruiker56: { pass:"Viaplay!",        name:"Meike",     first:"Meike",     clientId:"CLI-1998-0056", unit:3, theme:"pole",     dest:"units.html" },
   gebruiker729:{ pass:"Veronique!",      name:"Veronique", first:"Veronique", clientId:"CLI-1998-0729", unit:3, theme:"chic",     dest:"units.html" },
   admin:       { pass:"Poep123!",        name:"Systeembeheerder", first:"Beheer", clientId:"ADM-SYS-ROOT", unit:0, theme:"system", dest:"admin.html" },
 };
