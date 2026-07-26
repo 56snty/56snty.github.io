@@ -3,558 +3,302 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>GGzE · Admin Panel</title>
+<meta name="color-scheme" content="dark" />
+<title>GGzE — Systeembeheer · Logboek</title>
+
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..600&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { theme:{ extend:{ fontFamily:{
+    sans:['Instrument Sans','sans-serif'], serif:['Fraunces','serif'], mono:['JetBrains Mono','monospace'] }}}};
+</script>
+
 <style>
   :root{
-    --ggz-green:    #00a390;
-    --ggz-green-2:  #00c2a8;
-    --ggz-dark:     #003b33;
-    --ggz-light:    #e6f7f5;
-    --gold:         #b08d4f;
-    --ink:          #0d1414;
-    --paper:        #ffffff;
-    --muted:        #6b7573;
-    --border:       rgba(0,59,51,.12);
-    --red:          #dc2626;
-    --orange:       #ea580c;
-    --ease:         cubic-bezier(.16,1,.3,1);
-    --shadow-card:  0 1px 1px rgba(0,20,17,.03), 0 2px 8px -4px rgba(0,59,51,.08);
+    --bg:#0a0e0d; --panel:#0f1513; --panel-2:#131b18; --line:rgba(0,194,168,.14);
+    --ink:#e6efec; --sub:#7d918b; --green:#00c2a8; --green-d:#0a8c78;
+    --amber:#e0a244; --red:#f0616e; --violet:#8b6bff; --blue:#5b9dfa;
+    --ease:cubic-bezier(.16,1,.3,1);
   }
-
-  *{ box-sizing:border-box; margin:0; padding:0; }
-  html,body{ height:100%; }
-
-  body{
-    font-family:"Instrument Sans", system-ui, sans-serif;
-    font-feature-settings:"tnum" 1;
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; }
+  body{ font-family:'Instrument Sans',system-ui,sans-serif; color:var(--ink); min-height:100dvh;
     background:
-      radial-gradient(1100px 560px at 12% -12%, #d9f4ef 0%, transparent 58%),
-      radial-gradient(900px 640px at 108% 8%, #eefaf6 0%, transparent 52%),
-      linear-gradient(180deg, #f3f9f7, var(--ggz-light));
-    color:var(--ink);
-    min-height:100dvh;
-  }
+      radial-gradient(900px 500px at 100% -10%, rgba(0,194,168,.08), transparent 60%),
+      radial-gradient(700px 500px at -10% 110%, rgba(139,107,255,.06), transparent 60%),
+      var(--bg);
+    font-feature-settings:"tnum" 1; }
+  /* faint monitoring grid */
+  body::before{ content:""; position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.5;
+    background-image:linear-gradient(rgba(0,194,168,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,194,168,.04) 1px,transparent 1px);
+    background-size:52px 52px; -webkit-mask:radial-gradient(120vmax 90vmax at 50% -10%,#000,transparent 72%); mask:radial-gradient(120vmax 90vmax at 50% -10%,#000,transparent 72%); }
 
-  /* header */
-  .header{
-    background:linear-gradient(160deg, #005b4e, var(--ggz-dark));
-    color:white;
-    padding:22px clamp(20px,5vw,48px);
-    border-bottom:1px solid rgba(255,255,255,.08);
-    box-shadow:0 12px 32px -16px rgba(0,20,17,.4);
-    position:relative;
-  }
-  .header::after{
-    content:"";
-    position:absolute; bottom:0; left:0; right:0; height:2px;
-    background:linear-gradient(90deg, var(--ggz-green), var(--gold) 50%, var(--ggz-green));
-  }
-  .header-content{
-    max-width:1400px;
-    margin:0 auto;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    flex-wrap:wrap;
-    gap:20px;
-  }
-  .logo h1{
-    font-family:"Fraunces", serif;
-    font-size:24px;
-    font-weight:600;
-    letter-spacing:-.01em;
-  }
-  .logo p{
-    font-size:11px;
-    opacity:.75;
-    text-transform:uppercase;
-    letter-spacing:.14em;
-    margin-top:2px;
-  }
-  .logout-btn{
-    background:rgba(255,255,255,.08);
-    border:1px solid rgba(255,255,255,.18);
-    color:white;
-    border-radius:9px;
-    padding:9px 18px;
-    font-family:inherit;
-    font-weight:600;
-    font-size:13px;
-    cursor:pointer;
-    transition:all .25s var(--ease);
-  }
-  .logout-btn:hover{
-    background:#dc2626;
-    border-color:#dc2626;
-    transform:translateY(-1px);
-    box-shadow:0 8px 20px -6px rgba(220,38,38,.5);
-  }
+  .wrap{ position:relative; z-index:1; max-width:1040px; margin:0 auto; padding:26px 22px 70px; }
 
-  /* main */
-  .main{
-    max-width:1400px;
-    margin:0 auto;
-    padding:40px clamp(20px,5vw,48px);
-  }
+  /* top bar */
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:26px; }
+  .brand{ display:flex; align-items:center; gap:12px; }
+  .logo{ width:38px; height:38px; border-radius:11px; background:linear-gradient(150deg,var(--green),#046b5c);
+    display:flex; align-items:center; justify-content:center; color:#001b17; font-family:'Fraunces',serif; font-weight:600; font-size:17px;
+    box-shadow:0 10px 24px -8px rgba(0,194,168,.5); }
+  .brand-t{ font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:.2em; text-transform:uppercase; color:var(--green); }
+  .brand-s{ font-size:12px; color:var(--sub); }
+  .operator{ display:flex; align-items:center; gap:10px; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--sub);
+    border:1px solid var(--line); border-radius:100px; padding:7px 14px; background:var(--panel); }
+  .operator .live{ width:7px; height:7px; border-radius:50%; background:var(--green); box-shadow:0 0 0 0 rgba(0,194,168,.5); animation:blip 2s infinite; }
+  @keyframes blip{ 0%{ box-shadow:0 0 0 0 rgba(0,194,168,.5);} 70%{ box-shadow:0 0 0 7px rgba(0,194,168,0);} 100%{ box-shadow:0 0 0 0 rgba(0,194,168,0);} }
+  .exit{ color:var(--sub); text-decoration:none; font-family:'JetBrains Mono',monospace; font-size:11px; padding:7px 12px; border:1px solid var(--line); border-radius:100px; transition:.2s; }
+  .exit:hover{ color:var(--green); border-color:rgba(0,194,168,.4); }
 
-  .page-eyebrow{
-    font-size:11px; font-weight:600; letter-spacing:.16em; text-transform:uppercase;
-    color:var(--ggz-green); margin-bottom:10px;
-  }
-  .page-title{
-    font-family:"Fraunces", serif;
-    font-size:clamp(30px,5.5vw,40px);
-    font-weight:600;
-    letter-spacing:-.01em;
-    color:var(--ggz-dark);
-    margin-bottom:10px;
-  }
-  .page-subtitle{
-    font-size:15px;
-    color:var(--muted);
-    margin-bottom:40px;
-  }
+  h1{ font-family:'Fraunces',serif; font-weight:500; font-size:clamp(28px,5vw,40px); letter-spacing:-.02em; margin:0 0 4px; }
+  .lede{ color:var(--sub); font-size:13.5px; margin:0 0 26px; }
 
-  /* stats grid */
-  .stats-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
-    gap:18px;
-    margin-bottom:40px;
-  }
-  .stat-card{
-    background:var(--paper);
-    border:1px solid rgba(0,59,51,.06);
-    border-radius:16px;
-    padding:24px;
-    box-shadow:var(--shadow-card);
-    position:relative;
-    overflow:hidden;
-    transition:transform .25s var(--ease), box-shadow .25s var(--ease);
-  }
-  .stat-card::before{
-    content:"";
-    position:absolute; top:0; left:0; bottom:0; width:3px;
-    background:linear-gradient(180deg, var(--ggz-green-2), var(--ggz-dark));
-  }
-  .stat-card:hover{ transform:translateY(-2px); box-shadow:0 16px 32px -16px rgba(0,59,51,.2); }
-  .stat-label{
-    font-size:11px;
-    font-weight:600;
-    text-transform:uppercase;
-    letter-spacing:.1em;
-    color:var(--muted);
-    margin-bottom:10px;
-  }
-  .stat-value{
-    font-family:"Fraunces", serif;
-    font-size:34px;
-    font-weight:600;
-    letter-spacing:-.01em;
-    color:var(--ggz-dark);
-    font-variant-numeric:tabular-nums;
-  }
+  /* stat tiles */
+  .stats{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:26px; }
+  .stat{ background:linear-gradient(160deg,var(--panel-2),var(--panel)); border:1px solid var(--line); border-radius:16px; padding:18px 18px 16px; position:relative; overflow:hidden; }
+  .stat::after{ content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--accent,var(--green)); opacity:.8; }
+  .stat .k{ font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--sub); }
+  .stat .v{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:30px; color:var(--ink); line-height:1.1; margin-top:6px; font-variant-numeric:tabular-nums; }
 
-  /* sections */
-  .section{
-    background:var(--paper);
-    border:1px solid rgba(0,59,51,.06);
-    border-radius:16px;
-    padding:32px;
-    margin-bottom:24px;
-    box-shadow:var(--shadow-card);
-  }
-  .section-title{
-    font-family:"Fraunces", serif;
-    font-size:21px;
-    font-weight:600;
-    letter-spacing:-.005em;
-    color:var(--ggz-dark);
-    margin-bottom:20px;
-    display:flex;
-    align-items:center;
-    gap:12px;
-  }
-  .badge{
-    background:linear-gradient(150deg, var(--ggz-green-2), var(--ggz-dark) 85%);
-    color:white;
-    font-size:11.5px;
-    font-weight:600;
-    padding:4px 12px;
-    border-radius:100px;
-    font-variant-numeric:tabular-nums;
-    box-shadow:0 4px 10px -3px rgba(0,59,51,.4);
-  }
+  /* controls */
+  .controls{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:16px; }
+  .ctl{ background:var(--panel); border:1px solid var(--line); border-radius:10px; color:var(--ink);
+    font-family:'JetBrains Mono',monospace; font-size:12px; padding:9px 12px; }
+  .ctl:focus{ outline:none; border-color:rgba(0,194,168,.5); }
+  select.ctl{ appearance:none; cursor:pointer; padding-right:30px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%237d918b' stroke-width='2'%3E%3Cpath d='M2 4l4 4 4-4'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 10px center; }
+  .btn{ background:var(--panel); border:1px solid var(--line); border-radius:10px; color:var(--sub);
+    font-family:'JetBrains Mono',monospace; font-size:11.5px; padding:9px 13px; cursor:pointer; transition:.2s; display:inline-flex; align-items:center; gap:7px; }
+  .btn:hover{ color:var(--ink); border-color:rgba(0,194,168,.4); }
+  .btn.on{ color:var(--green); border-color:rgba(0,194,168,.5); background:rgba(0,194,168,.08); }
+  .btn.danger:hover{ color:var(--red); border-color:rgba(240,97,110,.5); }
+  .spacer{ flex:1; }
+  .count{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--sub); }
 
-  /* activity log */
-  .activity-log{
-    max-height:500px;
-    overflow-y:auto;
-  }
-  .log-item{
-    display:grid;
-    grid-template-columns:140px 120px 200px 1fr;
-    gap:16px;
-    padding:14px 16px;
-    border-bottom:1px solid var(--border);
-    font-size:13.5px;
-    border-radius:10px;
-    transition:background .2s var(--ease);
-  }
-  .log-item:hover{
-    background:var(--ggz-light);
-  }
-  .log-item:last-child{
-    border-bottom:none;
-  }
-  .log-time{
-    font-family:"JetBrains Mono", monospace;
-    font-size:11.5px;
-    color:var(--muted);
-    font-variant-numeric:tabular-nums;
-  }
-  .log-user{
-    font-weight:600;
-    color:var(--ggz-dark);
-  }
-  .log-action{
-    padding:4px 8px;
-    border-radius:6px;
-    font-size:11.5px;
-    font-weight:600;
-    text-align:center;
-  }
-  .log-action.login{
-    background:#dbeafe;
-    color:#1e40af;
-  }
-  .log-action.view{
-    background:#dcfce7;
-    color:#166534;
-  }
-  .log-action.add{
-    background:#fef3c7;
-    color:#92400e;
-  }
-  .log-action.delete{
-    background:#fee2e2;
-    color:#991b1b;
-  }
+  /* log stream */
+  .stream{ background:var(--panel); border:1px solid var(--line); border-radius:18px; overflow:hidden; }
+  .row{ display:grid; grid-template-columns:112px 130px 1fr; gap:14px; align-items:baseline;
+    padding:13px 20px; border-bottom:1px solid rgba(0,194,168,.07); font-size:13px; animation:in .35s var(--ease); }
+  @keyframes in{ from{ opacity:0; transform:translateY(-4px);} to{ opacity:1; transform:none;} }
+  .row:last-child{ border-bottom:none; }
+  .row:hover{ background:rgba(0,194,168,.03); }
+  .time{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--sub); white-space:nowrap; }
+  .badge{ font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:500; letter-spacing:.03em;
+    padding:3px 8px; border-radius:6px; white-space:nowrap; justify-self:start; border:1px solid transparent; }
+  .who{ color:var(--ink); font-weight:500; }
+  .who .id{ color:var(--sub); font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:400; }
+  .det{ color:var(--sub); font-family:'JetBrains Mono',monospace; font-size:11.5px; }
 
-  /* users table */
-  .users-table{
-    width:100%;
-    border-collapse:collapse;
-  }
-  .users-table th{
-    background:var(--ggz-light);
-    padding:12px;
-    text-align:left;
-    font-weight:600;
-    font-size:11px;
-    text-transform:uppercase;
-    letter-spacing:.08em;
-    color:var(--ggz-dark);
-  }
-  .users-table th:first-child{ border-radius:8px 0 0 8px; }
-  .users-table th:last-child{ border-radius:0 8px 8px 0; }
-  .users-table td{
-    padding:12px;
-    border-bottom:1px solid var(--border);
-    font-size:13.5px;
-  }
-  .users-table tr:hover td{
-    background:var(--ggz-light);
-  }
+  .empty{ padding:64px 20px; text-align:center; }
+  .empty .big{ font-family:'Fraunces',serif; font-size:22px; color:var(--ink); margin-bottom:8px; }
+  .empty .small{ font-size:13px; color:var(--sub); max-width:400px; margin:0 auto; line-height:1.6; }
 
-  .unit-badge{
-    display:inline-block;
-    padding:4px 10px;
-    background:linear-gradient(150deg, var(--ggz-green-2), var(--ggz-dark) 85%);
-    color:white;
-    border-radius:6px;
-    font-size:10.5px;
-    font-weight:600;
-  }
+  .foot{ text-align:center; font-family:'JetBrains Mono',monospace; font-size:9.5px; color:var(--sub); margin-top:26px; letter-spacing:.05em; line-height:1.8; }
 
-  .view-btn{
-    background:var(--ggz-dark);
-    color:white;
-    border:none;
-    border-radius:8px;
-    padding:7px 16px;
-    font-size:12.5px;
-    font-weight:600;
-    cursor:pointer;
-    transition:all .25s var(--ease);
+  @media (max-width:620px){
+    .row{ grid-template-columns:1fr; gap:5px; padding:12px 16px; }
+    .badge{ justify-self:start; }
   }
-  .view-btn:hover{
-    background:#005b4e;
-    transform:translateY(-1px);
-    box-shadow:0 6px 14px -4px rgba(0,59,51,.4);
-  }
-
-  .clear-logs-btn{
-    background:var(--orange);
-    color:white;
-    border:none;
-    border-radius:9px;
-    padding:10px 20px;
-    font-family:inherit;
-    font-weight:600;
-    font-size:13px;
-    cursor:pointer;
-    transition:all .25s var(--ease);
-    margin-top:16px;
-  }
-  .clear-logs-btn:hover{
-    background:#c2410c;
-    transform:translateY(-1px);
-  }
-
-  @media (max-width:768px){
-    .log-item{
-      grid-template-columns:1fr;
-      gap:8px;
-    }
-  }
+  @media (prefers-reduced-motion:reduce){ *{ animation:none !important; } }
 </style>
 </head>
 <body>
-
-  <!-- header -->
-  <header class="header">
-    <div class="header-content">
-      <div class="logo">
-        <h1>GGzE — Admin Panel</h1>
-        <p>Beheerders Dashboard</p>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo">G</div>
+        <div>
+          <div class="brand-t">GGzE · Systeembeheer</div>
+          <div class="brand-s">Activiteitenlogboek — realtime</div>
+        </div>
       </div>
-      <button class="logout-btn" onclick="logout()">Uitloggen</button>
-    </div>
-  </header>
-
-  <!-- main -->
-  <main class="main">
-    <div class="page-eyebrow">Systeemoverzicht</div>
-    <h1 class="page-title">Overzicht &amp; Activiteit</h1>
-    <p class="page-subtitle">Real-time monitoring van alle gebruikersactiviteiten binnen het GGzE systeem</p>
-
-    <!-- stats -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-label">Totaal Gebruikers</div>
-        <div class="stat-value" id="totalUsers">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Units</div>
-        <div class="stat-value">3</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Totale Activiteiten</div>
-        <div class="stat-value" id="totalActivities">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Vandaag Ingelogd</div>
-        <div class="stat-value" id="todayLogins">0</div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <div class="operator"><span class="live"></span> operator: <span id="op">admin</span></div>
+        <a class="exit" href="index.html">Uitloggen →</a>
       </div>
     </div>
 
-    <!-- activity log -->
-    <div class="section">
-      <div class="section-title">
-        <span>Activiteit Log</span>
-        <span class="badge" id="liveCount">0 events</span>
-      </div>
-      <div class="activity-log" id="activityLog">
-        <p style="text-align:center; color:var(--muted); padding:40px;">Geen activiteiten gevonden</p>
-      </div>
-      <button class="clear-logs-btn" onclick="clearLogs()">🗑️ Logs Wissen</button>
+    <h1>Activiteitenlogboek</h1>
+    <p class="lede">Alle sessies en gebeurtenissen binnen het patiëntportaal — geregistreerd conform beveiligingsbeleid.</p>
+
+    <div class="stats" id="stats"></div>
+
+    <div class="controls">
+      <select class="ctl" id="fAction"><option value="">Alle gebeurtenissen</option></select>
+      <select class="ctl" id="fUser"><option value="">Alle gebruikers</option></select>
+      <input class="ctl" id="fSearch" placeholder="zoeken…" style="width:130px" />
+      <button class="btn on" id="autoBtn">↻ live</button>
+      <div class="spacer"></div>
+      <span class="count" id="count">0 regels</span>
+      <button class="btn" id="exportBtn">⬇ export</button>
+      <button class="btn danger" id="clearBtn">✕ wissen</button>
     </div>
 
-    <!-- all users overview -->
-    <div class="section">
-      <div class="section-title">Alle Gebruikers per Unit</div>
-      <table class="users-table">
-        <thead>
-          <tr>
-            <th>Gebruikersnaam</th>
-            <th>Naam</th>
-            <th>Unit</th>
-            <th>Laatste Activiteit</th>
-            <th>Actie</th>
-          </tr>
-        </thead>
-        <tbody id="usersTable">
-        </tbody>
-      </table>
-    </div>
-  </main>
+    <div class="stream" id="stream"></div>
+
+    <p class="foot">
+      GGzE Patiënt Informatiesysteem · NEN-7510 · logboek opgeslagen op dit apparaat (localStorage)<br>
+      Systeembeheer-console — gemaakt door 56 · @56isk
+    </p>
+  </div>
 
 <script>
-/* ================================================================
-   ADMIN AUTHENTICATION
-   ================================================================ */
-const urlParams = new URLSearchParams(window.location.search);
-let currentUser = urlParams.get('user') || localStorage.getItem('currentUser');
+/* ══════════════════════════════════════════════════════════════
+   GGzE Systeembeheer — leest het gedeelde activiteitenlogboek
+   dat index.html en units.html wegschrijven. 56 · @56isk
+   ══════════════════════════════════════════════════════════════ */
 
-if(currentUser !== 'admin'){
-  alert('Alleen admins hebben toegang tot deze pagina');
-  window.location.href = 'Index.html';
-}
-
-/* ================================================================
-   DATA
-   ================================================================ */
-const ALL_USERS = {
-  unit2: [
-    { id: 'u2_1', username: 'patiënt_maria', name: 'Maria de Vries', lastSeen: '2026-07-21' },
-    { id: 'u2_2', username: 'patiënt_jan', name: 'Jan Vermeulen', lastSeen: '2026-07-22' },
-    { id: 'u2_3', username: 'patiënt_lisa', name: 'Lisa Bakker', lastSeen: '2026-07-20' },
-    { id: 'u2_4', username: 'patiënt_tom', name: 'Tom Janssen', lastSeen: '2026-07-22' },
-    { id: 'u2_5', username: 'patiënt_emma', name: 'Emma Peters', lastSeen: '2026-07-19' }
-  ],
-  unit3: [
-    { id: 'gebruiker162', username: 'gebruiker162', name: 'Sabine N', lastSeen: 'Actief' },
-    { id: 'gebruiker726', username: 'gebruiker726', name: 'Nienke V', lastSeen: 'Actief' },
-    { id: 'gebruiker492', username: 'gebruiker492', name: 'Demian', lastSeen: 'Actief' }
-  ],
-  unit4: [
-    { id: 'u4_1', username: 'patiënt_anna', name: 'Anna Smit', lastSeen: '2026-07-21' },
-    { id: 'u4_2', username: 'patiënt_david', name: 'David Visser', lastSeen: '2026-07-22' },
-    { id: 'u4_3', username: 'patiënt_sophie', name: 'Sophie Mulder', lastSeen: '2026-07-20' },
-    { id: 'u4_4', username: 'patiënt_lucas', name: 'Lucas Bos', lastSeen: '2026-07-22' }
-  ]
+const USERS = {
+  gebruiker162:"Sabine N.", gebruiker726:"Nienke V.", gebruiker492:"Demian",
+  gebruiker892:"Leonie", gebruiker83:"Bram", gebruiker744:"Esther",
+  gebruiker56:"Mike", gebruiker729:"Veronique", admin:"Systeembeheerder",
 };
 
-/* ================================================================
-   ACTIVITY LOG
-   ================================================================ */
-function renderActivityLog(){
-  const logs = JSON.parse(localStorage.getItem('activityLogs') || '[]');
-  const logContainer = document.getElementById('activityLog');
+/* action → { label, colour } for the badges */
+const ACTIONS = {
+  page_view:          { l:"page view",        c:"var(--sub)" },
+  auth_username_ok:   { l:"gebruiker herkend", c:"var(--blue)" },
+  auth_username_fail: { l:"gebruiker onbekend",c:"var(--amber)" },
+  login_success:      { l:"login ok",          c:"var(--green)" },
+  login_fail:         { l:"login mislukt",     c:"var(--red)" },
+  account_locked:     { l:"geblokkeerd",       c:"var(--red)" },
+  letter_opened:      { l:"brief geopend",     c:"var(--violet)" },
+  connect_click:      { l:"contact",           c:"var(--blue)" },
+  theme_change:       { l:"weergave",          c:"var(--sub)" },
+  easter_egg:         { l:"easter egg",        c:"var(--amber)" },
+  logout:             { l:"uitgelogd",         c:"var(--sub)" },
+  admin_view:         { l:"beheer",            c:"var(--green)" },
+};
 
-  if(logs.length === 0){
-    logContainer.innerHTML = '<p style="text-align:center; color:var(--muted); padding:40px;">Geen activiteiten gevonden</p>';
+const GGZ = { log(action, details={}, username=null){ try{
+  const logs = JSON.parse(localStorage.getItem('activityLogs')||'[]');
+  logs.push({ timestamp:new Date().toISOString(), username: username ?? '(anoniem)', action, details });
+  localStorage.setItem('activityLogs', JSON.stringify(logs.slice(-500)));
+}catch(e){} } };
+
+/* set operator label from current session, if any */
+const cur = (localStorage.getItem('currentUser')||'').toLowerCase();
+if(cur) document.getElementById('op').textContent = cur;
+GGZ.log('admin_view', {}, cur || 'admin');
+
+function readLogs(){
+  try{ const l = JSON.parse(localStorage.getItem('activityLogs')||'[]'); return Array.isArray(l) ? l : []; }
+  catch(e){ return []; }
+}
+
+function relTime(iso){
+  const d = new Date(iso), now = new Date(), s = Math.floor((now-d)/1000);
+  if(isNaN(s)) return '—';
+  if(s < 10) return 'zojuist';
+  if(s < 60) return s+' sec geleden';
+  const m = Math.floor(s/60); if(m < 60) return m+' min geleden';
+  const h = Math.floor(m/60); if(h < 24) return h+' uur geleden';
+  const dd = Math.floor(h/24); if(dd < 7) return dd+' dag'+(dd>1?'en':'')+' geleden';
+  return d.toLocaleDateString('nl-NL',{ day:'numeric', month:'short' });
+}
+function absTime(iso){ const d=new Date(iso); return isNaN(d)?'':d.toLocaleString('nl-NL'); }
+
+function fmtDetails(a, det){
+  if(!det || typeof det !== 'object') return '';
+  const parts = [];
+  for(const [k,v] of Object.entries(det)){
+    if(v === undefined || v === null || v === '') continue;
+    parts.push(`${k}: ${v}`);
+  }
+  return parts.join('  ·  ');
+}
+
+/* build the filter dropdowns once from whatever exists */
+function refreshFilters(logs){
+  const aSel = document.getElementById('fAction'), uSel = document.getElementById('fUser');
+  const seenA = new Set([...aSel.options].map(o=>o.value));
+  const seenU = new Set([...uSel.options].map(o=>o.value));
+  [...new Set(logs.map(l=>l.action))].forEach(a => { if(!seenA.has(a)){ const o=document.createElement('option'); o.value=a; o.textContent=(ACTIONS[a]?.l||a); aSel.appendChild(o); seenA.add(a); } });
+  [...new Set(logs.map(l=>l.username))].forEach(u => { if(!seenU.has(u)){ const o=document.createElement('option'); o.value=u; o.textContent=(USERS[u]||u); uSel.appendChild(o); seenU.add(u); } });
+}
+
+function render(){
+  const logs = readLogs();
+  refreshFilters(logs);
+
+  // stats (computed over the full log, not the filtered view)
+  const total = logs.length;
+  const users = new Set(logs.map(l=>l.username).filter(u=>u && u!=='(anoniem)')).size;
+  const logins = logs.filter(l=>l.action==='login_success').length;
+  const fails  = logs.filter(l=>l.action==='login_fail').length;
+  const eggs   = logs.filter(l=>l.action==='easter_egg').length;
+  document.getElementById('stats').innerHTML = [
+    ['Totaal', total, 'var(--green)'],
+    ['Gebruikers', users, 'var(--blue)'],
+    ['Logins', logins, 'var(--green)'],
+    ['Mislukte pogingen', fails, 'var(--red)'],
+    ['Easter eggs', eggs, 'var(--amber)'],
+  ].map(([k,v,c]) => `<div class="stat" style="--accent:${c}"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
+
+  // filters
+  const fa = document.getElementById('fAction').value;
+  const fu = document.getElementById('fUser').value;
+  const fs = document.getElementById('fSearch').value.trim().toLowerCase();
+
+  let rows = logs.slice().reverse(); // newest first
+  if(fa) rows = rows.filter(l => l.action === fa);
+  if(fu) rows = rows.filter(l => l.username === fu);
+  if(fs) rows = rows.filter(l => JSON.stringify(l).toLowerCase().includes(fs));
+
+  document.getElementById('count').textContent = rows.length + ' regel' + (rows.length===1?'':'s');
+
+  const stream = document.getElementById('stream');
+  if(rows.length === 0){
+    stream.innerHTML = `<div class="empty"><div class="big">${total===0?'Nog geen activiteit geregistreerd':'Geen resultaten'}</div>
+      <div class="small">${total===0
+        ? 'Log in via het patiëntportaal en open een dossier — gebeurtenissen verschijnen hier realtime.'
+        : 'Pas je filters aan om meer regels te zien.'}</div></div>`;
     return;
   }
 
-  // Reverse to show latest first
-  const reversed = [...logs].reverse();
-
-  logContainer.innerHTML = reversed.map(log => {
-    const date = new Date(log.timestamp);
-    const time = date.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    const dateStr = date.toLocaleDateString('nl-NL', { day: '2-digit', month: '2-digit' });
-
-    let actionClass = log.action;
-    let actionText = log.action;
-
-    if(log.action === 'login') actionText = '🔑 Login';
-    if(log.action === 'view') actionText = '👁️ Bekeken';
-    if(log.action === 'add') actionText = '➕ Toegevoegd';
-    if(log.action === 'delete') actionText = '🗑️ Verwijderd';
-
-    const details = log.details ? JSON.stringify(log.details) : '';
-
-    return `
-      <div class="log-item">
-        <div class="log-time">${dateStr} ${time}</div>
-        <div class="log-user">${log.username}</div>
-        <div class="log-action ${actionClass}">${actionText}</div>
-        <div style="color:var(--muted); font-size:13px;">${details}</div>
-      </div>
-    `;
+  stream.innerHTML = rows.map(l => {
+    const a = ACTIONS[l.action] || { l:l.action, c:'var(--sub)' };
+    const name = USERS[l.username] || l.username || '(anoniem)';
+    const idPart = (l.username && USERS[l.username]) ? ` <span class="id">${l.username}</span>` : '';
+    return `<div class="row">
+      <div class="time" title="${absTime(l.timestamp)}">${relTime(l.timestamp)}</div>
+      <div><span class="badge" style="color:${a.c};border-color:${a.c};background:color-mix(in srgb, ${a.c} 12%, transparent)">${a.l}</span></div>
+      <div><span class="who">${name}${idPart}</span>${det(a,l)}</div>
+    </div>`;
   }).join('');
-
-  document.getElementById('liveCount').textContent = `${logs.length} events`;
 }
+function det(a,l){ const d = fmtDetails(l.action, l.details); return d ? `<div class="det">${d}</div>` : ''; }
 
-/* ================================================================
-   STATS
-   ================================================================ */
-function updateStats(){
-  const logs = JSON.parse(localStorage.getItem('activityLogs') || '[]');
+/* controls wiring */
+['fAction','fUser'].forEach(id => document.getElementById(id).addEventListener('change', render));
+document.getElementById('fSearch').addEventListener('input', render);
 
-  // Total users
-  const totalUsers = Object.values(ALL_USERS).flat().length;
-  document.getElementById('totalUsers').textContent = totalUsers;
+let auto = true, timer = setInterval(render, 2000);
+document.getElementById('autoBtn').addEventListener('click', function(){
+  auto = !auto; this.classList.toggle('on', auto); this.textContent = auto ? '↻ live' : '⏸ gepauzeerd';
+  clearInterval(timer); if(auto) timer = setInterval(render, 2000);
+});
+// also update instantly when another tab writes a log
+window.addEventListener('storage', e => { if(e.key === 'activityLogs') render(); });
 
-  // Total activities
-  document.getElementById('totalActivities').textContent = logs.length;
-
-  // Today's logins
-  const today = new Date().toDateString();
-  const todayLogins = logs.filter(log =>
-    log.action === 'login' && new Date(log.timestamp).toDateString() === today
-  ).length;
-  document.getElementById('todayLogins').textContent = todayLogins;
-}
-
-/* ================================================================
-   USERS TABLE
-   ================================================================ */
-function renderUsersTable(){
-  const tbody = document.getElementById('usersTable');
-
-  let rows = '';
-
-  ['unit2', 'unit3', 'unit4'].forEach(unit => {
-    ALL_USERS[unit].forEach(user => {
-      const unitNum = unit.replace('unit', '');
-      rows += `
-        <tr>
-          <td><code>${user.username}</code></td>
-          <td>${user.name}</td>
-          <td><span class="unit-badge">Unit ${unitNum}</span></td>
-          <td>${user.lastSeen}</td>
-          <td>
-            <button class="view-btn" onclick="viewUser('${user.username}', '${unitNum}')">
-              Bekijken
-            </button>
-          </td>
-        </tr>
-      `;
-    });
-  });
-
-  tbody.innerHTML = rows;
-}
-
-/* ================================================================
-   ACTIONS
-   ================================================================ */
-function viewUser(username, unit){
-  window.location.href = `medicijnen.html?user=${username}&unit=${unit}&admin=true`;
-}
-
-function clearLogs(){
-  if(confirm('Weet je zeker dat je alle logs wilt wissen?')){
-    localStorage.setItem('activityLogs', '[]');
-    renderActivityLog();
-    updateStats();
+document.getElementById('exportBtn').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(readLogs(), null, 2)], { type:'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `ggze-logboek-${new Date().toISOString().slice(0,10)}.json`; a.click(); URL.revokeObjectURL(a.href);
+});
+document.getElementById('clearBtn').addEventListener('click', () => {
+  if(confirm('Weet je zeker dat je het volledige logboek wilt wissen? Dit kan niet ongedaan worden gemaakt.')){
+    localStorage.removeItem('activityLogs'); render();
   }
-}
+});
 
-function logout(){
-  localStorage.removeItem('currentUser');
-  window.location.href = 'Index.html';
-}
+render();
 
-/* ================================================================
-   INIT
-   ================================================================ */
-renderActivityLog();
-updateStats();
-renderUsersTable();
-
-// Auto-refresh every 5 seconds
-setInterval(() => {
-  renderActivityLog();
-  updateStats();
-}, 5000);
+console.log('%cGGzE Systeembeheer','color:#00c2a8;font:600 20px Georgia,serif');
+console.log('%cLogboek-console actief. Gemaakt door 56 · @56isk','color:#7d918b;font:12px monospace');
 </script>
 </body>
 </html>
