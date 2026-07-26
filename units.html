@@ -3,298 +3,473 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>GGzE — Unit Selectie</title>
+<title>GGzE — Ontslagdossier</title>
+
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { theme: { extend: {
+    fontFamily: { sans:['Instrument Sans','sans-serif'], serif:['Fraunces','serif'], mono:['JetBrains Mono','monospace'] },
+  }}};
+</script>
+
 <style>
   :root{
-    --ggz-green:   #00a390;
-    --ggz-green-2: #00c2a8;
-    --ggz-dark:    #003b33;
-    --ggz-light:   #e6f7f5;
-    --gold:        #b08d4f;
-    --ink:         #0d1414;
-    --paper:       #ffffff;
-    --muted:       #6b7573;
-    --border:      rgba(0,59,51,.12);
-    --ease:        cubic-bezier(.16,1,.3,1);
-    --shadow-sm:   0 1px 2px rgba(0,20,17,.04);
+    /* defaults — overwritten per user by JS */
+    --accent:#00a390; --accent2:#00c2a8; --bg1:#f3f9f7; --bg2:#e6f7f5;
+    --card:#fffdfb; --card-ink:#0d1414; --card-sub:#6b7573; --hair:rgba(0,59,51,.12);
+    --ease:cubic-bezier(.16,1,.3,1);
   }
-
-  *{ box-sizing:border-box; margin:0; padding:0; }
-  html,body{ height:100%; }
-
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; }
   body{
-    font-family:"Instrument Sans", system-ui, sans-serif;
-    font-feature-settings:"tnum" 1;
-    color:var(--ink);
-    min-height:100dvh;
+    font-family:'Instrument Sans',system-ui,sans-serif; color:var(--card-ink);
+    min-height:100dvh; position:relative; overflow-x:hidden;
     background:
-      radial-gradient(1100px 560px at 12% -12%, #d9f4ef 0%, transparent 58%),
-      radial-gradient(900px 640px at 108% 8%, #eefaf6 0%, transparent 52%),
-      linear-gradient(180deg, #f3f9f7, var(--ggz-light));
+      radial-gradient(1000px 700px at 8% -8%, var(--bg2), transparent 58%),
+      radial-gradient(900px 640px at 100% 6%, color-mix(in srgb,var(--accent) 14%, var(--bg1)), transparent 55%),
+      linear-gradient(180deg, var(--bg1), var(--bg2));
+    transition:background .6s var(--ease);
   }
+  .grain{ position:fixed; inset:0; z-index:1; pointer-events:none; opacity:.045; mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  body[data-dark="1"] .grain{ mix-blend-mode:screen; opacity:.06; }
 
-  /* theme toggle */
-  .theme-toggle{
-    position:fixed; top:20px; right:20px; z-index:500;
-    display:flex; gap:3px;
-    background:rgba(255,255,255,.75);
-    backdrop-filter:blur(16px) saturate(1.4);
-    border:1px solid rgba(0,59,51,.08);
-    border-radius:100px; padding:4px;
-    box-shadow:0 1px 1px rgba(255,255,255,.5) inset, 0 8px 24px -8px rgba(0,20,17,.16);
-  }
-  .theme-btn{
-    border:none; background:transparent;
-    width:34px; height:34px; border-radius:50%;
-    font-size:15px; cursor:pointer;
-    display:flex; align-items:center; justify-content:center;
-    transition:all .25s var(--ease); opacity:.45;
-  }
-  .theme-btn:hover{ opacity:.9; transform:translateY(-1px); }
-  .theme-btn.active{ background:var(--ggz-dark); opacity:1; box-shadow:0 4px 12px -2px rgba(0,59,51,.4); }
+  /* ── motif layer (subtle, per-theme) ── */
+  .motif{ position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+  .motif .sun{ position:absolute; left:50%; bottom:-46%; width:130vmax; height:130vmax; transform:translateX(-50%);
+    background:radial-gradient(circle, color-mix(in srgb,var(--accent) 30%,transparent), transparent 62%); opacity:.5; }
+  .motif .rays{ position:absolute; top:-30vmax; right:-20vmax; width:70vmax; height:70vmax; opacity:.4;
+    background:repeating-conic-gradient(from 0deg at 50% 50%, color-mix(in srgb,var(--accent2) 22%,transparent) 0deg 6deg, transparent 6deg 14deg);
+    -webkit-mask:radial-gradient(circle, #000 0%, transparent 66%); mask:radial-gradient(circle, #000 0%, transparent 66%); }
+  .motif .lines{ position:absolute; inset:0; opacity:.35;
+    background:repeating-linear-gradient(0deg, transparent 0 78px, color-mix(in srgb,var(--accent) 20%,transparent) 78px 79px); }
+  .motif .warm{ position:absolute; inset:0;
+    background:radial-gradient(60vmax 60vmax at 82% 12%, color-mix(in srgb,var(--accent) 20%,transparent), transparent 60%),
+               radial-gradient(50vmax 50vmax at 12% 88%, color-mix(in srgb,var(--accent2) 16%,transparent), transparent 60%); opacity:.7; }
+  .motif .dots{ position:absolute; inset:0; opacity:.5;
+    background-image:radial-gradient(color-mix(in srgb,var(--accent) 26%,transparent) 1.4px, transparent 1.5px);
+    background-size:26px 26px; -webkit-mask:linear-gradient(180deg,#000,transparent 70%); mask:linear-gradient(180deg,#000,transparent 70%); }
+  .motif .eq{ position:absolute; left:0; right:0; bottom:0; height:34vh; display:flex; align-items:flex-end; gap:6px; padding:0 4vw; opacity:.24; }
+  .motif .eq i{ flex:1; background:linear-gradient(180deg,var(--accent),var(--accent2)); border-radius:4px 4px 0 0; height:20%;
+    animation:eq 1.4s ease-in-out infinite; }
+  @keyframes eq{ 0%,100%{ height:16%; } 50%{ height:90%; } }
+  .motif .frame{ position:absolute; inset:26px; border:1px solid color-mix(in srgb,var(--accent2) 30%,transparent); border-radius:22px;
+    box-shadow:inset 0 0 0 6px color-mix(in srgb,var(--accent) 6%,transparent); opacity:.5; }
+  .motif .grid{ position:absolute; inset:0; opacity:.14;
+    background-image:linear-gradient(color-mix(in srgb,var(--accent) 40%,transparent) 1px, transparent 1px),
+                     linear-gradient(90deg, color-mix(in srgb,var(--accent) 40%,transparent) 1px, transparent 1px);
+    background-size:44px 44px; -webkit-mask:radial-gradient(120vmax 80vmax at 50% -10%, #000, transparent 70%); mask:radial-gradient(120vmax 80vmax at 50% -10%, #000, transparent 70%); }
 
-  /* header */
-  .topbar{
-    padding:20px clamp(20px,5vw,48px);
-    display:flex; justify-content:space-between; align-items:center;
-    flex-wrap:wrap; gap:16px;
-  }
-  .topbar-user{ display:flex; align-items:center; gap:12px; }
-  .avatar{
-    width:40px; height:40px; border-radius:50%;
-    background:linear-gradient(150deg, var(--ggz-green-2), var(--ggz-dark) 85%);
-    color:white; display:flex; align-items:center; justify-content:center;
-    font-weight:600; font-size:14px;
-    box-shadow:0 6px 14px -4px rgba(0,59,51,.5);
-  }
-  .topbar-name{ font-weight:600; color:var(--ggz-dark); font-size:14px; letter-spacing:-.005em; }
-  .topbar-session{ font-size:11.5px; color:var(--muted); font-family:"JetBrains Mono", monospace; font-variant-numeric:tabular-nums; }
-  .logout-link{
-    background:none; border:none; color:var(--muted); font-family:inherit;
-    font-size:13px; font-weight:500; cursor:pointer; transition:color .2s;
-  }
-  .logout-link:hover{ color:#dc2626; }
+  .wrap{ position:relative; z-index:2; max-width:720px; margin:0 auto; padding:26px 22px 80px; }
 
-  .main{ max-width:1000px; margin:0 auto; padding:20px clamp(20px,5vw,48px) 60px; }
+  /* ── top system bar ── */
+  .topbar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; }
+  .sysmark{ display:flex; align-items:center; gap:11px; }
+  .sysdot{ width:34px; height:34px; border-radius:10px; background:linear-gradient(150deg,var(--accent2),color-mix(in srgb,var(--accent) 55%,#000)); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-family:'Fraunces',serif; font-weight:600; font-size:15px;
+    box-shadow:0 8px 20px -8px color-mix(in srgb,var(--accent) 60%,transparent); cursor:pointer; user-select:none; }
+  .syslabel{ font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--card-sub); }
+  .logout{ font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.06em; color:var(--card-sub);
+    text-decoration:none; padding:8px 12px; border:1px solid var(--hair); border-radius:100px; transition:all .2s var(--ease); background:color-mix(in srgb,var(--card) 60%,transparent); }
+  .logout:hover{ color:var(--accent); border-color:color-mix(in srgb,var(--accent) 40%,transparent); }
 
-  .page-eyebrow{
-    font-size:11px; font-weight:600; letter-spacing:.16em; text-transform:uppercase;
-    color:var(--ggz-green); text-align:center; margin-bottom:10px;
-  }
-  .page-title{
-    font-family:"Fraunces", serif; font-weight:600; letter-spacing:-.01em;
-    font-size:clamp(28px,5vw,38px); color:var(--ggz-dark); margin-bottom:8px;
-    text-align:center;
-  }
-  .page-subtitle{ font-size:14.5px; color:var(--muted); text-align:center; margin-bottom:44px; }
+  /* ── dossier card ── */
+  .dossier{ background:var(--card); border:1px solid var(--hair); border-radius:24px; overflow:hidden;
+    box-shadow:0 1px 1px color-mix(in srgb,var(--accent) 6%,transparent), 0 24px 60px -34px color-mix(in srgb,var(--accent) 50%,transparent);
+    animation:rise .8s var(--ease); }
+  body[data-dark="1"] .dossier{ box-shadow:0 24px 70px -30px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.05); }
+  @keyframes rise{ from{ opacity:0; transform:translateY(20px); } to{ opacity:1; transform:none; } }
 
-  .unit-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));
-    gap:20px;
-  }
-  .unit-card{
-    background:var(--paper);
-    border:1px solid rgba(0,59,51,.06);
-    border-radius:18px;
-    padding:28px 24px;
-    cursor:pointer;
-    text-align:left;
-    transition:transform .3s var(--ease), box-shadow .3s var(--ease), border-color .3s var(--ease);
-    box-shadow:0 1px 1px rgba(0,20,17,.03), 0 2px 8px -4px rgba(0,59,51,.08);
-    animation:rise .6s var(--ease) both;
-    position:relative;
-    overflow:hidden;
-  }
-  .unit-card::before{
-    content:"";
-    position:absolute; top:0; left:0; right:0; height:2px;
-    background:linear-gradient(90deg, var(--ggz-green), var(--gold));
-    opacity:0; transition:opacity .3s var(--ease);
-  }
-  .unit-card:hover::before{ opacity:1; }
-  .unit-card:nth-child(1){ animation-delay:.05s; }
-  .unit-card:nth-child(2){ animation-delay:.12s; }
-  .unit-card:nth-child(3){ animation-delay:.19s; }
-  @keyframes rise{ from{ opacity:0; transform:translateY(16px) scale(.98);} to{ opacity:1; transform:translateY(0) scale(1);} }
+  .dhead{ padding:40px 40px 28px; border-bottom:1px solid var(--hair); position:relative; }
+  .dhead::before{ content:""; position:absolute; top:0; left:0; right:0; height:3px;
+    background:linear-gradient(90deg,var(--accent),var(--accent2) 60%,var(--accent)); }
+  .eyebrow{ font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--accent); font-weight:500; }
+  .mood{ float:right; font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--card-sub); border:1px solid var(--hair); border-radius:100px; padding:4px 10px; }
+  .greeting{ font-family:'Fraunces',serif; font-weight:400; letter-spacing:-.02em; color:var(--card-ink);
+    font-size:clamp(34px,7vw,52px); line-height:1.02; margin:16px 0 4px; }
+  .greeting em{ font-style:italic; color:var(--accent); }
+  .meta{ display:flex; flex-wrap:wrap; gap:8px; margin-top:18px; }
+  .chip{ font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:.04em; color:var(--card-sub);
+    background:color-mix(in srgb,var(--accent) 7%,transparent); border:1px solid var(--hair); border-radius:8px; padding:6px 10px; }
+  .chip.ok{ color:var(--accent); border-color:color-mix(in srgb,var(--accent) 32%,transparent); font-weight:500;
+    background:color-mix(in srgb,var(--accent) 12%,transparent); }
 
-  .unit-card:hover{
-    transform:translateY(-5px);
-    box-shadow:0 1px 1px rgba(0,20,17,.03), 0 24px 48px -16px rgba(0,59,51,.24);
-    border-color:rgba(0,163,144,.3);
-  }
-  .unit-icon{
-    width:52px; height:52px; border-radius:13px;
-    background:linear-gradient(160deg, var(--ggz-light), #d5f0ea);
-    border:1px solid rgba(0,163,144,.15);
-    display:flex; align-items:center; justify-content:center;
-    font-size:23px; margin-bottom:18px;
-  }
-  .unit-name{ font-family:"Fraunces", serif; font-weight:600; font-size:19px; letter-spacing:-.005em; color:var(--ggz-dark); margin-bottom:6px; }
-  .unit-desc{ font-size:13px; color:var(--muted); margin-bottom:18px; line-height:1.5; }
-  .unit-count{
-    display:flex; align-items:center; gap:7px;
-    font-size:11.5px; color:var(--ggz-green); font-weight:600; letter-spacing:.01em;
-    font-variant-numeric:tabular-nums;
-    border-top:1px solid var(--border); padding-top:14px;
-  }
-  .pulse-dot{
-    width:6px; height:6px; border-radius:50%; background:var(--ggz-green);
-    box-shadow:0 0 0 0 rgba(0,163,144,.5);
-    animation:pulse 2.4s infinite;
-  }
-  @keyframes pulse{
-    0%{ box-shadow:0 0 0 0 rgba(0,163,144,.45); }
-    70%{ box-shadow:0 0 0 6px rgba(0,163,144,0); }
-    100%{ box-shadow:0 0 0 0 rgba(0,163,144,0); }
-  }
+  .dbody{ padding:34px 40px 40px; }
 
-  .footer-note{ text-align:center; font-size:10.5px; color:var(--muted); margin-top:48px; line-height:1.7; letter-spacing:.01em; }
+  /* ── verblijf timeline (a real sequence: intake → verblijf → ontslag) ── */
+  .timeline{ display:grid; grid-template-columns:repeat(3,1fr); gap:0; margin-bottom:34px; position:relative; }
+  .timeline::before{ content:""; position:absolute; left:8%; right:8%; top:11px; height:1.5px;
+    background:linear-gradient(90deg,var(--accent),var(--accent2)); opacity:.35; }
+  .tstep{ text-align:center; position:relative; }
+  .tnode{ width:22px; height:22px; border-radius:50%; margin:0 auto 12px; background:var(--card); border:2px solid var(--accent);
+    display:flex; align-items:center; justify-content:center; position:relative; z-index:1; }
+  .tstep.done .tnode{ background:var(--accent); }
+  .tstep.done .tnode::after{ content:""; width:6px; height:6px; border-radius:50%; background:var(--card); }
+  .tk{ font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--card-sub); }
+  .tv{ font-size:13px; font-weight:600; color:var(--card-ink); margin-top:2px; }
 
-  /* ===================== WIN95 THEME ===================== */
-  body.theme-win95{
-    background:#008080 !important;
-    font-family:"MS Sans Serif","Microsoft Sans Serif",Arial,sans-serif;
-    padding:16px;
+  /* ── the signature: sealed letter → unsealed ── */
+  .seal{ text-align:center; padding:30px 24px; border:1.5px dashed color-mix(in srgb,var(--accent) 40%,transparent);
+    border-radius:18px; background:color-mix(in srgb,var(--accent) 5%,transparent); cursor:pointer;
+    transition:all .3s var(--ease); }
+  .seal:hover{ background:color-mix(in srgb,var(--accent) 9%,transparent); transform:translateY(-1px); }
+  .seal .wax{ width:56px; height:56px; margin:0 auto 14px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, color-mix(in srgb,var(--accent2) 70%,#fff), var(--accent) 70%);
+    display:flex; align-items:center; justify-content:center; font-size:24px;
+    box-shadow:0 10px 24px -8px color-mix(in srgb,var(--accent) 70%,transparent), inset 0 2px 4px rgba(255,255,255,.4);
+    animation:pulse 2.6s var(--ease) infinite; }
+  @keyframes pulse{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.05); } }
+  .seal .sk{ font-family:'Fraunces',serif; font-size:18px; color:var(--card-ink); }
+  .seal .st{ font-size:12.5px; color:var(--card-sub); margin-top:3px; font-family:'JetBrains Mono',monospace; letter-spacing:.06em; }
+
+  .letter{ display:none; }
+  .letter.open{ display:block; animation:unfold .7s var(--ease); }
+  @keyframes unfold{ from{ opacity:0; transform:translateY(14px) scale(.99); } to{ opacity:1; transform:none; } }
+  .letter .lead{ font-family:'Fraunces',serif; font-style:italic; font-size:22px; color:var(--accent); margin-bottom:14px; letter-spacing:-.01em; }
+  .letter .prose{ font-family:'Fraunces',serif; font-weight:300; font-size:clamp(19px,2.7vw,21px); line-height:1.62;
+    color:var(--card-ink); letter-spacing:-.005em; white-space:pre-line; }
+  .letter .sign{ margin-top:26px; display:flex; align-items:center; gap:12px; }
+  .letter .sig{ font-family:'Fraunces',serif; font-style:italic; font-size:30px; color:var(--accent); line-height:1; }
+  .letter .sigmeta{ font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--card-sub); }
+
+  /* stagger the reveal of prose lines */
+  .letter.open .reveal{ opacity:0; animation:rise .6s var(--ease) forwards; }
+  .letter.open .reveal:nth-child(1){ animation-delay:.05s; }
+  .letter.open .reveal:nth-child(2){ animation-delay:.18s; }
+  .letter.open .reveal:nth-child(3){ animation-delay:.32s; }
+  .letter.open .reveal:nth-child(4){ animation-delay:.46s; }
+
+  /* ── connect card ── */
+  .connect{ margin-top:38px; padding:28px 26px; border-radius:18px;
+    background:color-mix(in srgb,var(--accent) 6%,transparent); border:1px solid var(--hair); }
+  .connect h3{ font-family:'Fraunces',serif; font-weight:500; font-size:19px; color:var(--card-ink); margin:0 0 4px; letter-spacing:-.01em; }
+  .connect p{ font-size:13.5px; color:var(--card-sub); margin:0 0 18px; }
+  .links{ display:flex; flex-wrap:wrap; gap:10px; }
+  .link{ display:inline-flex; align-items:center; gap:9px; text-decoration:none; padding:11px 15px; border-radius:12px;
+    background:var(--card); border:1px solid var(--hair); color:var(--card-ink); font-size:13.5px; font-weight:600;
+    transition:all .2s var(--ease); }
+  .link:hover{ transform:translateY(-2px); border-color:color-mix(in srgb,var(--accent) 40%,transparent);
+    box-shadow:0 12px 24px -12px color-mix(in srgb,var(--accent) 55%,transparent); color:var(--accent); }
+  .link svg{ width:17px; height:17px; }
+  .link .handle{ font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--card-sub); }
+
+  .foot{ text-align:center; font-family:'JetBrains Mono',monospace; font-size:9.5px; color:var(--card-sub);
+    margin-top:30px; line-height:1.8; letter-spacing:.04em; }
+  .secret{ cursor:help; border-bottom:1px dotted var(--card-sub); }
+
+  .toast{ position:fixed; left:50%; bottom:28px; transform:translate(-50%,140%); z-index:80;
+    background:var(--card-ink); color:var(--card); padding:12px 18px; border-radius:100px;
+    font-size:13px; font-weight:500; box-shadow:0 16px 40px -12px rgba(0,0,0,.4); transition:transform .5s var(--ease); max-width:90vw; }
+  body[data-dark="1"] .toast{ background:var(--accent); color:#fff; }
+  .toast.show{ transform:translate(-50%,0); }
+
+  @media (max-width:560px){
+    .dhead,.dbody{ padding-left:24px; padding-right:24px; }
+    .tv{ font-size:12px; }
   }
-  body.theme-win95 .topbar{ display:none; }
-  body.theme-win95 .main{
-    background:#c0c0c0;
-    border:2px outset #ffffff;
-    box-shadow:3px 3px 0 rgba(0,0,0,.5);
-    max-width:800px;
-    padding:16px;
+  @media (prefers-reduced-motion:reduce){
+    *{ animation-duration:.001ms !important; }
+    .motif .eq i{ animation:none; height:45%; }
+    .seal .wax{ animation:none; }
+    .letter.open .reveal{ opacity:1; animation:none; }
   }
-  body.theme-win95 .page-title{
-    font-family:inherit; font-size:14px; text-align:left; color:#000080;
-    background:linear-gradient(to right,#000080,#1084d0);
-    color:white; padding:6px 8px; margin:-16px -16px 16px;
-  }
-  body.theme-win95 .page-subtitle{ display:none; }
-  body.theme-win95 .page-eyebrow{ display:none; }
-  body.theme-win95 .unit-card::before{ display:none; }
-  body.theme-win95 .unit-grid{ gap:12px; }
-  body.theme-win95 .unit-card{
-    background:#c0c0c0; border:2px outset #ffffff; border-radius:0;
-    text-align:center; box-shadow:none; animation:none;
-  }
-  body.theme-win95 .unit-card:hover{ transform:none; background:#d4d4d4; border-color:#ffffff; }
-  body.theme-win95 .unit-icon{ background:#000080; border-radius:0; margin:0 auto 12px; border:2px inset #808080; }
-  body.theme-win95 .unit-name{ font-family:inherit; font-size:13px; color:#000080; }
-  body.theme-win95 .unit-count{ color:#808080; border-top-color:#808080; justify-content:center; }
-  body.theme-win95 .pulse-dot{ background:#000; animation:none; box-shadow:none; }
 </style>
 </head>
 <body>
+  <div class="motif" id="motif" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
 
-  <div class="theme-toggle" id="themeToggle">
-    <button class="theme-btn" data-theme="premium" title="Premium">✨</button>
-    <button class="theme-btn" data-theme="win95" title="Windows 95">🖥️</button>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="sysmark">
+        <div class="sysdot" id="sysdot">G</div>
+        <span class="syslabel">GGzE · Ontslagdossier</span>
+      </div>
+      <a class="logout" href="index.html" id="logout">Uitloggen →</a>
+    </div>
+
+    <main class="dossier">
+      <div class="dhead">
+        <span class="mood" id="mood">—</span>
+        <span class="eyebrow" id="eyebrow">Ontslagdossier</span>
+        <h1 class="greeting" id="greeting">Dag <em id="firstName">daar</em>.</h1>
+        <div class="meta" id="meta"></div>
+      </div>
+
+      <div class="dbody">
+        <div class="timeline">
+          <div class="tstep done"><div class="tnode"></div><div class="tk">Fase 01</div><div class="tv">Intake</div></div>
+          <div class="tstep done"><div class="tnode"></div><div class="tk">Fase 02</div><div class="tv">10 maanden</div></div>
+          <div class="tstep done"><div class="tnode"></div><div class="tk">Fase 03</div><div class="tv">Ontslag</div></div>
+        </div>
+
+        <!-- signature: sealed → open -->
+        <div class="seal" id="seal" role="button" tabindex="0" aria-label="Open je ontslagbrief">
+          <div class="wax">✉</div>
+          <div class="sk">Je persoonlijke ontslagbrief</div>
+          <div class="st">tik om te openen</div>
+        </div>
+
+        <div class="letter" id="letter" aria-live="polite">
+          <div class="lead reveal" id="lead">Beste daar,</div>
+          <div class="prose reveal" id="prose"></div>
+          <div class="sign reveal">
+            <div>
+              <div class="sig">56</div>
+              <div class="sigmeta" id="sigmeta">Emal · lowkey</div>
+            </div>
+          </div>
+
+          <div class="connect reveal">
+            <h3>Blijf in contact na de opsy</h3>
+            <p>De muren zijn tijdelijk, jij niet. Voor als je zin hebt om te appen, te delen of gewoon hoi te zeggen:</p>
+            <div class="links">
+              <a class="link" id="ig" href="https://instagram.com/56isk" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+                Instagram <span class="handle">@56isk</span>
+              </a>
+              <a class="link" id="gh" href="https://github.com/56snty" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49l-.01-1.72c-2.78.62-3.37-1.37-3.37-1.37-.45-1.18-1.11-1.49-1.11-1.49-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.89 1.57 2.34 1.12 2.91.86.09-.66.35-1.12.63-1.38-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.7 0 0 .84-.28 2.75 1.05a9.34 9.34 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.4.2 2.44.1 2.7.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.79-4.57 5.05.36.32.68.94.68 1.9l-.01 2.82c0 .27.18.6.69.49A10.02 10.02 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"/></svg>
+                GitHub <span class="handle">56snty</span>
+              </a>
+              <a class="link" id="web" href="https://emal.dev" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 3 2.5 15 0 18M12 3c-2.5 3-2.5 15 0 18"/></svg>
+                emal.dev
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <p class="foot">
+          GGzE Patiënt Informatiesysteem · Dossier <span id="footId">—</span> · <span class="secret" id="secret" title="tik voor een geheimpje">status: ontslagen</span><br>
+          Met dank aan iedereen die deze tien maanden dragelijk maakte.
+        </p>
+      </div>
+    </main>
   </div>
 
-  <div class="topbar">
-    <div class="topbar-user">
-      <div class="avatar" id="avatarInitial">?</div>
-      <div>
-        <div class="topbar-name" id="userName"></div>
-        <div class="topbar-session">Sessie <span id="sessionId"></span> · <span id="statusTime"></span></div>
-      </div>
-    </div>
-    <button class="logout-link" onclick="logout()">Uitloggen</button>
-  </div>
-
-  <main class="main">
-    <div class="page-eyebrow">GGzE Eindhoven</div>
-    <h1 class="page-title">Selecteer uw unit</h1>
-    <p class="page-subtitle">Kies de unit om het cliëntdossier te openen</p>
-
-    <div class="unit-grid">
-      <div class="unit-card" onclick="selectUnit(2)">
-        <div class="unit-icon">🏥</div>
-        <div class="unit-name">Unit 2</div>
-        <div class="unit-desc">Acute Opname Psychiatrie</div>
-        <div class="unit-count"><span class="pulse-dot"></span> 5 patiënten actief</div>
-      </div>
-
-      <div class="unit-card" onclick="selectUnit(3)">
-        <div class="unit-icon">💚</div>
-        <div class="unit-name">Unit 3</div>
-        <div class="unit-desc">Algemene Behandeling</div>
-        <div class="unit-count"><span class="pulse-dot"></span> 3 patiënten actief</div>
-      </div>
-
-      <div class="unit-card" onclick="selectUnit(4)">
-        <div class="unit-icon">🌿</div>
-        <div class="unit-name">Unit 4</div>
-        <div class="unit-desc">Herstelgerichte Zorg</div>
-        <div class="unit-count"><span class="pulse-dot"></span> 4 patiënten actief</div>
-      </div>
-    </div>
-
-    <div class="footer-note">
-      U heeft alleen toegang tot units waarvoor u geautoriseerd bent. Alle toegang wordt gelogd.
-    </div>
-  </main>
+  <div class="toast" id="toast" role="status"><span id="toastText"></span></div>
 
 <script>
-/* ================================================================
-   THEME
-   ================================================================ */
-function applyGlobalTheme(theme){
-  document.body.classList.remove('theme-win95');
-  if(theme === 'win95') document.body.classList.add('theme-win95');
-  document.querySelectorAll('.theme-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.theme === theme);
-  });
-  localStorage.setItem('siteTheme', theme);
-}
-document.getElementById('themeToggle').addEventListener('click', (e) => {
-  const btn = e.target.closest('.theme-btn');
-  if(!btn) return;
-  applyGlobalTheme(btn.dataset.theme);
-});
-applyGlobalTheme(localStorage.getItem('siteTheme') || 'premium');
+/* ══════════════════════════════════════════════════════════════
+   GGzE Ontslagdossier — 56 · @56isk · github.com/56snty
+   Elke gebruiker krijgt een eigen thema + een unieke brief.
+   Pas de teksten gerust aan naar je eigen herinneringen. ♥
+   ══════════════════════════════════════════════════════════════ */
 
-/* ================================================================
-   AUTH / DATA
-   ================================================================ */
-const urlParams = new URLSearchParams(window.location.search);
-let currentUser = urlParams.get('user') || localStorage.getItem('currentUser');
-
-const USER_NAMES = {
-  "gebruiker162": "SABINE N.",
-  "gebruiker726": "NIENKE V.",
-  "gebruiker492": "DEMIAN"
+const USERS = {
+  gebruiker162:{ name:"Sabine N.", first:"Sabine",    clientId:"CLI-1998-0162", unit:1, theme:"costa" },
+  gebruiker726:{ name:"Nienke V.", first:"Nienke",    clientId:"CLI-1998-0726", unit:1, theme:"kust" },
+  gebruiker492:{ name:"Demian",    first:"Demian",    clientId:"CLI-1998-0492", unit:2, theme:"toestand" },
+  gebruiker892:{ name:"Leonie",    first:"Leonie",    clientId:"CLI-1998-0892", unit:3, theme:"tanteleo" },
+  gebruiker83: { name:"Bram",      first:"Bram",      clientId:"CLI-1998-0083", unit:3, theme:"house" },
+  gebruiker744:{ name:"Esther",    first:"Esther",    clientId:"CLI-1998-0744", unit:3, theme:"zonnig" },
+  gebruiker56: { name:"Mike",      first:"Mike",      clientId:"CLI-1998-0056", unit:3, theme:"pole" },
+  gebruiker729:{ name:"Veronique", first:"Veronique", clientId:"CLI-1998-0729", unit:3, theme:"chic" },
 };
 
-if(!currentUser || !USER_NAMES[currentUser]){
-  window.location.href = 'Index.html';
-}
+/* signature theme per user: palette + mood + motif + a unique Dutch letter */
+const THEMES = {
+  costa: {
+    label:"Costa · Spanje 2026", motif:"sun", dark:false,
+    accent:"#C6582B", accent2:"#E0A244", bg1:"#FBEFE4", bg2:"#F5DDC8", ink:"#3A1E12",
+    msg:`Tien maanden geleden zaten we allebei nog in de wachtkamer van dit hele verhaal, en moet je ons nu zien.
 
-document.getElementById('userName').textContent = USER_NAMES[currentUser];
-document.getElementById('avatarInitial').textContent = USER_NAMES[currentUser].charAt(0);
-document.getElementById('sessionId').textContent = Math.random().toString(36).slice(2,8).toUpperCase();
+Jij bleef praten over Spanje. Over zon, over zee, over "straks, als dit voorbij is". En weet je wat: straks is bijna nu.
 
-function updateClock(){
-  const now = new Date();
-  document.getElementById('statusTime').textContent = now.toLocaleTimeString('nl-NL', { hour12:false });
-}
-updateClock();
-setInterval(updateClock, 1000);
+Bewaar dat plan goed — ik hou je eraan. Tot in de zon.`
+  },
+  kust: {
+    label:"Kust · Rust", motif:"lines", dark:false,
+    accent:"#2E7D74", accent2:"#83BAB1", bg1:"#EBF4F1", bg2:"#D9EAE5", ink:"#16302C",
+    msg:`Sommige mensen maken een kamer rustiger, gewoon door binnen te komen. Jij bent er zo eentje.
 
-function selectUnit(unit){
-  window.location.href = `medicijnen.html?user=${currentUser}&unit=${unit}`;
-}
+Dank voor alle keren dat je gewoon naast me zat toen woorden even te veel waren. Dat was precies genoeg.
 
-function logout(){
-  if(confirm('Weet u zeker dat u wilt uitloggen?')){
-    localStorage.removeItem('currentUser');
-    window.location.href = 'Index.html';
+Ik neem een stukje van die rust mee naar buiten. Pas goed op jezelf, oké?`
+  },
+  toestand: {
+    label:"Wat een toestand", motif:"dots", dark:false,
+    accent:"#DA425E", accent2:"#5B7CFA", bg1:"#F3EEFB", bg2:"#EBE2FA", ink:"#2C1826",
+    msg:`Wat een toestand, hè. Als iemand mij aan het lachen kon krijgen op een dag die nergens op sloeg, was jij het wel.
+
+We hebben van deze plek samen iets minder klinisch gemaakt. Dat vergeet ik niet.
+
+Blijf die gast die de boel opschudt. Ik ga je missen — je grappen niet, want die steel ik gewoon.`
+  },
+  tanteleo: {
+    label:"Tante Leo", motif:"warm", dark:false,
+    accent:"#B26E6E", accent2:"#D9A15A", bg1:"#F6ECE6", bg2:"#EFDFD4", ink:"#3A2418",
+    msg:`Tante Leo. Je hebt iets zorgzaams zonder dat je er ooit om vroeg — je hield ons allemaal een beetje in de gaten.
+
+Dank voor de warmte, de goede raad, en de standjes die ik af en toe echt nodig had.
+
+Ik loop hier straks naar buiten met een stukje van jouw nuchterheid op zak. Dikke knuffel.`
+  },
+  house: {
+    label:"House · 04:00", motif:"eq", dark:true,
+    accent:"#8B6BFF", accent2:"#C24BE0", bg1:"#141020", bg2:"#0E0B18", ink:"#EDE9F7",
+    card:"#191330", cardInk:"#EDE9F7", cardSub:"#A79FC9", hair:"rgba(139,107,255,.22)",
+    msg:`Man van de late uurtjes en de veel te harde muziek in je koptelefoon. Met jou voelde zelfs 4 uur 's nachts niet als het einde van de wereld.
+
+Dank voor de gesprekken die pas begonnen als iedereen al sliep. Dat waren de echte.
+
+Ergens draait er straks een track die me aan jou doet denken. Dan weet je het. Houdoe.`
+  },
+  zonnig: {
+    label:"Zonnig", motif:"rays", dark:false,
+    accent:"#EC4E76", accent2:"#F2B33A", bg1:"#FCEAEE", bg2:"#F8DBE4", ink:"#331722",
+    msg:`Estherrr — ja, met precies zoveel r'en. Jij bracht kleur op grijze dagen, gewoon door jezelf te zijn.
+
+Dank voor het lachen, de chaos en dat altijd-nét-te-veel enthousiasme dat ik stiekem heerlijk vond.
+
+Blijf shinen. Je kan niet eens anders.`
+  },
+  pole: {
+    label:"Pole Position", motif:"lights", dark:false,
+    accent:"#E5482B", accent2:"#12161B", bg1:"#F4EFE9", bg2:"#EAE1D6", ink:"#16110D",
+    msg:`Viaplay aan, telefoon uit, wereld even op pauze. Met jou ging alles net iets sneller én net iets makkelijker.
+
+Dank dat je zo'n fijne teamgenoot was, op een plek waar je die goed kon gebruiken.
+
+Lights out en op naar buiten. Ik zie je aan de finish.`
+  },
+  chic: {
+    label:"Chic", motif:"frame", dark:false,
+    accent:"#6B2D4F", accent2:"#C4A15A", bg1:"#F5EEF1", bg2:"#EBDCE4", ink:"#2A1620",
+    msg:`Sommige mensen hebben stijl. Jij hebt klasse — dat is iets anders, en veel zeldzamer.
+
+Dank voor je eerlijkheid, je scherpte en de gesprekken waar ik écht iets aan had.
+
+Ik ben blij dat onze paden hier kruisten, hoe raar de aanleiding ook was. Tot snel, ergens buiten deze muren.`
+  },
+};
+
+const MOTIF_HTML = {
+  sun:`<div class="sun"></div>`, rays:`<div class="rays"></div>`, lines:`<div class="lines"></div>`,
+  warm:`<div class="warm"></div>`, dots:`<div class="dots"></div>`, frame:`<div class="frame"></div>`,
+  grid:`<div class="grid"></div>`,
+  eq:`<div class="eq">${Array.from({length:40},(_,i)=>`<i style="animation-delay:${(i*0.06).toFixed(2)}s"></i>`).join('')}</div>`,
+};
+
+const GGZ = { log(action, details={}, username=null){ try{
+  const logs = JSON.parse(localStorage.getItem('activityLogs')||'[]');
+  logs.push({ timestamp:new Date().toISOString(), username: username ?? '(anoniem)', action, details });
+  localStorage.setItem('activityLogs', JSON.stringify(logs.slice(-500)));
+}catch(e){} } };
+
+/* ── resolve the user (URL param → localStorage) ── */
+const params = new URLSearchParams(location.search);
+const key = (params.get('user') || localStorage.getItem('currentUser') || '').toLowerCase();
+const user = USERS[key];
+
+if(!user){
+  // no valid session — send them back to the gate
+  document.querySelector('.wrap').innerHTML =
+    '<div style="text-align:center;padding:80px 20px;font-family:Fraunces,serif">'+
+    '<div style="font-size:26px;color:#003b33;margin-bottom:10px">Geen actieve sessie</div>'+
+    '<div style="font-family:Instrument Sans,sans-serif;font-size:14px;color:#6b7573;margin-bottom:22px">Log opnieuw in om je dossier te bekijken.</div>'+
+    '<a href="index.html" style="font-family:JetBrains Mono,monospace;font-size:12px;color:#00a390;text-decoration:none;border:1px solid rgba(0,163,144,.4);padding:10px 16px;border-radius:100px">← Terug naar inloggen</a></div>';
+} else {
+  const t = THEMES[user.theme];
+  const dark = !!t.dark;
+  const r = document.documentElement.style;
+
+  // apply palette
+  r.setProperty('--accent', t.accent);
+  r.setProperty('--accent2', t.accent2);
+  r.setProperty('--bg1', t.bg1);
+  r.setProperty('--bg2', t.bg2);
+  r.setProperty('--card',    dark ? (t.card||'#191330')       : '#fffdfb');
+  r.setProperty('--card-ink',dark ? (t.cardInk||'#EDE9F7')    : t.ink);
+  r.setProperty('--card-sub',dark ? (t.cardSub||'#A79FC9')    : `color-mix(in srgb, ${t.ink} 55%, ${t.bg2})`);
+  r.setProperty('--hair',    dark ? (t.hair||'rgba(255,255,255,.14)') : `color-mix(in srgb, ${t.accent} 16%, transparent)`);
+  if(dark) document.body.setAttribute('data-dark','1');
+
+  // motif
+  document.getElementById('motif').innerHTML = MOTIF_HTML[t.motif] || '';
+
+  // header content
+  document.getElementById('mood').textContent = t.label;
+  document.getElementById('eyebrow').textContent = `Ontslagdossier · Afdeling ${user.unit}`;
+  document.getElementById('firstName').textContent = user.first;
+  document.getElementById('sysdot').textContent = user.first.charAt(0);
+  document.getElementById('footId').textContent = user.clientId;
+
+  const today = new Date().toLocaleDateString('nl-NL',{ day:'numeric', month:'long', year:'numeric' });
+  document.getElementById('meta').innerHTML =
+    `<span class="chip">${user.clientId}</span>`+
+    `<span class="chip">Afdeling ${user.unit}</span>`+
+    `<span class="chip">Verblijf: 10 maanden</span>`+
+    `<span class="chip">Ontslag: ${today}</span>`+
+    `<span class="chip ok">✓ Ontslagen</span>`;
+
+  // letter content
+  document.getElementById('lead').textContent = `Beste ${user.first},`;
+  document.getElementById('prose').textContent = t.msg;
+  document.title = `GGzE — Ontslagbrief · ${user.name}`;
+
+  GGZ.log('page_view', { page:'dossier', theme:user.theme }, key);
+
+  /* ── open the letter (the signature moment) ── */
+  const seal = document.getElementById('seal'), letter = document.getElementById('letter');
+  let opened = false;
+  function openLetter(){
+    if(opened) return; opened = true;
+    seal.style.transition = 'all .4s var(--ease)';
+    seal.style.opacity = '0'; seal.style.transform = 'scale(.96)';
+    setTimeout(() => { seal.style.display = 'none'; letter.classList.add('open'); }, 300);
+    GGZ.log('letter_opened', {}, key);
   }
+  seal.addEventListener('click', openLetter);
+  seal.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openLetter(); } });
+
+  /* connect click logging */
+  ['ig','gh','web'].forEach(id => document.getElementById(id)
+    .addEventListener('click', () => GGZ.log('connect_click', { platform:id }, key)));
+
+  /* logout */
+  document.getElementById('logout').addEventListener('click', () => GGZ.log('logout', {}, key));
+
+  /* ── easter eggs ── */
+  // secret: reveal your own code, playfully
+  document.getElementById('secret').addEventListener('click', () => {
+    toast(`🔑 Psst ${user.first}, je code was: ${key}`); GGZ.log('easter_egg',{egg:'secret_id'},key);
+  });
+  // sysdot 5× → warm note
+  let clicks = 0, ct;
+  document.getElementById('sysdot').addEventListener('click', () => {
+    clicks++; clearTimeout(ct); ct = setTimeout(()=>clicks=0,1200);
+    if(clicks===5){ clicks=0; confetti(); toast('💚 Bedankt dat je er was.'); GGZ.log('easter_egg',{egg:'sysdot5'},key); }
+  });
+  // konami → confetti
+  const KON=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a']; let ki=0;
+  window.addEventListener('keydown', e=>{ ki=(e.key.toLowerCase()===KON[ki].toLowerCase())?ki+1:0;
+    if(ki===KON.length){ ki=0; confetti(); toast('🕹️ Cheatcode geaccepteerd.'); GGZ.log('easter_egg',{egg:'konami'},key); } });
 }
+
+/* ── shared toast + confetti ── */
+let toastTimer;
+function toast(m){ const el=document.getElementById('toast'); document.getElementById('toastText').textContent=m;
+  el.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),3600); }
+function confetti(){
+  const cols=[getComputedStyle(document.documentElement).getPropertyValue('--accent')||'#00c2a8',
+              getComputedStyle(document.documentElement).getPropertyValue('--accent2')||'#b08d4f','#ffffff'];
+  for(let i=0;i<90;i++){ const s=document.createElement('span');
+    s.style.cssText=`position:fixed;z-index:200;top:-12px;left:${Math.random()*100}vw;width:${6+Math.random()*6}px;height:${8+Math.random()*8}px;background:${cols[i%cols.length]};border-radius:2px;pointer-events:none`;
+    document.body.appendChild(s);
+    s.animate([{transform:`translateY(0) rotate(0)`,opacity:1},
+               {transform:`translate(${(Math.random()-.5)*280}px,105vh) rotate(${Math.random()*720}deg)`,opacity:.9}],
+              {duration:2400+Math.random()*1800,easing:'cubic-bezier(.2,.6,.4,1)'}).onfinish=()=>s.remove(); }
+}
+
+console.log('%cGGzE Ontslagdossier','color:#00c2a8;font:600 22px Georgia,serif');
+console.log('%cEen afscheid, geen echt dossier. Gemaakt door 56 · @56isk · github.com/56snty ♥','color:#6b7573;font:13px monospace');
 </script>
 </body>
 </html>
