@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GGzE — Gastenboek · Bezoekersregister</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { theme:{ extend:{ fontFamily:{
+    sans:['Instrument Sans','sans-serif'], serif:['Fraunces','serif'], mono:['JetBrains Mono','monospace'] }}}};
+</script>
+
+<style>
+  :root{
+    --ggz:#00a390; --ggz-dark:#003b33;
+    --paper:#faf6ee; --paper2:#f2ead9; --card:#fffdf8;
+    --ink:#241c10; --sub:#7a6f5c; --hair:rgba(0,59,51,.13); --gold:#b08d4f;
+    --ease:cubic-bezier(.16,1,.3,1);
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; }
+  body{
+    font-family:'Instrument Sans',system-ui,sans-serif; color:var(--ink); min-height:100dvh;
+    background:
+      radial-gradient(880px 600px at 10% -8%, rgba(0,163,144,.10), transparent 58%),
+      radial-gradient(820px 560px at 102% 8%, rgba(176,141,79,.14), transparent 55%),
+      linear-gradient(180deg, var(--paper), var(--paper2));
+  }
+  .grain{ position:fixed; inset:0; z-index:1; pointer-events:none; opacity:.05; mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+  .wrap{ position:relative; z-index:2; max-width:680px; margin:0 auto; padding:26px 22px 80px; }
+
+  .topbar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:30px; }
+  .sysmark{ display:flex; align-items:center; gap:11px; }
+  .sysdot{ width:34px; height:34px; border-radius:10px; background:linear-gradient(150deg, var(--ggz), var(--ggz-dark));
+    color:#fff; display:flex; align-items:center; justify-content:center; font-family:'Fraunces',serif; font-weight:600; font-size:15px;
+    box-shadow:0 8px 20px -8px rgba(0,59,51,.5); }
+  .syslabel{ font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--sub); }
+  .backlink{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--sub); text-decoration:none;
+    padding:8px 13px; border:1px solid var(--hair); border-radius:100px; background:rgba(255,253,248,.6); transition:all .2s var(--ease); }
+  .backlink:hover{ color:var(--ggz); border-color:rgba(0,163,144,.4); }
+
+  header.top{ margin-bottom:30px; }
+  .eyebrow{ font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--ggz); font-weight:500; }
+  h1{ font-family:'Fraunces',serif; font-weight:400; letter-spacing:-.025em; font-size:clamp(40px,9vw,64px);
+    line-height:1; margin:12px 0 12px; }
+  h1 em{ font-style:italic; color:var(--gold); }
+  .lede{ font-size:15px; color:var(--sub); line-height:1.65; max-width:520px; margin:0; }
+
+  /* ── sign form: het register ── */
+  .register{ background:var(--card); border:1px solid var(--hair); border-radius:20px; padding:26px 26px 24px;
+    box-shadow:0 1px 1px rgba(176,141,79,.08), 0 22px 54px -32px rgba(63,48,22,.35); margin-bottom:34px;
+    position:relative; overflow:hidden; }
+  .register::before{ content:""; position:absolute; top:0; left:0; right:0; height:3px;
+    background:linear-gradient(90deg, var(--ggz), var(--gold), var(--ggz)); }
+  .reg-k{ font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--sub); margin-bottom:16px; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+  .label{ font-family:'JetBrains Mono',monospace; font-size:10.5px; font-weight:500; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--ggz-dark); opacity:.75; display:block; margin-bottom:8px; }
+  .field{ width:100%; padding:13px 15px; border:1.5px solid var(--hair); border-radius:12px; font-family:inherit;
+    font-size:15px; color:var(--ink); background:#fdfbf5; transition:border-color .2s var(--ease), box-shadow .2s var(--ease); }
+  .field::placeholder{ color:#b3a88f; }
+  .field:focus{ outline:none; border-color:var(--gold); box-shadow:0 0 0 4px rgba(176,141,79,.16); background:#fff; }
+  textarea.field{ resize:vertical; min-height:110px; font-family:'Fraunces',serif; font-weight:300; font-size:16.5px; line-height:1.6; }
+  .counter{ font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--sub); text-align:right; margin-top:6px; }
+  .sign-btn{ margin-top:16px; width:100%; padding:14px; border:none; border-radius:12px; cursor:pointer;
+    font-family:inherit; font-size:14.5px; font-weight:600; color:#fff;
+    background:linear-gradient(160deg, #005b4e, var(--ggz-dark));
+    box-shadow:0 1px 1px rgba(255,255,255,.12) inset, 0 10px 22px -8px rgba(0,59,51,.55);
+    transition:transform .2s var(--ease), box-shadow .2s var(--ease); }
+  .sign-btn:hover{ transform:translateY(-1px); }
+  .sign-btn:active{ transform:none; }
+  .devicenote{ font-family:'JetBrains Mono',monospace; font-size:9.5px; color:var(--sub); text-align:center;
+    margin-top:12px; letter-spacing:.05em; }
+
+  /* ── the wall ── */
+  .wallhead{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  .wallhead .t{ font-family:'Fraunces',serif; font-size:20px; letter-spacing:-.01em; }
+  .wallhead .n{ font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--sub); letter-spacing:.08em; }
+
+  .entry{ display:flex; gap:15px; background:var(--card); border:1px solid var(--hair); border-radius:16px;
+    padding:18px 18px 16px; margin-bottom:12px; position:relative; animation:in .5s var(--ease); }
+  @keyframes in{ from{ opacity:0; transform:translateY(10px) scale(.99); } to{ opacity:1; transform:none; } }
+  .stamp{ flex-shrink:0; width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-family:'Fraunces',serif; font-weight:600; font-size:18px; color:#fff;
+    box-shadow:inset 0 2px 4px rgba(255,255,255,.35), 0 8px 18px -8px rgba(0,0,0,.35); }
+  .entry .body{ flex:1; min-width:0; }
+  .entry .who{ display:flex; align-items:baseline; gap:9px; flex-wrap:wrap; margin-bottom:5px; }
+  .entry .name{ font-weight:600; font-size:14px; letter-spacing:-.005em; }
+  .entry .when{ font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--sub); }
+  .entry .msg{ font-family:'Fraunces',serif; font-weight:300; font-size:17px; line-height:1.58; letter-spacing:-.003em;
+    overflow-wrap:break-word; white-space:pre-line; }
+  .entry .del{ position:absolute; top:10px; right:12px; border:none; background:transparent; color:var(--sub);
+    font-size:13px; cursor:pointer; padding:4px; border-radius:6px; opacity:.55; transition:all .2s; }
+  .entry .del:hover{ opacity:1; color:#b3413f; background:rgba(179,65,63,.08); }
+
+  .empty{ text-align:center; padding:46px 18px; border:1.5px dashed rgba(176,141,79,.45); border-radius:18px;
+    background:rgba(176,141,79,.05); }
+  .empty .big{ font-family:'Fraunces',serif; font-size:21px; margin-bottom:6px; }
+  .empty .small{ font-size:13px; color:var(--sub); }
+
+  .adminrow{ display:none; justify-content:flex-end; margin:4px 0 14px; }
+  .adminrow.show{ display:flex; }
+  .abtn{ border:1px solid var(--hair); background:transparent; color:var(--sub); font-family:'JetBrains Mono',monospace;
+    font-size:10.5px; padding:7px 12px; border-radius:100px; cursor:pointer; transition:all .2s; }
+  .abtn:hover{ color:var(--ggz-dark); border-color:rgba(0,59,51,.3); }
+
+  .foot{ text-align:center; font-family:'JetBrains Mono',monospace; font-size:9.5px; color:var(--sub);
+    margin-top:34px; letter-spacing:.05em; line-height:1.8; }
+  .foot a{ color:var(--sub); }
+
+  .toast{ position:fixed; left:50%; bottom:28px; transform:translate(-50%,140%); z-index:80;
+    background:var(--ggz-dark); color:#fff; padding:12px 18px; border-radius:100px;
+    font-size:13px; font-weight:500; box-shadow:0 16px 40px -12px rgba(0,59,51,.5); transition:transform .5s var(--ease); max-width:90vw; }
+  .toast.show{ transform:translate(-50%,0); }
+
+  @media (max-width:520px){ .register{ padding:20px 18px 18px; } }
+  @media (prefers-reduced-motion:reduce){ *{ animation:none !important; transition-duration:.08s !important; } }
+</style>
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <div class="topbar">
+      <div class="sysmark">
+        <div class="sysdot">G</div>
+        <span class="syslabel">GGzE · OPSY — Bezoekersregister</span>
+      </div>
+      <a class="backlink" id="back" href="index.html">← Dossier</a>
+    </div>
+
+    <header class="top">
+      <span class="eyebrow">Registratie verplicht · zegt het systeem</span>
+      <h1>Gasten<em>boek</em></h1>
+      <p class="lede">Tien maanden lang hield deze plek alles van mij bij. Nu draaien we het om: dit is de enige registratie die ík bewaar — jullie woorden, voor onderweg.</p>
+    </header>
+
+    <section class="register" aria-label="Teken het gastenboek">
+      <div class="reg-k"><span>Formulier GB-56</span><span>Invullen in blokletters mag, hoeft niet</span></div>
+      <div class="mb-4">
+        <label class="label" for="gname">Naam</label>
+        <input class="field" id="gname" maxlength="40" autocomplete="off" placeholder="Wie ben je?" />
+      </div>
+      <div>
+        <label class="label" for="gmsg">Bericht voor Emal</label>
+        <textarea class="field" id="gmsg" maxlength="600" placeholder="Een herinnering, een wens, een laatste standje — alles mag."></textarea>
+        <div class="counter"><span id="chars">0</span> / 600</div>
+      </div>
+      <button class="sign-btn" id="signBtn">Onderteken het register</button>
+      <p class="devicenote">Berichten worden bewaard op dit apparaat — teken dus op het toestel van 56 zelf.</p>
+    </section>
+
+    <div class="wallhead">
+      <span class="t">Het register</span>
+      <span class="n" id="tally">0 handtekeningen</span>
+    </div>
+    <div class="adminrow" id="adminrow">
+      <button class="abtn" id="exportBook">⬇ exporteer gastenboek</button>
+    </div>
+    <div id="wall"></div>
+
+    <p class="foot">
+      GGzE Patiënt Informatiesysteem · Register GB-56<br>
+      blijf in contact: <a href="https://instagram.com/56isk" target="_blank" rel="noopener">@56isk</a> · <a href="https://github.com/56snty" target="_blank" rel="noopener">github.com/56snty</a> · <a href="https://emal.dev" target="_blank" rel="noopener">emal.dev</a>
+    </p>
+  </div>
+
+  <div class="toast" id="toast" role="status"><span id="toastText"></span></div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   Gastenboek — het bezoekersregister, maar dan andersom.
+   56 · @56isk · github.com/56snty
+   ══════════════════════════════════════════════════════════════ */
+
+const USERS = {
+  gebruiker162:"Sabine N.", gebruiker726:"Nienke V.", gebruiker492:"Demian",
+  gebruiker892:"Leonie", gebruiker83:"Bram", gebruiker744:"Esther",
+  gebruiker56:"Meike", gebruiker729:"Veronique", admin:"Systeembeheerder",
+};
+const HINTS = { gebruiker162:"#C6582B", gebruiker726:"#2E7D74", gebruiker492:"#DA425E", gebruiker892:"#B26E6E",
+  gebruiker83:"#7C5CFF", gebruiker744:"#F0567E", gebruiker56:"#E5482B", gebruiker729:"#6B2D4F", admin:"#00a390" };
+
+const GGZ = { log(action, details={}, username=null){ try{
+  const logs = JSON.parse(localStorage.getItem('activityLogs')||'[]');
+  logs.push({ timestamp:new Date().toISOString(), username: username ?? '(anoniem)', action, details });
+  localStorage.setItem('activityLogs', JSON.stringify(logs.slice(-500)));
+}catch(e){} } };
+
+const params = new URLSearchParams(location.search);
+const key = (params.get('user') || localStorage.getItem('currentUser') || '').toLowerCase() || null;
+GGZ.log('page_view', { page:'gastenboek' }, key);
+
+if(key){ document.getElementById('back').href = 'units.html?user=' + key; }
+if(key && USERS[key] && key !== 'admin'){ document.getElementById('gname').value = USERS[key]; }
+if(key === 'admin'){ document.getElementById('adminrow').classList.add('show'); }
+
+/* ── storage ── */
+function readBook(){
+  try{ const b = JSON.parse(localStorage.getItem('guestbook')||'[]'); return Array.isArray(b) ? b : []; }
+  catch(e){ return []; }
+}
+function writeBook(b){
+  try{ localStorage.setItem('guestbook', JSON.stringify(b.slice(-200))); return true; }
+  catch(e){ return false; }
+}
+
+function relTime(iso){
+  const d = new Date(iso), s = Math.floor((Date.now()-d)/1000);
+  if(isNaN(s)) return '';
+  if(s < 60) return 'zojuist';
+  const m = Math.floor(s/60); if(m < 60) return m+' min geleden';
+  const h = Math.floor(m/60); if(h < 24) return h+' uur geleden';
+  const dd = Math.floor(h/24); if(dd < 7) return dd+' dag'+(dd>1?'en':'')+' geleden';
+  return d.toLocaleDateString('nl-NL',{ day:'numeric', month:'short' });
+}
+
+/* ── render (DOM API only — vrije tekst blijft vrije tekst) ── */
+function render(){
+  const book = readBook().slice().reverse(); // newest first
+  const wall = document.getElementById('wall');
+  wall.textContent = '';
+  document.getElementById('tally').textContent =
+    book.length + (book.length === 1 ? ' handtekening' : ' handtekeningen');
+
+  if(book.length === 0){
+    const e = document.createElement('div'); e.className = 'empty';
+    const b = document.createElement('div'); b.className = 'big'; b.textContent = 'Nog niemand heeft getekend.';
+    const s = document.createElement('div'); s.className = 'small'; s.textContent = 'Wees de eerste — eeuwige roem in het logboek gegarandeerd.';
+    e.append(b, s); wall.appendChild(e); return;
+  }
+
+  book.forEach(item => {
+    const row = document.createElement('article'); row.className = 'entry';
+
+    const stamp = document.createElement('div'); stamp.className = 'stamp';
+    const col = (item.user && HINTS[item.user]) ? HINTS[item.user] : 'var(--gold)';
+    stamp.style.background = 'radial-gradient(circle at 35% 30%, color-mix(in srgb, '+col+' 55%, #fff), '+col+' 72%)';
+    stamp.textContent = (item.name || '?').trim().charAt(0).toUpperCase() || '?';
+
+    const body = document.createElement('div'); body.className = 'body';
+    const who = document.createElement('div'); who.className = 'who';
+    const name = document.createElement('span'); name.className = 'name'; name.textContent = item.name || 'Anoniem';
+    const when = document.createElement('span'); when.className = 'when'; when.textContent = relTime(item.ts);
+    who.append(name, when);
+    const msg = document.createElement('div'); msg.className = 'msg'; msg.textContent = item.msg || '';
+    body.append(who, msg);
+
+    row.append(stamp, body);
+
+    if(key === 'admin'){
+      const del = document.createElement('button'); del.className = 'del'; del.textContent = '✕'; del.title = 'Verwijderen';
+      del.addEventListener('click', () => {
+        if(confirm('Dit bericht verwijderen?')){
+          writeBook(readBook().filter(x => x.ts !== item.ts)); render();
+        }
+      });
+      row.appendChild(del);
+    }
+    wall.appendChild(row);
+  });
+}
+
+/* ── sign ── */
+const msgEl = document.getElementById('gmsg'), nameEl = document.getElementById('gname');
+msgEl.addEventListener('input', () => document.getElementById('chars').textContent = msgEl.value.length);
+
+let toastTimer;
+function toast(m){ const el=document.getElementById('toast'); document.getElementById('toastText').textContent=m;
+  el.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),3400); }
+
+document.getElementById('signBtn').addEventListener('click', () => {
+  const name = nameEl.value.trim(), msg = msgEl.value.trim();
+  if(!name){ toast('Vul even je naam in — anders weet ik niet wie ik moet missen.'); nameEl.focus(); return; }
+  if(!msg){ toast('Een leeg register telt niet. Schrijf iets liefs. Of iets geks.'); msgEl.focus(); return; }
+
+  const book = readBook();
+  book.push({ name, msg, user: (key && USERS[key]) ? key : null, ts: new Date().toISOString() });
+  if(!writeBook(book)){ toast('Opslaan lukte niet op dit apparaat.'); return; }
+
+  GGZ.log('guestbook_sign', { name }, key);
+  msgEl.value = ''; document.getElementById('chars').textContent = '0';
+  render();
+  toast('Getekend. Dankjewel ♥');
+});
+
+/* live update if another tab writes */
+window.addEventListener('storage', e => { if(e.key === 'guestbook') render(); });
+
+/* admin export */
+document.getElementById('exportBook').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(readBook(), null, 2)], { type:'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'ggze-gastenboek-' + new Date().toISOString().slice(0,10) + '.json'; a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+render();
+
+console.log('%cGastenboek','color:#b08d4f;font:600 22px Georgia,serif');
+console.log('%cJullie woorden, voor onderweg. Gemaakt door 56 · @56isk · github.com/56snty','color:#7a6f5c;font:13px monospace');
+</script>
+</body>
+</html>
