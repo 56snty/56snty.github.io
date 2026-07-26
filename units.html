@@ -98,6 +98,10 @@
     background:color-mix(in srgb,var(--accent) 7%,transparent); border:1px solid var(--hair); border-radius:8px; padding:6px 10px; }
   .chip.ok{ color:var(--accent); border-color:color-mix(in srgb,var(--accent) 32%,transparent); font-weight:500;
     background:color-mix(in srgb,var(--accent) 12%,transparent); }
+  .chip.bff{ color:#a8842c; border-color:rgba(196,161,90,.55); background:rgba(196,161,90,.16); font-weight:500; }
+  body[data-dark="1"] .chip.bff{ color:#e3c37a; }
+  .dhead .wm{ position:absolute; right:14px; top:-10px; font-family:'Fraunces',serif; font-style:italic; font-weight:600;
+    font-size:128px; line-height:1; color:var(--accent); opacity:.07; pointer-events:none; user-select:none; }
 
   .dbody{ padding:34px 40px 40px; }
 
@@ -120,7 +124,8 @@
   .seal:hover{ background:color-mix(in srgb,var(--accent) 9%,transparent); transform:translateY(-1px); }
   .seal .wax{ width:56px; height:56px; margin:0 auto 14px; border-radius:50%;
     background:radial-gradient(circle at 35% 30%, color-mix(in srgb,var(--accent2) 70%,#fff), var(--accent) 70%);
-    display:flex; align-items:center; justify-content:center; font-size:24px;
+    display:flex; align-items:center; justify-content:center; font-size:26px;
+    font-family:'Fraunces',serif; font-weight:600; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.2);
     box-shadow:0 10px 24px -8px color-mix(in srgb,var(--accent) 70%,transparent), inset 0 2px 4px rgba(255,255,255,.4);
     animation:pulse 2.6s var(--ease) infinite; }
   @keyframes pulse{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.05); } }
@@ -133,6 +138,8 @@
   .letter .lead{ font-family:'Fraunces',serif; font-style:italic; font-size:22px; color:var(--accent); margin-bottom:14px; letter-spacing:-.01em; }
   .letter .prose{ font-family:'Fraunces',serif; font-weight:300; font-size:clamp(19px,2.7vw,21px); line-height:1.62;
     color:var(--card-ink); letter-spacing:-.005em; white-space:pre-line; }
+  .letter .prose::first-letter{ font-family:'Fraunces',serif; font-weight:500; font-size:3em; line-height:.82;
+    float:left; padding:8px 10px 0 0; color:var(--accent); }
   .letter .sign{ margin-top:26px; display:flex; align-items:center; gap:12px; }
   .letter .sig{ font-family:'Fraunces',serif; font-style:italic; font-size:30px; color:var(--accent); line-height:1; }
   .letter .sigmeta{ font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--card-sub); }
@@ -143,6 +150,18 @@
   .letter.open .reveal:nth-child(2){ animation-delay:.18s; }
   .letter.open .reveal:nth-child(3){ animation-delay:.32s; }
   .letter.open .reveal:nth-child(4){ animation-delay:.46s; }
+  .letter.open .reveal:nth-child(5){ animation-delay:.6s; }
+
+  /* ── Emal's own statement (shared — everyone sees the same) ── */
+  .pov{ margin-top:38px; border:1px solid var(--hair); border-radius:18px; padding:26px 26px 28px;
+    background:color-mix(in srgb, var(--accent) 4%, transparent); }
+  .pov .tag{ display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;
+    font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--card-sub); margin-bottom:14px; }
+  .pov h3{ font-family:'Fraunces',serif; font-weight:500; font-size:22px; letter-spacing:-.015em; margin:0 0 12px; color:var(--card-ink); }
+  .pov .pprose{ font-family:'Fraunces',serif; font-weight:300; font-size:17.5px; line-height:1.66;
+    color:var(--card-ink); white-space:pre-line; letter-spacing:-.003em; }
+  .pov .psig{ margin-top:18px; font-family:'Fraunces',serif; font-style:italic; font-size:21px; color:var(--accent); }
 
   /* ── connect card ── */
   .connect{ margin-top:38px; padding:28px 26px; border-radius:18px;
@@ -195,6 +214,7 @@
 
     <main class="dossier">
       <div class="dhead">
+        <span class="wm" id="wm" aria-hidden="true"></span>
         <span class="mood" id="mood">—</span>
         <span class="eyebrow" id="eyebrow">Ontslagdossier</span>
         <h1 class="greeting" id="greeting">Dag <em id="firstName">daar</em>.</h1>
@@ -210,7 +230,7 @@
 
         <!-- signature: sealed → open -->
         <div class="seal" id="seal" role="button" tabindex="0" aria-label="Open je ontslagbrief">
-          <div class="wax">✉</div>
+          <div class="wax" id="waxInit">✉</div>
           <div class="sk">Je persoonlijke ontslagbrief</div>
           <div class="st">tik om te openen</div>
         </div>
@@ -225,8 +245,25 @@
             </div>
           </div>
 
+          <div class="pov reveal">
+            <div class="tag"><span>Behandelverslag · ingevuld door de patiënt zelf</span><span>Dossier 56</span></div>
+            <h3>Mijn kant van het verhaal</h3>
+            <div class="pprose">Voor wie mij hier heeft meegemaakt is dit geen nieuws, maar ik wil het één keer zelf opschrijven.
+
+Ik kwam hier binnen als iemand die alles aan het verliezen was aan gokken. Geld, rust, vertrouwen — dat van anderen, maar vooral dat in mezelf. Ik kon geen dag zonder. Vandaag schrijf ik dit gokvrij, met een echte datum op mijn ontslagbrief: 27 augustus.
+
+Het waren de zwaarste tien maanden van mijn leven. Er waren dagen dat ik wilde opgeven en nachten die langer duurden dan de dagen. Maar jullie bleven. Jullie zagen mij op mijn slechtst en behandelden me alsof ik mijn best waard was. Dat vergeet ik nooit.
+
+Ik ga niet beloven dat het vanaf nu makkelijk wordt. Ik beloof wél dat ik het elke dag opnieuw probeer. Eén dag tegelijk — jullie hebben me geleerd dat dat genoeg is.
+
+Dus: bedankt. Voor het geduld, de gesprekken, de tweede kansen en de zeventiende. Dit rare digitale afscheid is mijn manier om te zeggen dat het gewerkt heeft. Ik heb het overleefd — en dat is deels jullie schuld. xD
+
+Tot buiten.</div>
+            <div class="psig">— Emal</div>
+          </div>
+
           <div class="connect reveal">
-            <h3>Blijf in contact na de opsy</h3>
+            <h3>Blijf in contact na OPSY</h3>
             <p>De muren zijn tijdelijk, jij niet. Voor als je zin hebt om te appen, te delen of gewoon hoi te zeggen:</p>
             <div class="links">
               <a class="link" id="ig" href="https://instagram.com/56isk" target="_blank" rel="noopener">
@@ -265,11 +302,11 @@
 const USERS = {
   gebruiker162:{ name:"Sabine N.", first:"Sabine",    clientId:"CLI-1998-0162", unit:1, theme:"costa" },
   gebruiker726:{ name:"Nienke V.", first:"Nienke",    clientId:"CLI-1998-0726", unit:1, theme:"kust" },
-  gebruiker492:{ name:"Demian",    first:"Demian",    clientId:"CLI-1998-0492", unit:2, theme:"toestand" },
+  gebruiker492:{ name:"Demian",    first:"Demian",    clientId:"CLI-1998-0492", unit:2, theme:"toestand", bff:true },
   gebruiker892:{ name:"Leonie",    first:"Leonie",    clientId:"CLI-1998-0892", unit:3, theme:"tanteleo" },
   gebruiker83: { name:"Bram",      first:"Bram",      clientId:"CLI-1998-0083", unit:3, theme:"house" },
   gebruiker744:{ name:"Esther",    first:"Esther",    clientId:"CLI-1998-0744", unit:3, theme:"zonnig" },
-  gebruiker56: { name:"Mike",      first:"Mike",      clientId:"CLI-1998-0056", unit:3, theme:"pole" },
+  gebruiker56: { name:"Meike",     first:"Meike",     clientId:"CLI-1998-0056", unit:3, theme:"pole" },
   gebruiker729:{ name:"Veronique", first:"Veronique", clientId:"CLI-1998-0729", unit:3, theme:"chic" },
 };
 
@@ -278,75 +315,77 @@ const THEMES = {
   costa: {
     label:"Costa · Spanje 2026", motif:"sun", dark:false,
     accent:"#C6582B", accent2:"#E0A244", bg1:"#FBEFE4", bg2:"#F5DDC8", ink:"#3A1E12",
-    msg:`Tien maanden geleden zaten we allebei nog in de wachtkamer van dit hele verhaal, en moet je ons nu zien.
+    msg:`Tien maanden lang was jij degene die over Spanje begon als de dagen hier te grijs werden. Zon, zee, tapas — je had het hele plan al klaar.
 
-Jij bleef praten over Spanje. Over zon, over zee, over "straks, als dit voorbij is". En weet je wat: straks is bijna nu.
+Dank je voor alle keren dat je verder keek dan mijn dossier. Je nam me serieus, ook als ik dat zelf even niet deed.
 
-Bewaar dat plan goed — ik hou je eraan. Tot in de zon.`
+Als je in 2026 echt op dat vliegtuig stapt: geniet dubbel. En als je een kaartje stuurt, hang ik 'm op. Tot in de zon.`
   },
   kust: {
     label:"Kust · Rust", motif:"lines", dark:false,
     accent:"#2E7D74", accent2:"#83BAB1", bg1:"#EBF4F1", bg2:"#D9EAE5", ink:"#16302C",
-    msg:`Sommige mensen maken een kamer rustiger, gewoon door binnen te komen. Jij bent er zo eentje.
+    msg:`Sommige mensen maken een ruimte rustiger door alleen maar binnen te komen. Jij bent er zo eentje — en op een afdeling als deze is dat goud waard.
 
-Dank voor alle keren dat je gewoon naast me zat toen woorden even te veel waren. Dat was precies genoeg.
+Dank voor alle keren dat je gewoon even naast me kwam zitten toen woorden te veel waren. Je hoefde niks op te lossen. Juist daardoor deed je dat wél.
 
-Ik neem een stukje van die rust mee naar buiten. Pas goed op jezelf, oké?`
+Ik neem een stukje van jouw rust mee naar buiten. Zorg jij dat je er ook wat voor jezelf overhoudt?`
   },
   toestand: {
     label:"Wat een toestand", motif:"dots", dark:false,
     accent:"#DA425E", accent2:"#5B7CFA", bg1:"#F3EEFB", bg2:"#EBE2FA", ink:"#2C1826",
-    msg:`Wat een toestand, hè. Als iemand mij aan het lachen kon krijgen op een dag die nergens op sloeg, was jij het wel.
+    msg:`Wat een toestand, hè. Twee mensen die elkaar op de raarste plek van Nederland tegenkomen en er als beste vrienden uitlopen — dat verzin je niet.
 
-We hebben van deze plek samen iets minder klinisch gemaakt. Dat vergeet ik niet.
+Jij was de reden dat ik op de zwaarste dagen toch nog ergens om kon lachen. De eindeloze gesprekken, de grappen die nergens op sloegen, het gevoel dat er iemand naast me stond in plaats van tegenover me.
 
-Blijf die gast die de boel opschudt. Ik ga je missen — je grappen niet, want die steel ik gewoon.`
+Tien maanden hebben we deze plek samen kleiner gemaakt dan hij was. Wat hier begon stopt niet bij de uitgang — jij komt niet van me af, ook niet buiten deze muren.
+
+Bedankt dat je mijn beste vriend werd op het moment dat ik er één het hardst nodig had. Tot snel. Echt snel.`
   },
   tanteleo: {
     label:"Tante Leo", motif:"warm", dark:false,
     accent:"#B26E6E", accent2:"#D9A15A", bg1:"#F6ECE6", bg2:"#EFDFD4", ink:"#3A2418",
-    msg:`Tante Leo. Je hebt iets zorgzaams zonder dat je er ooit om vroeg — je hield ons allemaal een beetje in de gaten.
+    msg:`Tante Leo. Iedereen op de afdeling weet precies wie ik bedoel — de vrouw die ons allemaal een beetje in de gaten hield zonder dat we erom vroegen.
 
-Dank voor de warmte, de goede raad, en de standjes die ik af en toe echt nodig had.
+Dank voor je warmte, je nuchtere raad en de standjes die ik af en toe écht nodig had. Je was streng op precies de goede momenten en zacht op alle andere.
 
-Ik loop hier straks naar buiten met een stukje van jouw nuchterheid op zak. Dikke knuffel.`
+Ik loop hier straks naar buiten met een stukje van jouw nuchterheid op zak. Pas goed op jezelf — en op de volgende lichting.`
   },
   house: {
     label:"House · 04:00", motif:"eq", dark:true,
     accent:"#8B6BFF", accent2:"#C24BE0", bg1:"#141020", bg2:"#0E0B18", ink:"#EDE9F7",
     card:"#191330", cardInk:"#EDE9F7", cardSub:"#A79FC9", hair:"rgba(139,107,255,.22)",
-    msg:`Man van de late uurtjes en de veel te harde muziek in je koptelefoon. Met jou voelde zelfs 4 uur 's nachts niet als het einde van de wereld.
+    msg:`Man van de nachtdiensten en de goede muziek. Met jou erbij voelde zelfs vier uur 's nachts op de afdeling niet als het einde van de wereld.
 
-Dank voor de gesprekken die pas begonnen als iedereen al sliep. Dat waren de echte.
+Dank voor de gesprekken die pas begonnen als de rest van de wereld sliep. Die waren echter dan de meeste daggesprekken — en je playlist was ook nog eens beter.
 
-Ergens draait er straks een track die me aan jou doet denken. Dan weet je het. Houdoe.`
+Ergens draait straks een track die me aan die nachten doet denken. Dan weet je het. Houdoe.`
   },
   zonnig: {
     label:"Zonnig", motif:"rays", dark:false,
     accent:"#EC4E76", accent2:"#F2B33A", bg1:"#FCEAEE", bg2:"#F8DBE4", ink:"#331722",
-    msg:`Estherrr — ja, met precies zoveel r'en. Jij bracht kleur op grijze dagen, gewoon door jezelf te zijn.
+    msg:`Estherrr — ja, met precies zoveel r'en, want zo klonk het elke ochtend door de gang.
 
-Dank voor het lachen, de chaos en dat altijd-nét-te-veel enthousiasme dat ik stiekem heerlijk vond.
+Jij bracht kleur op grijze dagen, gewoon door je werk te doen zoals alleen jij dat doet: met net iets te veel enthousiasme, precies genoeg geduld en altijd een lach. Dat is geen kleinigheid op een plek als deze.
 
-Blijf shinen. Je kan niet eens anders.`
+Blijf shinen. Je kan toch niet anders.`
   },
   pole: {
     label:"Pole Position", motif:"lights", dark:false,
     accent:"#E5482B", accent2:"#12161B", bg1:"#F4EFE9", bg2:"#EAE1D6", ink:"#16110D",
-    msg:`Viaplay aan, telefoon uit, wereld even op pauze. Met jou ging alles net iets sneller én net iets makkelijker.
+    msg:`Viaplay aan, zorgen uit. Onze F1-praat was misschien wel de beste therapie die hier niet op het rooster stond.
 
-Dank dat je zo'n fijne teamgenoot was, op een plek waar je die goed kon gebruiken.
+Dank dat je van gewone momenten iets normaals wist te maken — even geen patiënt en begeleider, gewoon twee mensen die vinden dat er te weinig races in een weekend passen.
 
-Lights out en op naar buiten. Ik zie je aan de finish.`
+Lights out, en op naar buiten. Ik kijk zondag gewoon — en dan denk ik heus wel even aan de afdeling. Heel even.`
   },
   chic: {
     label:"Chic", motif:"frame", dark:false,
     accent:"#6B2D4F", accent2:"#C4A15A", bg1:"#F5EEF1", bg2:"#EBDCE4", ink:"#2A1620",
-    msg:`Sommige mensen hebben stijl. Jij hebt klasse — dat is iets anders, en veel zeldzamer.
+    msg:`Er zijn mensen met stijl, en er zijn mensen met klasse. Jij hoort bij die tweede groep — en het valt op, zelfs in een gang vol tl-licht.
 
-Dank voor je eerlijkheid, je scherpte en de gesprekken waar ik écht iets aan had.
+Dank voor je eerlijkheid en je scherpte. Jij zei de dingen die ik moest horen op een manier die ik kón horen. Daar heb ik meer aan gehad dan je misschien doorhad.
 
-Ik ben blij dat onze paden hier kruisten, hoe raar de aanleiding ook was. Tot snel, ergens buiten deze muren.`
+Ik ben blij dat onze paden hier kruisten, hoe raar de aanleiding ook was. Het ga je goed — en dank je wel.`
   },
 };
 
@@ -399,14 +438,16 @@ if(!user){
   document.getElementById('eyebrow').textContent = `Ontslagdossier · Afdeling ${user.unit}`;
   document.getElementById('firstName').textContent = user.first;
   document.getElementById('sysdot').textContent = user.first.charAt(0);
+  document.getElementById('waxInit').textContent = user.first.charAt(0);
+  document.getElementById('wm').textContent = user.first.charAt(0);
   document.getElementById('footId').textContent = user.clientId;
 
-  const today = new Date().toLocaleDateString('nl-NL',{ day:'numeric', month:'long', year:'numeric' });
   document.getElementById('meta').innerHTML =
     `<span class="chip">${user.clientId}</span>`+
     `<span class="chip">Afdeling ${user.unit}</span>`+
+    (user.bff ? `<span class="chip bff">★ Beste vriend</span>` : ``)+
     `<span class="chip">Verblijf: 10 maanden</span>`+
-    `<span class="chip">Ontslag: ${today}</span>`+
+    `<span class="chip">Ontslag: 27 augustus 2026</span>`+
     `<span class="chip ok">✓ Ontslagen</span>`;
 
   // letter content
