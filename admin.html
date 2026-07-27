@@ -2,303 +2,388 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="color-scheme" content="dark" />
-<title>GGzE — Systeembeheer · Logboek</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Systeembeheer · Logboek</title>
+<meta name="description" content="Activiteitenlogboek van het patiëntportaal." />
+<meta name="robots" content="noindex, nofollow" />
+<meta name="theme-color" content="#08090a" />
+
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Systeembeheer · Logboek" />
+<meta property="og:description" content="Activiteitenlogboek van het patiëntportaal." />
+<meta property="og:locale" content="nl_NL" />
+<meta name="twitter:card" content="summary" />
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23d8674a'/%3E%3Ctext x='16' y='22' font-family='Georgia,serif' font-size='17' font-weight='600' fill='%23fff' text-anchor='middle'%3E56%3C/text%3E%3C/svg%3E" />
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..600&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
-
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-  tailwind.config = { theme:{ extend:{ fontFamily:{
-    sans:['Instrument Sans','sans-serif'], serif:['Fraunces','serif'], mono:['JetBrains Mono','monospace'] }}}};
-</script>
+<link rel="stylesheet" href="assets/site.css" />
 
 <style>
-  :root{
-    --bg:#0a0e0d; --panel:#0f1513; --panel-2:#131b18; --line:rgba(0,194,168,.14);
-    --ink:#e6efec; --sub:#7d918b; --green:#00c2a8; --green-d:#0a8c78;
-    --amber:#e0a244; --red:#f0616e; --violet:#8b6bff; --blue:#5b9dfa;
-    --ease:cubic-bezier(.16,1,.3,1);
+  .console{ padding-block:var(--s-2) var(--s-10); }
+  .console__head{ padding-block:var(--s-6) var(--s-4); }
+
+  .operator{
+    display:inline-flex; align-items:center; gap:9px;
+    padding:7px 14px; border-radius:100px;
+    border:1px solid var(--line); background:var(--surface);
+    font-family:'JetBrains Mono', ui-monospace, monospace;
+    font-size:var(--t-xs); color:var(--sub);
   }
-  *{ box-sizing:border-box; }
-  html,body{ margin:0; }
-  body{ font-family:'Instrument Sans',system-ui,sans-serif; color:var(--ink); min-height:100dvh;
-    background:
-      radial-gradient(900px 500px at 100% -10%, rgba(0,194,168,.08), transparent 60%),
-      radial-gradient(700px 500px at -10% 110%, rgba(139,107,255,.06), transparent 60%),
-      var(--bg);
-    font-feature-settings:"tnum" 1; }
-  /* faint monitoring grid */
-  body::before{ content:""; position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.5;
-    background-image:linear-gradient(rgba(0,194,168,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,194,168,.04) 1px,transparent 1px);
-    background-size:52px 52px; -webkit-mask:radial-gradient(120vmax 90vmax at 50% -10%,#000,transparent 72%); mask:radial-gradient(120vmax 90vmax at 50% -10%,#000,transparent 72%); }
+  .live{
+    width:7px; height:7px; border-radius:50%;
+    background:var(--accent);
+    animation:blip 2s ease-out infinite;
+  }
+  @keyframes blip{
+    0%  { box-shadow:0 0 0 0 var(--accent-soft); }
+    70% { box-shadow:0 0 0 7px transparent; }
+    100%{ box-shadow:0 0 0 0 transparent; }
+  }
 
-  .wrap{ position:relative; z-index:1; max-width:1040px; margin:0 auto; padding:26px 22px 70px; }
+  /* ── stat tiles ── */
+  .stats{
+    display:grid; gap:10px; margin-bottom:var(--s-4);
+    grid-template-columns:repeat(auto-fit, minmax(148px, 1fr));
+  }
+  .stat{
+    position:relative; overflow:hidden;
+    padding:var(--s-2); border-radius:var(--radius);
+    background:var(--surface); border:1px solid var(--line);
+  }
+  .stat::after{
+    content:""; position:absolute; left:0; top:0; bottom:0; width:2px;
+    background:var(--accent); opacity:.7;
+  }
+  .stat__k{
+    font-family:'JetBrains Mono', ui-monospace, monospace;
+    font-size:var(--t-mono); letter-spacing:.14em;
+    text-transform:uppercase; color:var(--sub);
+  }
+  .stat__v{
+    margin-top:6px; line-height:1.1;
+    font-family:'JetBrains Mono', ui-monospace, monospace;
+    font-weight:700; font-size:1.75rem;
+    font-variant-numeric:tabular-nums;
+  }
 
-  /* top bar */
-  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:26px; }
-  .brand{ display:flex; align-items:center; gap:12px; }
-  .logo{ width:38px; height:38px; border-radius:11px; background:linear-gradient(150deg,var(--green),#046b5c);
-    display:flex; align-items:center; justify-content:center; color:#001b17; font-family:'Fraunces',serif; font-weight:600; font-size:17px;
-    box-shadow:0 10px 24px -8px rgba(0,194,168,.5); }
-  .brand-t{ font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:.2em; text-transform:uppercase; color:var(--green); }
-  .brand-s{ font-size:12px; color:var(--sub); }
-  .operator{ display:flex; align-items:center; gap:10px; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--sub);
-    border:1px solid var(--line); border-radius:100px; padding:7px 14px; background:var(--panel); }
-  .operator .live{ width:7px; height:7px; border-radius:50%; background:var(--green); box-shadow:0 0 0 0 rgba(0,194,168,.5); animation:blip 2s infinite; }
-  @keyframes blip{ 0%{ box-shadow:0 0 0 0 rgba(0,194,168,.5);} 70%{ box-shadow:0 0 0 7px rgba(0,194,168,0);} 100%{ box-shadow:0 0 0 0 rgba(0,194,168,0);} }
-  .exit{ color:var(--sub); text-decoration:none; font-family:'JetBrains Mono',monospace; font-size:11px; padding:7px 12px; border:1px solid var(--line); border-radius:100px; transition:.2s; }
-  .exit:hover{ color:var(--green); border-color:rgba(0,194,168,.4); }
-
-  h1{ font-family:'Fraunces',serif; font-weight:500; font-size:clamp(28px,5vw,40px); letter-spacing:-.02em; margin:0 0 4px; }
-  .lede{ color:var(--sub); font-size:13.5px; margin:0 0 26px; }
-
-  /* stat tiles */
-  .stats{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:26px; }
-  .stat{ background:linear-gradient(160deg,var(--panel-2),var(--panel)); border:1px solid var(--line); border-radius:16px; padding:18px 18px 16px; position:relative; overflow:hidden; }
-  .stat::after{ content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--accent,var(--green)); opacity:.8; }
-  .stat .k{ font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--sub); }
-  .stat .v{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:30px; color:var(--ink); line-height:1.1; margin-top:6px; font-variant-numeric:tabular-nums; }
-
-  /* controls */
-  .controls{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:16px; }
-  .ctl{ background:var(--panel); border:1px solid var(--line); border-radius:10px; color:var(--ink);
-    font-family:'JetBrains Mono',monospace; font-size:12px; padding:9px 12px; }
-  .ctl:focus{ outline:none; border-color:rgba(0,194,168,.5); }
-  select.ctl{ appearance:none; cursor:pointer; padding-right:30px;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%237d918b' stroke-width='2'%3E%3Cpath d='M2 4l4 4 4-4'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 10px center; }
-  .btn{ background:var(--panel); border:1px solid var(--line); border-radius:10px; color:var(--sub);
-    font-family:'JetBrains Mono',monospace; font-size:11.5px; padding:9px 13px; cursor:pointer; transition:.2s; display:inline-flex; align-items:center; gap:7px; }
-  .btn:hover{ color:var(--ink); border-color:rgba(0,194,168,.4); }
-  .btn.on{ color:var(--green); border-color:rgba(0,194,168,.5); background:rgba(0,194,168,.08); }
-  .btn.danger:hover{ color:var(--red); border-color:rgba(240,97,110,.5); }
+  /* ── controls ── */
+  .controls{
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+    margin-bottom:var(--s-2);
+  }
+  .ctl{
+    padding:9px 12px; border-radius:10px;
+    background:var(--surface); border:1px solid var(--line);
+    color:var(--ink);
+    font-family:'JetBrains Mono', ui-monospace, monospace;
+    font-size:var(--t-xs);
+  }
+  .ctl:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+  select.ctl{
+    appearance:none; cursor:pointer; padding-right:30px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%23828d94' stroke-width='2'%3E%3Cpath d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 10px center;
+  }
+  .pill.is-on{ color:var(--accent); border-color:var(--accent-line); background:var(--accent-soft); }
+  .pill--danger:hover{ color:#ff9aa3; border-color:rgba(240,97,110,.5); }
   .spacer{ flex:1; }
-  .count{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--sub); }
 
-  /* log stream */
-  .stream{ background:var(--panel); border:1px solid var(--line); border-radius:18px; overflow:hidden; }
-  .row{ display:grid; grid-template-columns:112px 130px 1fr; gap:14px; align-items:baseline;
-    padding:13px 20px; border-bottom:1px solid rgba(0,194,168,.07); font-size:13px; animation:in .35s var(--ease); }
-  @keyframes in{ from{ opacity:0; transform:translateY(-4px);} to{ opacity:1; transform:none;} }
+  /* ── log stream ── */
+  .stream{
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:var(--radius-lg); overflow:hidden;
+  }
+  .row{
+    display:grid; grid-template-columns:112px 132px 1fr;
+    gap:14px; align-items:baseline;
+    padding:12px var(--s-2);
+    border-bottom:1px solid var(--line);
+    font-size:var(--t-sm);
+  }
   .row:last-child{ border-bottom:none; }
-  .row:hover{ background:rgba(0,194,168,.03); }
-  .time{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--sub); white-space:nowrap; }
-  .badge{ font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:500; letter-spacing:.03em;
-    padding:3px 8px; border-radius:6px; white-space:nowrap; justify-self:start; border:1px solid transparent; }
-  .who{ color:var(--ink); font-weight:500; }
-  .who .id{ color:var(--sub); font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:400; }
-  .det{ color:var(--sub); font-family:'JetBrains Mono',monospace; font-size:11.5px; }
+  .row:hover{ background:rgba(255,255,255,.02); }
+  .row__time{
+    font-family:'JetBrains Mono', ui-monospace, monospace;
+    font-size:var(--t-xs); color:var(--sub); white-space:nowrap;
+  }
+  .badge{
+    display:inline-block; justify-self:start;
+    padding:3px 8px; border-radius:6px;
+    border:1px solid currentColor;
+    font-family:'JetBrains Mono', ui-monospace, monospace;
+    font-size:10px; font-weight:500; white-space:nowrap;
+  }
+  .row__who{ font-weight:500; }
+  .row__id{
+    font-family:'JetBrains Mono', ui-monospace, monospace;
+    font-size:var(--t-xs); font-weight:400; color:var(--sub);
+  }
+  .row__det{
+    font-family:'JetBrains Mono', ui-monospace, monospace;
+    font-size:var(--t-xs); color:var(--sub);
+  }
 
-  .empty{ padding:64px 20px; text-align:center; }
-  .empty .big{ font-family:'Fraunces',serif; font-size:22px; color:var(--ink); margin-bottom:8px; }
-  .empty .small{ font-size:13px; color:var(--sub); max-width:400px; margin:0 auto; line-height:1.6; }
-
-  .foot{ text-align:center; font-family:'JetBrains Mono',monospace; font-size:9.5px; color:var(--sub); margin-top:26px; letter-spacing:.05em; line-height:1.8; }
+  .empty{ padding:var(--s-10) var(--s-3); text-align:center; }
 
   @media (max-width:620px){
-    .row{ grid-template-columns:1fr; gap:5px; padding:12px 16px; }
-    .badge{ justify-self:start; }
+    .row{ grid-template-columns:1fr; gap:5px; }
   }
-  @media (prefers-reduced-motion:reduce){ *{ animation:none !important; } }
 </style>
 </head>
 <body>
-  <div class="wrap">
+
+<a class="skip-link" href="#stream">Naar het logboek</a>
+<div class="wash" aria-hidden="true"></div>
+
+<div class="page">
+  <div class="container">
+
     <div class="topbar">
-      <div class="brand">
-        <div class="logo">G</div>
-        <div>
-          <div class="brand-t">GGzE · Systeembeheer</div>
-          <div class="brand-s">Activiteitenlogboek — realtime</div>
-        </div>
+      <div class="brandmark">
+        <span class="brandmark__dot" aria-hidden="true">G</span>
+        <span class="brandmark__label">Systeembeheer</span>
       </div>
-      <div style="display:flex;gap:10px;align-items:center">
-        <div class="operator"><span class="live"></span> operator: <span id="op">admin</span></div>
-        <a class="exit" href="index.html">Uitloggen →</a>
+      <div class="row">
+        <span class="operator"><span class="live" aria-hidden="true"></span> operator: <span id="op">admin</span></span>
+        <a class="pill" href="index.html" id="exit">Uitloggen →</a>
       </div>
     </div>
 
-    <h1>Activiteitenlogboek</h1>
-    <p class="lede">Alle sessies en gebeurtenissen binnen het patiëntportaal — geregistreerd conform beveiligingsbeleid.</p>
+    <main class="console">
+      <header class="console__head">
+        <h1 class="h1">Activiteitenlogboek</h1>
+        <p class="lead" style="margin-top:var(--s-1)">
+          Alle sessies en gebeurtenissen binnen het patiëntportaal, geregistreerd
+          conform beveiligingsbeleid.
+        </p>
+      </header>
 
-    <div class="stats" id="stats"></div>
+      <h2 class="visually-hidden">Statistieken</h2>
+      <div class="stats" id="stats"></div>
 
-    <div class="controls">
-      <select class="ctl" id="fAction"><option value="">Alle gebeurtenissen</option></select>
-      <select class="ctl" id="fUser"><option value="">Alle gebruikers</option></select>
-      <input class="ctl" id="fSearch" placeholder="zoeken…" style="width:130px" />
-      <button class="btn on" id="autoBtn">↻ live</button>
-      <div class="spacer"></div>
-      <span class="count" id="count">0 regels</span>
-      <button class="btn" id="exportBtn">⬇ export</button>
-      <button class="btn danger" id="clearBtn">✕ wissen</button>
-    </div>
+      <h2 class="visually-hidden">Filters</h2>
+      <div class="controls">
+        <label class="visually-hidden" for="fAction">Filter op gebeurtenis</label>
+        <select class="ctl" id="fAction"><option value="">Alle gebeurtenissen</option></select>
 
-    <div class="stream" id="stream"></div>
+        <label class="visually-hidden" for="fUser">Filter op gebruiker</label>
+        <select class="ctl" id="fUser"><option value="">Alle gebruikers</option></select>
 
-    <p class="foot">
-      GGzE Patiënt Informatiesysteem · NEN-7510 · logboek opgeslagen op dit apparaat (localStorage)<br>
-      Systeembeheer-console — gemaakt door 56 · @56isk
-    </p>
+        <label class="visually-hidden" for="fSearch">Zoeken</label>
+        <input class="ctl" id="fSearch" placeholder="zoeken…" style="width:130px" />
+
+        <button class="pill is-on" type="button" id="autoBtn" aria-pressed="true">↻ live</button>
+        <div class="spacer"></div>
+        <span class="mono" id="count">0 regels</span>
+        <button class="pill" type="button" id="exportBtn">⬇ export</button>
+        <button class="pill pill--danger" type="button" id="clearBtn">✕ wissen</button>
+      </div>
+
+      <h2 class="visually-hidden">Gebeurtenissen</h2>
+      <div class="stream" id="stream" aria-live="polite"></div>
+
+      <p class="foot">
+        Patiënt Informatiesysteem · NEN-7510 · logboek opgeslagen op dit apparaat (localStorage)<br />
+        Systeembeheer-console, gemaakt door 56 · @56isk
+      </p>
+    </main>
   </div>
+</div>
 
+<script src="assets/site.js"></script>
 <script>
-/* ══════════════════════════════════════════════════════════════
-   GGzE Systeembeheer — leest het gedeelde activiteitenlogboek
-   dat index.html en units.html wegschrijven. 56 · @56isk
-   ══════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════════
+   Systeembeheer — leest het gedeelde activiteitenlogboek dat de
+   andere pagina's wegschrijven. 56 · @56isk
+   ══════════════════════════════════════════════════════════════════ */
 
-const USERS = {
-  gebruiker162:"Sabine N.", gebruiker726:"Nienke V.", gebruiker492:"Demian",
-  gebruiker892:"Leonie", gebruiker83:"Bram", gebruiker744:"Esther",
-  gebruiker56:"Meike", gebruiker729:"Veronique", admin:"Systeembeheerder",
+/* action → { label, colour }. Colours are the few places the console
+   steps outside the single-accent rule, because a log needs to
+   distinguish success from failure at a glance. */
+var ACTIONS = {
+  page_view:          { l:'page view',          c:'var(--n-600)' },
+  auth_username_ok:   { l:'gebruiker herkend',  c:'#5c9ce0' },
+  auth_username_fail: { l:'gebruiker onbekend', c:'#e0a244' },
+  login_success:      { l:'login ok',           c:'#4ade96' },
+  login_fail:         { l:'login mislukt',      c:'#f0616e' },
+  account_locked:     { l:'geblokkeerd',        c:'#f0616e' },
+  letter_opened:      { l:'brief geopend',      c:'#8b6bff' },
+  connect_click:      { l:'contact',            c:'#5c9ce0' },
+  theme_change:       { l:'weergave',           c:'var(--n-600)' },
+  easter_egg:         { l:'easter egg',         c:'#e0a244' },
+  guestbook_sign:     { l:'gastenboek',         c:'#4ade96' },
+  reis_finished:      { l:'reis voltooid',      c:'#8b6bff' },
+  logout:             { l:'uitgelogd',          c:'var(--n-600)' },
+  admin_view:         { l:'beheer',             c:'#4ade96' }
 };
 
-/* action → { label, colour } for the badges */
-const ACTIONS = {
-  page_view:          { l:"page view",        c:"var(--sub)" },
-  auth_username_ok:   { l:"gebruiker herkend", c:"var(--blue)" },
-  auth_username_fail: { l:"gebruiker onbekend",c:"var(--amber)" },
-  login_success:      { l:"login ok",          c:"var(--green)" },
-  login_fail:         { l:"login mislukt",     c:"var(--red)" },
-  account_locked:     { l:"geblokkeerd",       c:"var(--red)" },
-  letter_opened:      { l:"brief geopend",     c:"var(--violet)" },
-  connect_click:      { l:"contact",           c:"var(--blue)" },
-  theme_change:       { l:"weergave",          c:"var(--sub)" },
-  easter_egg:         { l:"easter egg",        c:"var(--amber)" },
-  logout:             { l:"uitgelogd",         c:"var(--sub)" },
-  admin_view:         { l:"beheer",            c:"var(--green)" },
-};
+function userLabel(u){
+  return (GGZ.USERS[u] && GGZ.USERS[u].name) || u || '(anoniem)';
+}
 
-const GGZ = { log(action, details={}, username=null){ try{
-  const logs = JSON.parse(localStorage.getItem('activityLogs')||'[]');
-  logs.push({ timestamp:new Date().toISOString(), username: username ?? '(anoniem)', action, details });
-  localStorage.setItem('activityLogs', JSON.stringify(logs.slice(-500)));
-}catch(e){} } };
-
-/* set operator label from current session, if any */
-const cur = (localStorage.getItem('currentUser')||'').toLowerCase();
+var cur = GGZ.sessionKey();
 if(cur) document.getElementById('op').textContent = cur;
 GGZ.log('admin_view', {}, cur || 'admin');
 
-function readLogs(){
-  try{ const l = JSON.parse(localStorage.getItem('activityLogs')||'[]'); return Array.isArray(l) ? l : []; }
-  catch(e){ return []; }
-}
+document.getElementById('exit').addEventListener('click', function(){
+  try{ localStorage.removeItem('currentUser'); }catch(e){}
+  GGZ.log('logout', {}, cur || 'admin');
+});
 
-function relTime(iso){
-  const d = new Date(iso), now = new Date(), s = Math.floor((now-d)/1000);
-  if(isNaN(s)) return '—';
-  if(s < 10) return 'zojuist';
-  if(s < 60) return s+' sec geleden';
-  const m = Math.floor(s/60); if(m < 60) return m+' min geleden';
-  const h = Math.floor(m/60); if(h < 24) return h+' uur geleden';
-  const dd = Math.floor(h/24); if(dd < 7) return dd+' dag'+(dd>1?'en':'')+' geleden';
-  return d.toLocaleDateString('nl-NL',{ day:'numeric', month:'short' });
-}
-function absTime(iso){ const d=new Date(iso); return isNaN(d)?'':d.toLocaleString('nl-NL'); }
-
-function fmtDetails(a, det){
+function fmtDetails(det){
   if(!det || typeof det !== 'object') return '';
-  const parts = [];
-  for(const [k,v] of Object.entries(det)){
-    if(v === undefined || v === null || v === '') continue;
-    parts.push(`${k}: ${v}`);
-  }
-  return parts.join('  ·  ');
+  return Object.keys(det)
+    .filter(function(k){
+      var v = det[k];
+      return v !== undefined && v !== null && v !== '';
+    })
+    .map(function(k){ return k + ': ' + det[k]; })
+    .join('  ·  ');
 }
 
-/* build the filter dropdowns once from whatever exists */
+/* build filter dropdowns from whatever the log actually contains */
 function refreshFilters(logs){
-  const aSel = document.getElementById('fAction'), uSel = document.getElementById('fUser');
-  const seenA = new Set([...aSel.options].map(o=>o.value));
-  const seenU = new Set([...uSel.options].map(o=>o.value));
-  [...new Set(logs.map(l=>l.action))].forEach(a => { if(!seenA.has(a)){ const o=document.createElement('option'); o.value=a; o.textContent=(ACTIONS[a]?.l||a); aSel.appendChild(o); seenA.add(a); } });
-  [...new Set(logs.map(l=>l.username))].forEach(u => { if(!seenU.has(u)){ const o=document.createElement('option'); o.value=u; o.textContent=(USERS[u]||u); uSel.appendChild(o); seenU.add(u); } });
+  var aSel = document.getElementById('fAction');
+  var uSel = document.getElementById('fUser');
+  var seenA = {}, seenU = {};
+
+  [].forEach.call(aSel.options, function(o){ seenA[o.value] = true; });
+  [].forEach.call(uSel.options, function(o){ seenU[o.value] = true; });
+
+  logs.forEach(function(l){
+    if(l.action && !seenA[l.action]){
+      var o = document.createElement('option');
+      o.value = l.action;
+      o.textContent = (ACTIONS[l.action] && ACTIONS[l.action].l) || l.action;
+      aSel.appendChild(o);
+      seenA[l.action] = true;
+    }
+    if(l.username && !seenU[l.username]){
+      var u = document.createElement('option');
+      u.value = l.username;
+      u.textContent = userLabel(l.username);
+      uSel.appendChild(u);
+      seenU[l.username] = true;
+    }
+  });
 }
 
 function render(){
-  const logs = readLogs();
+  var logs = GGZ.readLogs();
   refreshFilters(logs);
 
-  // stats (computed over the full log, not the filtered view)
-  const total = logs.length;
-  const users = new Set(logs.map(l=>l.username).filter(u=>u && u!=='(anoniem)')).size;
-  const logins = logs.filter(l=>l.action==='login_success').length;
-  const fails  = logs.filter(l=>l.action==='login_fail').length;
-  const eggs   = logs.filter(l=>l.action==='easter_egg').length;
+  /* stats are computed over the whole log, not the filtered view */
+  var users = {};
+  logs.forEach(function(l){
+    if(l.username && l.username !== '(anoniem)') users[l.username] = true;
+  });
+  function countOf(a){
+    return logs.filter(function(l){ return l.action === a; }).length;
+  }
+
   document.getElementById('stats').innerHTML = [
-    ['Totaal', total, 'var(--green)'],
-    ['Gebruikers', users, 'var(--blue)'],
-    ['Logins', logins, 'var(--green)'],
-    ['Mislukte pogingen', fails, 'var(--red)'],
-    ['Easter eggs', eggs, 'var(--amber)'],
-  ].map(([k,v,c]) => `<div class="stat" style="--accent:${c}"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
+    ['Totaal', logs.length],
+    ['Gebruikers', Object.keys(users).length],
+    ['Logins', countOf('login_success')],
+    ['Mislukte pogingen', countOf('login_fail')],
+    ['Easter eggs', countOf('easter_egg')]
+  ].map(function(p){
+    return '<div class="stat"><div class="stat__k">' + p[0] +
+           '</div><div class="stat__v">' + p[1] + '</div></div>';
+  }).join('');
 
-  // filters
-  const fa = document.getElementById('fAction').value;
-  const fu = document.getElementById('fUser').value;
-  const fs = document.getElementById('fSearch').value.trim().toLowerCase();
+  /* filters */
+  var fa = document.getElementById('fAction').value;
+  var fu = document.getElementById('fUser').value;
+  var fs = document.getElementById('fSearch').value.trim().toLowerCase();
 
-  let rows = logs.slice().reverse(); // newest first
-  if(fa) rows = rows.filter(l => l.action === fa);
-  if(fu) rows = rows.filter(l => l.username === fu);
-  if(fs) rows = rows.filter(l => JSON.stringify(l).toLowerCase().includes(fs));
+  var rows = logs.slice().reverse();   // newest first
+  if(fa) rows = rows.filter(function(l){ return l.action === fa; });
+  if(fu) rows = rows.filter(function(l){ return l.username === fu; });
+  if(fs) rows = rows.filter(function(l){
+    return JSON.stringify(l).toLowerCase().indexOf(fs) !== -1;
+  });
 
-  document.getElementById('count').textContent = rows.length + ' regel' + (rows.length===1?'':'s');
+  document.getElementById('count').textContent =
+    rows.length + ' regel' + (rows.length === 1 ? '' : 's');
 
-  const stream = document.getElementById('stream');
+  var stream = document.getElementById('stream');
+
   if(rows.length === 0){
-    stream.innerHTML = `<div class="empty"><div class="big">${total===0?'Nog geen activiteit geregistreerd':'Geen resultaten'}</div>
-      <div class="small">${total===0
-        ? 'Log in via het patiëntportaal en open een dossier — gebeurtenissen verschijnen hier realtime.'
-        : 'Pas je filters aan om meer regels te zien.'}</div></div>`;
+    stream.innerHTML =
+      '<div class="empty"><p class="h3">' +
+      (logs.length === 0 ? 'Nog geen activiteit geregistreerd' : 'Geen resultaten') +
+      '</p><p class="muted" style="font-size:var(--t-sm);margin-top:6px">' +
+      (logs.length === 0
+        ? 'Log in via het patiëntportaal en open een dossier, gebeurtenissen verschijnen hier realtime.'
+        : 'Pas je filters aan om meer regels te zien.') +
+      '</p></div>';
     return;
   }
 
-  stream.innerHTML = rows.map(l => {
-    const a = ACTIONS[l.action] || { l:l.action, c:'var(--sub)' };
-    const name = USERS[l.username] || l.username || '(anoniem)';
-    const idPart = (l.username && USERS[l.username]) ? ` <span class="id">${l.username}</span>` : '';
-    return `<div class="row">
-      <div class="time" title="${absTime(l.timestamp)}">${relTime(l.timestamp)}</div>
-      <div><span class="badge" style="color:${a.c};border-color:${a.c};background:color-mix(in srgb, ${a.c} 12%, transparent)">${a.l}</span></div>
-      <div><span class="who">${name}${idPart}</span>${det(a,l)}</div>
-    </div>`;
+  stream.innerHTML = rows.map(function(l){
+    var a = ACTIONS[l.action] || { l:l.action, c:'var(--n-600)' };
+    var known = !!GGZ.USERS[l.username];
+    var det = fmtDetails(l.details);
+    return '<div class="row">' +
+      '<div class="row__time" title="' + GGZ.absTime(l.timestamp) + '">' +
+        GGZ.relTime(l.timestamp) + '</div>' +
+      '<div><span class="badge" style="color:' + a.c + '">' + a.l + '</span></div>' +
+      '<div><span class="row__who">' + userLabel(l.username) + '</span>' +
+        (known ? ' <span class="row__id">' + l.username + '</span>' : '') +
+        (det ? '<div class="row__det">' + det + '</div>' : '') +
+      '</div>' +
+    '</div>';
   }).join('');
 }
-function det(a,l){ const d = fmtDetails(l.action, l.details); return d ? `<div class="det">${d}</div>` : ''; }
 
-/* controls wiring */
-['fAction','fUser'].forEach(id => document.getElementById(id).addEventListener('change', render));
+/* ── controls ── */
+['fAction','fUser'].forEach(function(id){
+  document.getElementById(id).addEventListener('change', render);
+});
 document.getElementById('fSearch').addEventListener('input', render);
 
-let auto = true, timer = setInterval(render, 2000);
+var auto = true;
+var timer = setInterval(render, 2000);
 document.getElementById('autoBtn').addEventListener('click', function(){
-  auto = !auto; this.classList.toggle('on', auto); this.textContent = auto ? '↻ live' : '⏸ gepauzeerd';
-  clearInterval(timer); if(auto) timer = setInterval(render, 2000);
+  auto = !auto;
+  this.classList.toggle('is-on', auto);
+  this.setAttribute('aria-pressed', String(auto));
+  this.textContent = auto ? '↻ live' : '⏸ gepauzeerd';
+  clearInterval(timer);
+  if(auto) timer = setInterval(render, 2000);
 });
-// also update instantly when another tab writes a log
-window.addEventListener('storage', e => { if(e.key === 'activityLogs') render(); });
 
-document.getElementById('exportBtn').addEventListener('click', () => {
-  const blob = new Blob([JSON.stringify(readLogs(), null, 2)], { type:'application/json' });
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-  a.download = `ggze-logboek-${new Date().toISOString().slice(0,10)}.json`; a.click(); URL.revokeObjectURL(a.href);
+/* update instantly when another tab writes a log */
+window.addEventListener('storage', function(e){
+  if(e.key === 'activityLogs') render();
 });
-document.getElementById('clearBtn').addEventListener('click', () => {
+
+document.getElementById('exportBtn').addEventListener('click', function(){
+  var blob = new Blob([JSON.stringify(GGZ.readLogs(), null, 2)], { type:'application/json' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'logboek-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+document.getElementById('clearBtn').addEventListener('click', function(){
   if(confirm('Weet je zeker dat je het volledige logboek wilt wissen? Dit kan niet ongedaan worden gemaakt.')){
-    localStorage.removeItem('activityLogs'); render();
+    try{ localStorage.removeItem('activityLogs'); }catch(e){}
+    render();
   }
 });
 
 render();
 
-console.log('%cGGzE Systeembeheer','color:#00c2a8;font:600 20px Georgia,serif');
-console.log('%cLogboek-console actief. Gemaakt door 56 · @56isk','color:#7d918b;font:12px monospace');
+console.log('%cSysteembeheer', 'color:#d8674a;font:600 20px Georgia,serif');
+console.log('%cLogboek-console actief. Gemaakt door 56 · @56isk', 'color:#828d94;font:12px monospace');
+
+GGZ.init({ accent:false });
 </script>
 </body>
 </html>
