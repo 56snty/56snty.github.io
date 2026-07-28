@@ -1,0 +1,174 @@
+/* ══════════════════════════════════════════════════════════════════
+   Design tokens
+   One source of truth for colour, space, type, motion and elevation.
+   Every component reads from here; nothing hardcodes a value.
+   ══════════════════════════════════════════════════════════════════ */
+
+:root{
+  /* ── neutral ramp ─────────────────────────────────────────────── */
+  --n-000:#08090a;
+  --n-050:#0d0f11;
+  --n-100:#121517;
+  --n-150:#171b1e;
+  --n-200:#1d2225;
+  --n-300:#2a3034;
+  --n-400:#3d454a;
+  --n-500:#5c666c;
+  --n-600:#828d94;
+  --n-700:#aab3b9;
+  --n-800:#d2d8db;
+  --n-900:#eef1f2;
+
+  /* ── surfaces ─────────────────────────────────────────────────── */
+  --bg:var(--n-000);
+  --surface:var(--n-100);
+  --surface-2:var(--n-150);
+  --surface-3:var(--n-200);
+  --line:rgba(255,255,255,.08);
+  --line-strong:rgba(255,255,255,.14);
+
+  /* subtle gradients — a 1-2% lift, never a visible band */
+  --grad-surface:linear-gradient(160deg,
+                   rgba(255,255,255,.045),
+                   rgba(255,255,255,.012) 42%,
+                   transparent 70%);
+  --grad-raised:linear-gradient(160deg,
+                   rgba(255,255,255,.07),
+                   rgba(255,255,255,.02) 46%,
+                   transparent 72%);
+  --grad-accent:linear-gradient(160deg,
+                   color-mix(in srgb, var(--accent) 92%, #fff),
+                   var(--accent) 55%,
+                   color-mix(in srgb, var(--accent) 88%, #000));
+
+  /* ── text ──────────────────────────────────────────────────────
+     ink 17.6:1, ink-2 9.4:1, sub 5.9:1 on --bg. All clear AA.      */
+  --ink:var(--n-900);
+  --ink-2:var(--n-700);
+  --sub:var(--n-600);
+
+  /* ── accent ────────────────────────────────────────────────────
+     Set per user at runtime. --accent-ink is near-black because
+     every accent in the set is a mid-tone: white on them lands at
+     2.8-4.0:1 (fails AA), near-black at 5.0-7.1:1 (passes).        */
+  --accent:#d8674a;
+  --accent-ink:#08090a;
+  --accent-soft:color-mix(in srgb, var(--accent) 14%, transparent);
+  --accent-line:color-mix(in srgb, var(--accent) 32%, transparent);
+  --accent-glow:color-mix(in srgb, var(--accent) 38%, transparent);
+
+  /* ── semantic ─────────────────────────────────────────────────── */
+  --danger:#ff9aa3;
+  --danger-bg:rgba(240,97,110,.11);
+  --danger-line:rgba(240,97,110,.34);
+  --ok:#7ee0ab;
+  --ok-bg:rgba(74,222,150,.10);
+  --ok-line:rgba(74,222,150,.30);
+  --warn:#e8bd7a;
+
+  /* ── elevation ────────────────────────────────────────────────
+     Layered: a tight contact shadow plus a wide ambient one, with
+     a hairline top highlight so edges catch light like real glass. */
+  --shadow-sm:
+    0 1px 2px rgba(0,0,0,.34),
+    0 1px 1px rgba(0,0,0,.22);
+  --shadow-md:
+    inset 0 1px 0 rgba(255,255,255,.05),
+    0 2px 4px rgba(0,0,0,.30),
+    0 8px 18px -6px rgba(0,0,0,.46);
+  --shadow-lg:
+    inset 0 1px 0 rgba(255,255,255,.06),
+    0 4px 10px rgba(0,0,0,.32),
+    0 18px 38px -12px rgba(0,0,0,.58);
+  --shadow-xl:
+    inset 0 1px 0 rgba(255,255,255,.07),
+    0 8px 20px rgba(0,0,0,.38),
+    0 32px 64px -16px rgba(0,0,0,.68);
+  --shadow-accent:0 8px 24px -10px var(--accent-glow);
+
+  /* ── spacing: 8pt base ────────────────────────────────────────── */
+  --s-05:4px;
+  --s-1:8px;   --s-2:16px;  --s-3:24px;  --s-4:32px;
+  --s-5:40px;  --s-6:48px;  --s-8:64px;  --s-10:80px;
+  --s-12:96px; --s-16:128px; --s-20:160px;
+
+  /* ── type scale ───────────────────────────────────────────────── */
+  --font-sans:'Instrument Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-serif:'Fraunces', ui-serif, Georgia, serif;
+  --font-mono:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --t-display:clamp(2.75rem, 1.2rem + 7.2vw, 7rem);
+  --t-h1:clamp(2.25rem, 1.3rem + 4.2vw, 4.25rem);
+  --t-h2:clamp(1.6rem, 1.15rem + 2.1vw, 2.5rem);
+  --t-h3:clamp(1.2rem, 1.05rem + .7vw, 1.5rem);
+  --t-lead:clamp(1.05rem, .98rem + .4vw, 1.28rem);
+  --t-body:1rem;
+  --t-sm:.875rem;
+  --t-xs:.75rem;
+  --t-mono:.6875rem;
+
+  --measure:66ch;
+  --container:1160px;
+
+  /* ── radius ───────────────────────────────────────────────────── */
+  --r-sm:8px;
+  --r-md:12px;
+  --r-lg:16px;
+  --r-xl:22px;
+  --r-full:999px;
+
+  /* ── motion ───────────────────────────────────────────────────── */
+  --ease:cubic-bezier(.16,1,.3,1);
+  --ease-out:cubic-bezier(.22,.61,.36,1);
+  --dur-fast:150ms;
+  --dur-hover:200ms;
+  --dur-slow:250ms;
+  --dur-enter:760ms;
+
+  --z-sticky:40;
+  --z-overlay:100;
+  --z-toast:200;
+
+  color-scheme:dark;
+}
+
+/* ── reset ────────────────────────────────────────────────────── */
+*,*::before,*::after{ box-sizing:border-box; }
+html,body,#root{ margin:0; }
+html{ -webkit-text-size-adjust:100%; }
+
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--font-sans);
+  font-size:var(--t-body);
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  font-feature-settings:"tnum" 1;
+  overflow-x:hidden;
+}
+
+img,svg,video{ max-width:100%; height:auto; display:block; }
+button,input,select,textarea{ font:inherit; color:inherit; }
+h1,h2,h3,h4,p,figure,ul,ol{ margin:0; }
+ul,ol{ padding:0; list-style:none; }
+a{ color:inherit; }
+
+/* ── focus ────────────────────────────────────────────────────── */
+:focus-visible{
+  outline:2px solid var(--accent);
+  outline-offset:3px;
+  border-radius:var(--r-sm);
+}
+:focus:not(:focus-visible){ outline:none; }
+
+/* ── reduced motion: full fallback ────────────────────────────── */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;
+    scroll-behavior:auto !important;
+  }
+}

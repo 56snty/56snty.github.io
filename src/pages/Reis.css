@@ -1,0 +1,139 @@
+/* ── fixed chrome ─────────────────────────────────────────────── */
+.railbar{
+  position:fixed; top:0; left:0; right:0;
+  z-index:var(--z-sticky);
+  padding-inline:clamp(var(--s-3), 5vw, var(--s-6));
+  background:linear-gradient(to bottom, rgba(8,9,10,.88), transparent);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+}
+.railbar .topbar{ padding-block:var(--s-2); max-width:var(--container); margin-inline:auto; }
+
+.progress{
+  position:fixed; top:0; left:0; right:0;
+  height:2px; z-index:calc(var(--z-sticky) + 10);
+  background:var(--accent);
+  transform-origin:0 50%;
+  box-shadow:0 0 12px var(--accent-glow);
+}
+
+/* ── month rail ───────────────────────────────────────────────── */
+.rail{
+  position:fixed; left:var(--s-3); top:50%;
+  z-index:calc(var(--z-sticky) - 5);
+  transform:translateY(-50%);
+  display:flex; flex-direction:column; gap:14px;
+}
+.rdot{
+  position:relative;
+  width:8px; height:8px; padding:0;
+  border:none; border-radius:var(--r-full);
+  background:var(--n-400); cursor:pointer;
+  transition:transform var(--dur-hover) var(--ease-out),
+             background var(--dur-hover) var(--ease-out),
+             box-shadow var(--dur-hover) var(--ease-out);
+}
+.rdot::after{
+  content:attr(data-m);
+  position:absolute; left:16px; top:50%;
+  transform:translateY(-50%);
+  font-family:var(--font-mono);
+  font-size:9px; letter-spacing:.12em; color:var(--sub);
+  opacity:0; white-space:nowrap;
+  transition:opacity var(--dur-hover) var(--ease-out);
+}
+.rdot:hover::after,
+.rdot.is-active::after{ opacity:1; }
+.rdot.is-active{
+  background:var(--accent);
+  transform:scale(1.6);
+  box-shadow:0 0 0 4px var(--accent-soft);
+}
+
+/* ── hero ─────────────────────────────────────────────────────── */
+.hero{
+  position:relative;
+  min-height:100svh;
+  display:flex; flex-direction:column; justify-content:center;
+  padding-block:var(--s-16) var(--s-10);
+}
+.hero__inner{ position:relative; z-index:2; will-change:transform, opacity; }
+.hero__title{ margin-block:var(--s-3) var(--s-4); }
+.hero__sub{ margin-bottom:var(--s-4); }
+.hero__dates{
+  font-family:var(--font-mono);
+  font-size:var(--t-xs); letter-spacing:.14em; color:var(--sub);
+}
+
+.hero__cue{
+  position:absolute; left:50%; bottom:var(--s-5);
+  transform:translateX(-50%);
+  display:flex; flex-direction:column; align-items:center; gap:10px;
+  font-family:var(--font-mono);
+  font-size:var(--t-mono); letter-spacing:.2em;
+  text-transform:uppercase; color:var(--sub);
+}
+.hero__cue-line{
+  width:1px; height:38px;
+  background:linear-gradient(to bottom, var(--accent), transparent);
+  transform-origin:top;
+  animation:cue-drift 2.4s var(--ease) infinite;
+}
+@keyframes cue-drift{
+  0%,100%{ transform:scaleY(.4); opacity:.4; }
+  50%    { transform:scaleY(1);  opacity:1; }
+}
+
+/* ── chapters ─────────────────────────────────────────────────── */
+.chapter{
+  min-height:70svh;
+  display:flex; flex-direction:column; justify-content:center;
+  padding-block:var(--s-10);
+}
+.chapter__k{
+  font-family:var(--font-mono);
+  font-size:var(--t-mono); letter-spacing:.2em;
+  text-transform:uppercase; color:var(--accent);
+  margin-bottom:var(--s-2);
+}
+.chapter__title{ margin-bottom:var(--s-2); }
+.chapter__rule{
+  width:40px; height:2px; margin-top:var(--s-4);
+  background:var(--accent); border-radius:2px;
+  transform-origin:left center;
+}
+
+/* ── finale ───────────────────────────────────────────────────── */
+.finale{
+  min-height:100svh;
+  display:flex; flex-direction:column; justify-content:center; align-items:center;
+  text-align:center;
+  padding-block:var(--s-12) var(--s-16);
+}
+.bigdate{
+  cursor:pointer; user-select:none;
+  margin-block:var(--s-3) var(--s-2);
+  transition:transform var(--dur-hover) var(--ease-out);
+}
+.bigdate:hover{ transform:scale(1.015); }
+.finale__out{ margin-inline:auto; }
+.finale__cta{ margin-top:var(--s-6); }
+
+.countpill{
+  display:inline-block; margin-top:var(--s-4);
+  padding:11px var(--s-3);
+  border-radius:var(--r-full);
+  border:1px solid var(--accent-line);
+  background:var(--accent-soft);
+  box-shadow:var(--shadow-sm);
+  font-family:var(--font-mono);
+  font-size:var(--t-xs); letter-spacing:.08em; color:var(--ink-2);
+}
+.countpill b{ color:var(--accent); font-size:1.05rem; font-weight:700; }
+
+@media (max-width:900px){ .rail{ display:none; } }
+
+@media (prefers-reduced-motion:reduce){
+  .hero__cue-line{ animation:none; transform:scaleY(1); }
+  .progress{ transition:none; }
+}
