@@ -13,14 +13,16 @@ const LOG_CAP = 500;
    which is how medicijnen.html drifted to units 2/3/4 while the
    login assigned 0-3.                                              */
 export const USERS = {
-  gebruiker162: { name:'Sabine N.', first:'Sabine',    clientId:'CLI-1998-0162', unit:1, accent:'#d8674a' },
-  gebruiker726: { name:'Nienke V.', first:'Nienke',    clientId:'CLI-1998-0726', unit:1, accent:'#4fa89b' },
+  gebruiker483: { name: 'Esmee', first: 'Esmee', clientId: 'CLI-1998-0483', unit: 1, accent: '#4fa89b' },
+  gebruiker162: { name:'Sabine.', first:'Sabine',    clientId:'CLI-1998-0162', unit:1, accent:'#d8674a' },
+  gebruiker726: { name:'Nienke.', first:'Nienke',    clientId:'CLI-1998-0726', unit:1, accent:'#4fa89b' },
   gebruiker492: { name:'Demian',    first:'Demian',    clientId:'CLI-1998-0492', unit:2, accent:'#e0566f', bff:true },
   gebruiker892: { name:'Leonie',    first:'Leonie',    clientId:'CLI-1998-0892', unit:3, accent:'#c98686' },
   gebruiker83:  { name:'Bram',      first:'Bram',      clientId:'CLI-1998-0083', unit:3, accent:'#8b6bff' },
-  gebruiker744: { name:'Esther',    first:'Esther',    clientId:'CLI-1998-0744', unit:3, accent:'#f0709a' },
+  gebruiker744: { name:'Ester',    first:'Ester',    clientId:'CLI-1998-0744', unit:3, accent:'#f0709a' },
   gebruiker56:  { name:'Meike',     first:'Meike',     clientId:'CLI-1998-0056', unit:3, accent:'#e5674b' },
   gebruiker729: { name:'Veronique', first:'Veronique', clientId:'CLI-1998-0729', unit:3, accent:'#b0698c' },
+  gebruiker839: { name: 'Daan', first: 'Daan', clientId: 'CLI-1998-0839', unit: 3, accent: '#7fb069' },
   admin:        { name:'Systeembeheerder', first:'Beheer', clientId:'ADM-SYS-ROOT', unit:0, accent:'#5c9ce0' },
 };
 
@@ -28,7 +30,9 @@ export const USERS = {
    between friends, not an authentication system — there is nothing
    behind it worth protecting. */
 export const PASSWORDS = {
-  gebruiker162:'Spanje2026!',     gebruiker726:'ZW2!',
+  gebruiker483:'Esmee123!',
+  gebruiker839:'Daan123!',
+  gebruiker162:'Spanje2026!',     gebruiker726:'ZW1!',
   gebruiker492:'Wateentoestand!', gebruiker892:'Tanteleo!',
   gebruiker83:'House1!',          gebruiker744:'Estherrr!',
   gebruiker56:'Viaplay!',         gebruiker729:'Veronique!',
