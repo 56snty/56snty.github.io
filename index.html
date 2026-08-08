@@ -40,7 +40,9 @@
 
   /* ---- HUD ------------------------------------------------------------ */
   .hud{position:fixed;z-index:3;font-size:10px;letter-spacing:.08em;line-height:1.7;
-       pointer-events:none;opacity:0;transition:opacity 1.2s ease .3s;text-transform:lowercase}
+       pointer-events:none;opacity:0;transition:opacity 1.2s ease .3s;text-transform:lowercase;
+       text-shadow:0 0 10px rgba(12,10,8,.60),0 1px 2px rgba(12,10,8,.45)}
+  body.light .hud{text-shadow:0 0 10px rgba(233,228,219,.65),0 1px 2px rgba(233,228,219,.50)}
   body.ready .hud{opacity:1}
   .hud b{font-weight:700;color:var(--ink)}
   .hud .a{color:var(--amber)}
@@ -107,8 +109,8 @@ const CFG = {
   SPLAT_FORCE: 6000,
   SPLAT_RADIUS: 0.0022,
 
-  DRIFT: 2.2,              // idle curl-noise amplitude
-  WIND_MAX: 5.0,           // ambient force at >=50 km/h
+  DRIFT: 1.2,              // idle curl-noise amplitude
+  WIND_MAX: 2.5,           // ambient force at >=50 km/h
   LAT: 51.44, LON: 5.47,   // eindhoven
   WEATHER: true,
   TZ: "Europe/Amsterdam",
@@ -118,9 +120,9 @@ const CFG = {
      to a procedural haze, never flat black. */
   VIDEO: { dark: "bg.mp4", light: "bg-light.mp4" },
   VIDEO_MIX: 0.92,     // how much video vs. base tone
-  REFRACT: 0.00045,    // fluid velocity → background warp strength
+  REFRACT: 0.00038,    // fluid velocity → background warp strength
   PARALLAX: 0.014,     // pointer micro-parallax on the video
-  CHROMA: 1.35,        // chromatic spread of the warp (1 = off)
+  CHROMA: 1.22,        // chromatic spread of the warp (1 = off)
   AUDIO: "music.mp3",  // optional — [ sound ] toggle appears only if it loads
 
   THEMES: {
@@ -364,9 +366,13 @@ void main(){
   float settle = calm * match;
 
   /* ---- background ---- */
+  /* distortion keyed to EXCESS motion only — a resting frame is a clean frame */
+  float speed  = length(vel);
+  float excess = max(0.0, speed - (uCalmBase + 2.0));
+  vec2  velE   = vel * (excess / max(speed, 1e-4));
   vec3 base;
   if (uHasVideo > 0.5){
-    vec2 off = clamp(vel * uRefract, vec2(-0.05), vec2(0.05)) * (0.45 + min(d, 1.0));
+    vec2 off = clamp(velE * uRefract, vec2(-0.035), vec2(0.035)) * (0.45 + min(d, 1.0));
     off *= 1.0 + uBeat * 0.5;
     vec2 uvR = vflip(cover(vUv + off * (2.0 - uChroma) + uParallax, aspect, uVideoAspect, uFocusY));
     vec2 uvG = vflip(cover(vUv + off               + uParallax, aspect, uVideoAspect, uFocusY));
@@ -379,6 +385,11 @@ void main(){
   } else {
     base = sceneFallback(vUv + uParallax * 0.6, aspect);
   }
+
+  /* legibility scrim: a breath of shadow under the ink where the footage runs bright */
+  float bl = dot(base, vec3(0.299, 0.587, 0.114));
+  float scrim = max(wb, db * 0.8) * smoothstep(0.35, 0.80, bl) * 0.5;
+  base *= 1.0 - scrim;
 
   /* ---- ink: fluid ↔ crisp handoff ---- */
   float coreF = smoothstep(0.16, 0.92, d);
@@ -787,7 +798,7 @@ function frame(now){
       idleT = 0;
       const a = Math.random() * Math.PI * 2;
       splats.push({ x: .2 + Math.random() * .6, y: .25 + Math.random() * .5,
-                    dx: Math.cos(a) * 26, dy: Math.sin(a) * 26, r: 2.2 });
+                    dx: Math.cos(a) * 18, dy: Math.sin(a) * 18, r: 2.2 });
     }
   }
 
