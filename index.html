@@ -141,7 +141,7 @@ const CFG = {
 
 const MOBILE = matchMedia("(pointer: coarse)").matches;
 const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
-if (MOBILE) { CFG.SIM_RES = 144; CFG.DYE_RES = 720; CFG.PRESSURE_ITERS = 16; }
+if (MOBILE) { CFG.SIM_RES = 144; CFG.DYE_RES = 768; CFG.PRESSURE_ITERS = 16; }
 if (REDUCED){ CFG.DRIFT = 0.5; }
 
 const canvas = document.getElementById("c");
@@ -294,9 +294,9 @@ void main(){
 const FRAG_DISPLAY = `#version 300 es
 precision highp float; precision highp sampler2D;
 in vec2 vUv; out vec4 o;
-uniform sampler2D uDye, uVelocity, uVideo;
+uniform sampler2D uDye, uVelocity, uVideo, uWord;
 uniform vec2 uRes, uParallax, uDyeTexel;
-uniform float uTime, uWarm, uBeat, uHasVideo, uVideoAspect, uFocusY;
+uniform float uTime, uWarm, uBeat, uHasVideo, uVideoAspect, uFocusY, uCalmBase;
 uniform float uGain, uSat, uGamma, uEdge, uVignette, uVideoMix, uRefract, uChroma;
 uniform vec3 uBg, uInk, uAmber;
 
@@ -344,18 +344,24 @@ vec3 sceneFallback(vec2 uv, float aspect){
 }
 void main(){
   float aspect = uRes.x / uRes.y;
-
-  /* heat shimmer: micro-displace the ink lookups so edges feel alive */
-  vec2 shim = (vec2(vnoise(vUv * 90.0 + uTime * 1.7),
-                    vnoise(vUv * 90.0 - uTime * 1.4)) - 0.5) * 0.0018;
-  vec2 duv = vUv + shim;
-  float d   = clamp(texture(uDye, duv).x, 0.0, 1.6);
   vec2 vel  = texture(uVelocity, vUv).xy;
+  float calm = 1.0 - smoothstep(uCalmBase + 4.0, uCalmBase + 26.0, length(vel));
 
-  /* soft halo: cross-blurred density */
+  /* heat shimmer only while the fluid is actually moving — never at rest */
+  vec2 shim = (vec2(vnoise(vUv * 90.0 + uTime * 1.7),
+                    vnoise(vUv * 90.0 - uTime * 1.4)) - 0.5) * 0.0016 * (1.0 - calm);
+  vec2 duv = vUv + shim;
+  float d = clamp(texture(uDye, duv).x, 0.0, 1.6);
+
+  /* cross-blurred dye vs. cross-blurred word: how settled is this pixel? */
   vec2 ox = vec2(uDyeTexel.x * 4.0, 0.0), oy = vec2(0.0, uDyeTexel.y * 4.0);
   float db = (d + texture(uDye, duv + ox).x + texture(uDye, duv - ox).x
                 + texture(uDye, duv + oy).x + texture(uDye, duv - oy).x) * 0.2;
+  float wHi = texture(uWord, vUv).x;
+  float wb  = (wHi + texture(uWord, vUv + ox).x + texture(uWord, vUv - ox).x
+                   + texture(uWord, vUv + oy).x + texture(uWord, vUv - oy).x) * 0.2;
+  float match  = 1.0 - smoothstep(0.10, 0.32, abs(db - wb));
+  float settle = calm * match;
 
   /* ---- background ---- */
   vec3 base;
@@ -374,19 +380,21 @@ void main(){
     base = sceneFallback(vUv + uParallax * 0.6, aspect);
   }
 
-  /* ---- ink ---- */
-  float core = smoothstep(0.16, 0.92, d);
-  float edge = smoothstep(0.015, 0.24, d) * (1.0 - smoothstep(0.22, 0.78, d));
-  float halo = smoothstep(0.004, 0.16, db) * (1.0 - smoothstep(0.10, 0.55, db));
+  /* ---- ink: fluid ↔ crisp handoff ---- */
+  float coreF = smoothstep(0.16, 0.92, d);
+  float cover2 = mix(coreF, wHi, settle);
+  float edge = smoothstep(0.015, 0.24, d) * (1.0 - smoothstep(0.22, 0.78, d)) * (1.0 - settle * 0.55);
+  float halo = smoothstep(0.004, 0.16, db) * (1.0 - smoothstep(0.10, 0.55, db)) * (1.0 - settle * 0.45);
   vec3 ink = mix(mix(uInk, vec3(0.862, 0.894, 0.933), 0.35 * step(0.5, uInk.r)), uInk, uWarm);
   vec3 amberGlow = uAmber * mix(0.50, 0.85, uWarm);
   vec3 col = mix(base, amberGlow, halo * (0.16 + uBeat * 0.12));
   col = mix(col, amberGlow, edge * uEdge);
-  col = mix(col, ink, core);
+  col = mix(col, ink, cover2);
 
+  col = mix(col, col * col * (3.0 - 2.0 * col), 0.16);               // filmic-lite contrast
   vec2 q = vUv - 0.5;
-  col *= 1.0 - uVignette * dot(q, q);                              // vignette
-  col += (hash(vUv * uRes + fract(uTime) * 971.0) - 0.5) * 0.032;  // grain
+  col *= 1.0 - uVignette * dot(q, q);                                // vignette
+  col += (hash(vUv * uRes + fract(uTime) * 971.0) - 0.5) * 0.028;    // grain
   o = vec4(col, 1.0);
 }`;
 
@@ -487,34 +495,37 @@ function initFramebuffers(){
 
 /* ---- wordmark texture ------------------------------------------------------ */
 function buildWordTexture(){
-  const d = gridSize(CFG.DYE_RES);
+  /* full display resolution (capped 2048) — the crisp layer samples this 1:1 */
+  const s = Math.min(1, 2048 / Math.max(canvas.width, canvas.height));
+  const W = Math.max(2, Math.round(canvas.width * s));
+  const H = Math.max(2, Math.round(canvas.height * s));
   const cv = document.createElement("canvas");
-  cv.width = d.w; cv.height = d.h;
+  cv.width = W; cv.height = H;
   const ctx = cv.getContext("2d");
-  ctx.fillStyle = "#000"; ctx.fillRect(0, 0, d.w, d.h);
-  let size = Math.round(d.h * 0.34);
-  const font = s => CFG.FONT.replace("SIZE", s);
+  ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
+  let size = Math.round(H * 0.34);
+  const font = f => CFG.FONT.replace("SIZE", f);
   ctx.font = font(size);
   try { ctx.letterSpacing = "0.01em"; } catch (e) {}
-  const maxW = d.w * CFG.WORD_WIDTH;
-  let w = ctx.measureText(CFG.TEXT).width;
+  const maxW = W * CFG.WORD_WIDTH;
+  const w = ctx.measureText(CFG.TEXT).width;
   if (w > maxW){ size = Math.floor(size * maxW / w); ctx.font = font(size); }
   ctx.fillStyle = "#fff";
   ctx.textAlign = "center"; ctx.textBaseline = "middle";
-  ctx.shadowColor = "#fff"; ctx.shadowBlur = size * 0.02; // soften the edge one hair
-  ctx.fillText(CFG.TEXT, d.w / 2, d.h / 2 + size * 0.04);
+  ctx.fillText(CFG.TEXT, W / 2, H / 2 + size * 0.04);
 
   if (wordTex) gl.deleteTexture(wordTex);
   wordTex = gl.createTexture();
   gl.activeTexture(gl.TEXTURE0);
   gl.bindTexture(gl.TEXTURE_2D, wordTex);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, cv);
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+  gl.generateMipmap(gl.TEXTURE_2D);   // clean minification into the sim's restore pass
 }
 function attachWord(unit){ gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, wordTex); return unit; }
 
@@ -864,6 +875,9 @@ function frame(now){
   gl.uniform1i(prg.display.u.uDye, dye.read.attach(0));
   gl.uniform1i(prg.display.u.uVelocity, velocity.read.attach(1));
   gl.uniform1i(prg.display.u.uVideo, 2);   // bound in uploadVideo
+  gl.uniform1i(prg.display.u.uWord, attachWord(3));
+  gl.uniform1f(prg.display.u.uCalmBase,
+    (Math.hypot(wx.wind[0], wx.wind[1]) + CFG.DRIFT * 0.7) / CFG.VEL_DISSIPATION);
   gl.uniform2f(prg.display.u.uRes, canvas.width, canvas.height);
   gl.uniform2f(prg.display.u.uParallax, (sx - 0.5) * CFG.PARALLAX, (0.5 - sy) * CFG.PARALLAX);
   gl.uniform2fv(prg.display.u.uDyeTexel, dye.texel);
